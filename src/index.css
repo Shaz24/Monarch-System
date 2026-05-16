@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-void text-white font-rajdhani overflow-x-hidden;
+    background-color: #030408; /* Fallback */
+    color: #dee2f5;
+  }
+  
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 50;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 100% 4px;
+    opacity: 0.5;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-panel/70 backdrop-blur-md border border-white/5;
+  }
+  
+  .neon-border-blue {
+    @apply border border-accent-blue shadow-neon-blue;
+  }
+
+  .neon-border-purple {
+    @apply border border-accent-purple shadow-neon-purple;
+  }
+
+  .neon-text-blue {
+    @apply text-accent-blue;
+    text-shadow: 0 0 5px rgba(0,212,255,0.4), 0 0 10px rgba(0,212,255,0.2);
+  }
+
+  .neon-text-purple {
+    @apply text-accent-purple;
+    text-shadow: 0 0 5px rgba(123,47,255,0.4), 0 0 10px rgba(123,47,255,0.2);
+  }
+  
+  .clipped-corner {
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+
+  .btn-primary {
+    @apply bg-accent-blue text-void font-bold px-6 py-2 uppercase tracking-widest transition-all duration-300 hover:shadow-neon-blue hover:brightness-110 clipped-corner;
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent text-accent-blue neon-border-blue px-6 py-2 uppercase tracking-widest transition-all duration-300 hover:bg-accent-glow clipped-corner;
+  }
+}
