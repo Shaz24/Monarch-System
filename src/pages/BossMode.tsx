@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Skull, Swords, ShieldAlert, CheckSquare, Square, Zap, RefreshCw, Flame, Dumbbell, Brain, Timer } from 'lucide-react';
+import { Skull, Swords, CheckSquare, Square, Zap, RefreshCw, Flame, Dumbbell, Brain, Timer } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import toast from 'react-hot-toast';
