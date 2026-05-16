@@ -122,19 +122,41 @@ export default function Mind() {
                 Enter total lockdown. Extreme focus protocol. Yields 1.5x XP multiplier.
               </p>
               
-              <div className="flex items-center gap-4 mb-6">
-                <input 
-                  type="range" 
-                  min="10" 
-                  max="120" 
-                  step="10"
-                  value={monkTarget}
-                  onChange={(e) => setMonkTarget(parseInt(e.target.value))}
-                  className="flex-1 accent-accent-purple"
-                />
-                <span className="font-orbitron font-bold text-xl text-white w-16 text-right">
-                  {monkTarget}m
-                </span>
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-space-mono text-xs text-white/50 uppercase tracking-widest">Duration</span>
+                  <span className="font-orbitron font-bold text-2xl text-accent-purple">{monkTarget}<span className="text-sm text-white/50 ml-1">min</span></span>
+                </div>
+                <div className="relative flex items-center h-8">
+                  {/* Track background */}
+                  <div className="absolute inset-y-0 left-0 right-0 flex items-center">
+                    <div className="w-full h-1.5 bg-white/10 rounded-full" />
+                    <div 
+                      className="absolute h-1.5 rounded-full bg-gradient-to-r from-accent-purple to-[#b829e3]"
+                      style={{ width: `${((monkTarget - 10) / (120 - 10)) * 100}%` }}
+                    />
+                  </div>
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="120" 
+                    step="10"
+                    value={monkTarget}
+                    onChange={(e) => setMonkTarget(parseInt(e.target.value))}
+                    className="relative w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  {/* Thumb indicator */}
+                  <div 
+                    className="absolute w-5 h-5 rounded-full bg-accent-purple border-2 border-white shadow-[0_0_10px_rgba(123,47,255,0.8)] pointer-events-none transition-all"
+                    style={{ left: `calc(${((monkTarget - 10) / (120 - 10)) * 100}% - 10px)` }}
+                  />
+                </div>
+                {/* Tick marks */}
+                <div className="flex justify-between mt-2 px-0">
+                  {[10, 30, 60, 90, 120].map(t => (
+                    <span key={t} className={`font-space-mono text-[9px] transition-colors ${monkTarget === t ? 'text-accent-purple' : 'text-white/20'}`}>{t}m</span>
+                  ))}
+                </div>
               </div>
 
               <button 
