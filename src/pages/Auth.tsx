@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Mail, Lock, Gamepad2, UserPlus, LogIn } from 'lucide-react';
+import { Mail, Lock, UserPlus, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Auth() {

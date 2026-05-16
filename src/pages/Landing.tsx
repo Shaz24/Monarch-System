@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, Brain, Swords, ChevronRight, Activity } from 'lucide-react';
+import { Shield, Brain, Swords, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 const FEATURES = [
