@@ -4,30 +4,29 @@ import { Terminal, Code2, GitMerge, Plus } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
 import toast from 'react-hot-toast';
-
-interface CodeLog {
-  id: string;
-  type: string;
-  duration: number;
-  xp_earned: number;
-  date: string;
-  project: string;
-}
+import { useActivityLogs } from '../hooks/useActivityLogs';
+import { useProfile } from '../hooks/useProfile';
 
 export default function Coding() {
   const { addXpParticle } = useUIStore();
-  const [logs, setLogs] = useState<CodeLog[]>([]);
+  const { logs, addLog } = useActivityLogs('coding');
+  const { stats } = useProfile();
   
   // Form State
   const [type, setType] = useState('Feature Development');
   const [duration, setDuration] = useState('60');
   const [project, setProject] = useState('Monarch System');
 
-  // Dummy Stat state for UI
-  const [intelligenceXP, setIntelligenceXP] = useState(1200);
-  const [creativityXP, setCreativityXP] = useState(950);
+  // Helper to get real stats
+  const getStat = (name: string) => {
+    const s = stats.find(s => s.stat_name.toLowerCase() === name.toLowerCase());
+    return { level: s?.level ?? 1, xp: s?.xp ?? 0 };
+  };
 
-  const handleLogCode = (e: React.FormEvent) => {
+  const intelligenceStat = getStat('intelligence');
+  const creativityStat = getStat('creativity');
+
+  const handleLogCode = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Calculate XP
@@ -35,24 +34,12 @@ export default function Coding() {
     const dur = parseInt(duration) || 0;
     const xpEarned = Math.round(base * dur);
 
-    const newLog: CodeLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      type,
-      duration: dur,
-      xp_earned: xpEarned,
-      date: new Date().toLocaleDateString(),
-      project
-    };
+    let statCategories = [];
+    if (type === 'Algorithms' || type === 'Refactoring') statCategories = ['intelligence'];
+    else if (type === 'UI/UX Implementation') statCategories = ['creativity'];
+    else statCategories = ['intelligence', 'creativity'];
 
-    setLogs([newLog, ...logs]);
-    
-    // Distribute XP
-    if (type === 'Algorithms' || type === 'Refactoring') setIntelligenceXP(prev => prev + xpEarned);
-    else if (type === 'UI/UX Implementation') setCreativityXP(prev => prev + xpEarned);
-    else {
-      setIntelligenceXP(prev => prev + Math.floor(xpEarned * 0.7));
-      setCreativityXP(prev => prev + Math.floor(xpEarned * 0.3));
-    }
+    await addLog(type, dur, xpEarned, { project }, statCategories);
 
     // Visual Feedback
     const rect = (e.target as HTMLFormElement).getBoundingClientRect();
@@ -147,8 +134,8 @@ export default function Coding() {
           
           {/* Related Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatRing statName="Intelligence" level={Math.floor(intelligenceXP / 100) + 1} xp={intelligenceXP % 100} />
-            <StatRing statName="Creativity" level={Math.floor(creativityXP / 100) + 1} xp={creativityXP % 100} />
+            <StatRing statName="Intelligence" level={intelligenceStat.level} xp={intelligenceStat.xp % 100} />
+            <StatRing statName="Creativity" level={creativityStat.level} xp={creativityStat.xp % 100} />
           </div>
 
           {/* Log History */}
@@ -177,12 +164,12 @@ export default function Coding() {
                           <Code2 className="w-5 h-5 text-accent-blue" />
                         </div>
                         <div>
-                          <h3 className="font-archivo-narrow text-lg text-white">{log.project}</h3>
-                          <p className="font-space-mono text-xs text-white/50">{log.date} • {log.type}</p>
+                          <h3 className="font-archivo-narrow text-lg text-white">{log.metadata?.project || 'Unknown Project'}</h3>
+                          <p className="font-space-mono text-xs text-white/50">{new Date(log.created_at).toLocaleDateString()} • {log.activity_type}</p>
                         </div>
                       </div>
                       <div className="flex gap-4 items-center w-full md:w-auto justify-between md:justify-end">
-                        <span className="font-space-mono text-sm text-white/70">{log.duration} MIN</span>
+                        <span className="font-space-mono text-sm text-white/70">{log.duration_minutes} MIN</span>
                         <span className="font-space-mono text-sm font-bold text-accent-blue bg-accent-blue/10 px-3 py-1">
                           +{log.xp_earned} XP
                         </span>

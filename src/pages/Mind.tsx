@@ -5,18 +5,13 @@ import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
 import { MonkModeOverlay } from '../components/MonkModeOverlay';
 import toast from 'react-hot-toast';
-
-interface MindLog {
-  id: string;
-  type: string;
-  duration: number;
-  xp_earned: number;
-  date: string;
-}
+import { useActivityLogs } from '../hooks/useActivityLogs';
+import { useProfile } from '../hooks/useProfile';
 
 export default function Mind() {
   const { addXpParticle, triggerLevelUp } = useUIStore();
-  const [logs, setLogs] = useState<MindLog[]>([]);
+  const { logs, addLog } = useActivityLogs('mind');
+  const { stats } = useProfile();
   
   // Monk Mode State
   const [isMonkMode, setIsMonkMode] = useState(false);
@@ -26,41 +21,35 @@ export default function Mind() {
   const [type, setType] = useState('Meditation');
   const [duration, setDuration] = useState('20');
 
-  // Dummy Stat state for UI
-  const [stoicismXP, setStoicismXP] = useState(850);
-  const [focusXP, setFocusXP] = useState(600);
+  // Helper to get real stats
+  const getStat = (name: string) => {
+    const s = stats.find(s => s.stat_name.toLowerCase() === name.toLowerCase());
+    return { level: s?.level ?? 1, xp: s?.xp ?? 0 };
+  };
 
-  const processXpGain = (typeStr: string, durMins: number, isMonk = false) => {
+  const stoicismStat = getStat('stoicism');
+  const focusStat = getStat('focus');
+
+  const processXpGain = async (typeStr: string, durMins: number, isMonk = false) => {
     // Calculate XP: base * duration
     const base = 2;
     let xpEarned = Math.round(base * durMins);
     if (isMonk) xpEarned = Math.round(xpEarned * 1.5); // Monk mode bonus
-
-    const newLog: MindLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      type: typeStr + (isMonk ? ' (Monk Mode)' : ''),
-      duration: durMins,
-      xp_earned: xpEarned,
-      date: new Date().toLocaleDateString(),
-    };
-
-    setLogs(prev => [newLog, ...prev]);
     
-    // Distribute XP
-    if (typeStr === 'Meditation' || typeStr === 'Journaling') setStoicismXP(prev => prev + xpEarned);
-    else if (typeStr === 'Deep Work' || typeStr === 'Deep Reading') setFocusXP(prev => prev + xpEarned);
-    else {
-      setStoicismXP(prev => prev + Math.floor(xpEarned / 2));
-      setFocusXP(prev => prev + Math.floor(xpEarned / 2));
-    }
+    let statCategories = [];
+    if (typeStr === 'Meditation' || typeStr === 'Journaling') statCategories = ['stoicism'];
+    else if (typeStr === 'Deep Work' || typeStr === 'Deep Reading') statCategories = ['focus'];
+    else statCategories = ['stoicism', 'focus'];
+
+    await addLog(typeStr + (isMonk ? ' (Monk Mode)' : ''), durMins, xpEarned, { isMonk }, statCategories);
 
     return xpEarned;
   };
 
-  const handleLogManual = (e: React.FormEvent) => {
+  const handleLogManual = async (e: React.FormEvent) => {
     e.preventDefault();
     const dur = parseInt(duration) || 0;
-    const xp = processXpGain(type, dur);
+    const xp = await processXpGain(type, dur);
     
     // Visual Feedback
     const rect = (e.target as HTMLFormElement).getBoundingClientRect();
@@ -68,10 +57,10 @@ export default function Mind() {
     toast.success('Cognitive data integrated.');
   };
 
-  const handleMonkModeClose = (completed: boolean, actualDuration: number) => {
+  const handleMonkModeClose = async (completed: boolean, actualDuration: number) => {
     setIsMonkMode(false);
     if (completed) {
-      const xp = processXpGain('Deep Focus', actualDuration, true);
+      const xp = await processXpGain('Deep Focus', actualDuration, true);
       // Trigger particles from center
       addXpParticle(window.innerWidth / 2, window.innerHeight / 2, xp);
       toast.success('Monk Mode completed. Mind expanded.', { icon: '🧠' });
@@ -82,7 +71,7 @@ export default function Mind() {
       }
     } else {
       if (actualDuration > 0) {
-        const xp = processXpGain('Partial Focus', actualDuration, false);
+        const xp = await processXpGain('Partial Focus', actualDuration, false);
         toast(`Partial focus logged. ${xp} XP recovered.`);
       }
     }
@@ -207,8 +196,8 @@ export default function Mind() {
             
             {/* Related Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StatRing statName="Stoicism" level={Math.floor(stoicismXP / 100) + 1} xp={stoicismXP % 100} />
-              <StatRing statName="Focus" level={Math.floor(focusXP / 100) + 1} xp={focusXP % 100} />
+              <StatRing statName="Stoicism" level={stoicismStat.level} xp={stoicismStat.xp % 100} />
+              <StatRing statName="Focus" level={focusStat.level} xp={focusStat.xp % 100} />
             </div>
 
             {/* Log History */}
@@ -232,17 +221,17 @@ export default function Mind() {
                         className="p-4 bg-void/50 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-accent-blue/50 transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 flex items-center justify-center ${log.type.includes('Monk') ? 'bg-accent-purple/10' : 'bg-accent-blue/10'}`}>
-                            <Brain className={`w-5 h-5 ${log.type.includes('Monk') ? 'text-accent-purple' : 'text-accent-blue'}`} />
+                          <div className={`w-10 h-10 flex items-center justify-center ${log.activity_type.includes('Monk') ? 'bg-accent-purple/10' : 'bg-accent-blue/10'}`}>
+                            <Brain className={`w-5 h-5 ${log.activity_type.includes('Monk') ? 'text-accent-purple' : 'text-accent-blue'}`} />
                           </div>
                           <div>
-                            <h3 className="font-archivo-narrow text-lg text-white">{log.type}</h3>
-                            <p className="font-space-mono text-xs text-white/50">{log.date}</p>
+                            <h3 className="font-archivo-narrow text-lg text-white">{log.activity_type}</h3>
+                            <p className="font-space-mono text-xs text-white/50">{new Date(log.created_at).toLocaleDateString()}</p>
                           </div>
                         </div>
                         <div className="flex gap-4 items-center w-full md:w-auto justify-between md:justify-end">
-                          <span className="font-space-mono text-sm text-white/70">{log.duration} MIN</span>
-                          <span className={`font-space-mono text-sm font-bold px-3 py-1 ${log.type.includes('Monk') ? 'text-accent-purple bg-accent-purple/10' : 'text-accent-blue bg-accent-blue/10'}`}>
+                          <span className="font-space-mono text-sm text-white/70">{log.duration_minutes} MIN</span>
+                          <span className={`font-space-mono text-sm font-bold px-3 py-1 ${log.activity_type.includes('Monk') ? 'text-accent-purple bg-accent-purple/10' : 'text-accent-blue bg-accent-blue/10'}`}>
                             +{log.xp_earned} XP
                           </span>
                         </div>

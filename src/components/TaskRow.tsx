@@ -13,7 +13,7 @@ interface Task {
   stat_category: string;
 }
 
-export const TaskRow = ({ task }: { task: Task }) => {
+export const TaskRow = ({ task, onComplete }: { task: Task; onComplete?: () => void }) => {
   const [completed, setCompleted] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const { addXpParticle, triggerLevelUp } = useUIStore();
@@ -59,6 +59,9 @@ export const TaskRow = ({ task }: { task: Task }) => {
     if (completed) return;
     setCompleted(true);
     addXpParticle(e.clientX, e.clientY, task.xp_reward);
+    
+    // Call the external onComplete handler to update database
+    if (onComplete) onComplete();
     
     // Simulate a random level up for demo purposes (10% chance)
     if (Math.random() > 0.9) {

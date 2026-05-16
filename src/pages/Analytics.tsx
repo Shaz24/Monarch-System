@@ -1,19 +1,7 @@
 import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Activity, Target } from 'lucide-react';
-
-const STATS_MATRIX = [
-  { subject: 'STR', A: 45, fullMark: 100 },
-  { subject: 'END', A: 60, fullMark: 100 },
-  { subject: 'INT', A: 85, fullMark: 100 },
-  { subject: 'FOC', A: 90, fullMark: 100 },
-  { subject: 'STO', A: 75, fullMark: 100 },
-  { subject: 'DIS', A: 80, fullMark: 100 },
-  { subject: 'CRE', A: 65, fullMark: 100 },
-  { subject: 'CHA', A: 40, fullMark: 100 },
-  { subject: 'WEA', A: 20, fullMark: 100 },
-  { subject: 'CON', A: 95, fullMark: 100 },
-];
+import { useProfile } from '../hooks/useProfile';
 
 const XP_HISTORY = [
   { date: 'May 01', xp: 4000 },
@@ -26,6 +14,28 @@ const XP_HISTORY = [
 ];
 
 export default function Analytics() {
+  const { stats } = useProfile();
+
+  // Create a mapping of stat_name to level/xp
+  const statsMap = stats.reduce((acc, s) => {
+    acc[s.stat_name.toUpperCase().substring(0, 3)] = s.level * 100 + s.xp;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Compute stats matrix
+  const STATS_MATRIX = [
+    { subject: 'STR', A: statsMap['STR'] || 0, fullMark: 1000 },
+    { subject: 'END', A: statsMap['END'] || 0, fullMark: 1000 },
+    { subject: 'INT', A: statsMap['INT'] || 0, fullMark: 1000 },
+    { subject: 'FOC', A: statsMap['FOC'] || 0, fullMark: 1000 },
+    { subject: 'STO', A: statsMap['STO'] || 0, fullMark: 1000 },
+    { subject: 'DIS', A: statsMap['DIS'] || 0, fullMark: 1000 },
+    { subject: 'CRE', A: statsMap['CRE'] || 0, fullMark: 1000 },
+    { subject: 'CHA', A: statsMap['CHA'] || 0, fullMark: 1000 },
+    { subject: 'WEA', A: statsMap['WEA'] || 0, fullMark: 1000 },
+    { subject: 'CON', A: statsMap['CON'] || 0, fullMark: 1000 },
+  ];
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -60,7 +70,7 @@ export default function Analytics() {
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={STATS_MATRIX}>
                 <PolarGrid stroke="rgba(255,255,255,0.1)" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'Space Mono' }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
                 <Radar name="Player" dataKey="A" stroke="#00D4FF" fill="#b829e3" fillOpacity={0.4} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#080D1A', border: '1px solid #b829e3', borderRadius: 0, fontFamily: 'Space Mono' }} 

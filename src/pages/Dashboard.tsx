@@ -4,40 +4,34 @@ import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { StatRing } from '../components/StatRing';
 import { useUIStore } from '../store/uiStore';
 
-// Dummy data since DB is not connected yet
-const DUMMY_STATS = [
-  { name: 'Strength', level: 5, xp: 250 },
-  { name: 'Discipline', level: 8, xp: 750 },
-  { name: 'Intelligence', level: 4, xp: 100 },
-  { name: 'Creativity', level: 3, xp: 50 },
-  { name: 'Endurance', level: 6, xp: 400 },
-  { name: 'Charisma', level: 2, xp: 150 },
-  { name: 'Focus', level: 7, xp: 600 },
-  { name: 'Stoicism', level: 9, xp: 850 },
-  { name: 'Wealth', level: 1, xp: 0 },
-  { name: 'Consistency', level: 10, xp: 950 },
-];
-
-const WEEKLY_DATA = [
-  { day: 'M', score: 60 },
-  { day: 'T', score: 80 },
-  { day: 'W', score: 50 },
-  { day: 'T', score: 90 },
-  { day: 'F', score: 70 },
-  { day: 'S', score: 100 },
-  { day: 'S', score: 85 },
-];
+import { useProfile } from '../hooks/useProfile';
+import { useWeeklyActivity } from '../hooks/useWeeklyActivity';
+import { getRankFromLevel } from '../lib/rpg';
 
 export default function Dashboard() {
   const addXpParticle = useUIStore(state => state.addXpParticle);
-  const currentLevel = 12;
-  const currentXp = 850;
-  const xpNeeded = 1200; // calculateXPForLevel(12) = 1200
-  const xpPercent = (currentXp / xpNeeded) * 100;
+  const { profile, stats, loading } = useProfile();
+  const { weeklyData, grade } = useWeeklyActivity();
+  
+  const currentLevel = profile?.current_level ?? 1;
+  const currentXp = profile?.current_xp ?? 0;
+  const xpNeeded = currentLevel * 100;
+  const xpPercent = Math.min(100, Math.round((currentXp % xpNeeded) / xpNeeded * 100));
+  const rank = getRankFromLevel(currentLevel);
   
   const handleTestXP = (e: React.MouseEvent) => {
     addXpParticle(e.clientX, e.clientY, 50);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="font-space-mono text-xs text-white/50 uppercase tracking-widest animate-pulse">
+          Loading System Data...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -52,14 +46,18 @@ export default function Dashboard() {
         {/* Main Identity */}
         <div className="glass-panel p-6 lg:col-span-2 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
           <div className="w-24 h-24 rounded-none border-2 border-accent-blue shadow-neon-blue flex items-center justify-center bg-void z-10 shrink-0">
-            <Shield className="w-12 h-12 text-accent-blue" />
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <Shield className="w-12 h-12 text-accent-blue" />
+            )}
           </div>
           
           <div className="flex-1 w-full z-10">
             <div className="flex justify-between items-end mb-2">
               <div>
-                <p className="font-space-mono text-xs text-accent-blue tracking-widest uppercase">Rank: D-Class Hunter</p>
-                <h1 className="font-orbitron text-4xl font-bold text-white uppercase tracking-wider">Player_01</h1>
+                <p className="font-space-mono text-xs text-accent-blue tracking-widest uppercase">Rank: {rank}-Class Hunter</p>
+                <h1 className="font-orbitron text-4xl font-bold text-white uppercase tracking-wider">{profile?.display_name || profile?.username || 'Player_01'}</h1>
               </div>
               <div className="text-right">
                 <p className="font-space-mono text-sm text-white/50">LVL</p>
@@ -97,7 +95,7 @@ export default function Dashboard() {
               <p className="font-space-mono text-xs text-accent-purple tracking-widest uppercase">Aura Level</p>
               <div className="flex items-center gap-2 mt-1">
                 <Zap className="w-6 h-6 text-accent-purple" />
-                <span className="font-orbitron text-3xl font-bold text-white">100%</span>
+                <span className="font-orbitron text-3xl font-bold text-white">{profile?.aura_level ?? 100}%</span>
               </div>
             </div>
             {/* Aura Bar */}
@@ -111,12 +109,12 @@ export default function Dashboard() {
               <p className="font-space-mono text-xs text-[#ff5a00] tracking-widest uppercase">Current Streak</p>
               <div className="flex items-center gap-2 mt-1">
                 <Flame className="w-6 h-6 text-[#ff5a00]" style={{ filter: 'drop-shadow(0 0 5px rgba(255,90,0,0.5))' }} />
-                <span className="font-orbitron text-3xl font-bold text-white">14 <span className="text-sm text-white/50">DAYS</span></span>
+                <span className="font-orbitron text-3xl font-bold text-white">{profile?.streak_days ?? 0} <span className="text-sm text-white/50">DAYS</span></span>
               </div>
             </div>
             <div className="font-space-mono text-xs text-[#ff5a00]/70 text-right">
               MULTIPLIER<br/>
-              <span className="text-lg font-bold text-[#ff5a00]">1.2x</span>
+              <span className="text-lg font-bold text-[#ff5a00]">{(1 + (profile?.streak_days ?? 0) * 0.05).toFixed(1)}x</span>
             </div>
           </div>
         </div>
@@ -134,11 +132,17 @@ export default function Dashboard() {
             </h2>
             <Target className="w-5 h-5 text-accent-blue" />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {DUMMY_STATS.map((stat) => (
-              <StatRing key={stat.name} statName={stat.name} level={stat.level} xp={stat.xp} />
-            ))}
-          </div>
+          {stats.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {stats.map((stat) => (
+                <StatRing key={stat.stat_name} statName={stat.stat_name.charAt(0).toUpperCase() + stat.stat_name.slice(1)} level={stat.level} xp={stat.xp % 100} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-white/30 font-space-mono text-sm uppercase tracking-widest border border-dashed border-white/10">
+              No stats initialized. Complete tasks to level up.
+            </div>
+          )}
         </div>
 
         {/* Productivity & Consistency */}
@@ -151,7 +155,7 @@ export default function Dashboard() {
               <div className="relative w-32 h-32 flex items-center justify-center rounded-full border-4 border-void shadow-neon-purple">
                 <div className="absolute inset-0 rounded-full border-4 border-accent-purple opacity-50 border-t-accent-blue animate-[spin_10s_linear_infinite]" />
                 <div className="text-center">
-                  <span className="block font-orbitron text-4xl font-bold neon-text-blue">A</span>
+                  <span className="block font-orbitron text-4xl font-bold neon-text-blue">{grade}</span>
                   <span className="font-space-mono text-xs uppercase tracking-widest text-white/50">Grade</span>
                 </div>
               </div>
@@ -164,7 +168,7 @@ export default function Dashboard() {
             </h2>
             <div className="h-40 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={WEEKLY_DATA}>
+                <BarChart data={weeklyData}>
                   <Tooltip 
                     cursor={{ fill: 'rgba(0, 212, 255, 0.1)' }} 
                     contentStyle={{ backgroundColor: '#080D1A', border: '1px solid #00D4FF', borderRadius: 0, fontFamily: 'Space Mono' }} 

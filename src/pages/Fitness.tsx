@@ -4,30 +4,29 @@ import { Activity, Dumbbell, Timer, Flame, Plus } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
 import toast from 'react-hot-toast';
-
-interface WorkoutLog {
-  id: string;
-  type: string;
-  duration: number;
-  intensity: string;
-  xp_earned: number;
-  date: string;
-}
+import { useActivityLogs } from '../hooks/useActivityLogs';
+import { useProfile } from '../hooks/useProfile';
 
 export default function Fitness() {
   const { addXpParticle } = useUIStore();
-  const [logs, setLogs] = useState<WorkoutLog[]>([]);
+  const { logs, addLog } = useActivityLogs('fitness');
+  const { stats } = useProfile();
   
   // Form State
   const [type, setType] = useState('Weightlifting');
   const [duration, setDuration] = useState('45');
   const [intensity, setIntensity] = useState('Medium');
 
-  // Dummy Stat state for UI
-  const [strengthXP, setStrengthXP] = useState(250);
-  const [enduranceXP, setEnduranceXP] = useState(400);
+  // Helper to get real stats
+  const getStat = (name: string) => {
+    const s = stats.find(s => s.stat_name.toLowerCase() === name.toLowerCase());
+    return { level: s?.level ?? 1, xp: s?.xp ?? 0 };
+  };
 
-  const handleLogWorkout = (e: React.FormEvent) => {
+  const strengthStat = getStat('strength');
+  const enduranceStat = getStat('endurance');
+
+  const handleLogWorkout = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Calculate XP: base * duration * intensity multiplier
@@ -36,24 +35,12 @@ export default function Fitness() {
     const dur = parseInt(duration) || 0;
     const xpEarned = Math.round(base * dur * multi);
 
-    const newLog: WorkoutLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      type,
-      duration: dur,
-      intensity,
-      xp_earned: xpEarned,
-      date: new Date().toLocaleDateString(),
-    };
+    let statCategories = [];
+    if (type === 'Weightlifting') statCategories = ['strength'];
+    else if (type === 'Cardio') statCategories = ['endurance'];
+    else statCategories = ['strength', 'endurance'];
 
-    setLogs([newLog, ...logs]);
-    
-    // Distribute XP
-    if (type === 'Weightlifting') setStrengthXP(prev => prev + xpEarned);
-    else if (type === 'Cardio') setEnduranceXP(prev => prev + xpEarned);
-    else {
-      setStrengthXP(prev => prev + Math.floor(xpEarned / 2));
-      setEnduranceXP(prev => prev + Math.floor(xpEarned / 2));
-    }
+    await addLog(type, dur, xpEarned, { intensity }, statCategories);
 
     // Visual Feedback
     const rect = (e.target as HTMLFormElement).getBoundingClientRect();
@@ -156,8 +143,8 @@ export default function Fitness() {
           
           {/* Related Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatRing statName="Strength" level={Math.floor(strengthXP / 100) + 1} xp={strengthXP % 100} />
-            <StatRing statName="Endurance" level={Math.floor(enduranceXP / 100) + 1} xp={enduranceXP % 100} />
+            <StatRing statName="Strength" level={strengthStat.level} xp={strengthStat.xp % 100} />
+            <StatRing statName="Endurance" level={enduranceStat.level} xp={enduranceStat.xp % 100} />
           </div>
 
           {/* Log History */}
@@ -186,12 +173,12 @@ export default function Fitness() {
                           <Dumbbell className="w-5 h-5 text-[#ff5a00]" />
                         </div>
                         <div>
-                          <h3 className="font-archivo-narrow text-lg text-white">{log.type}</h3>
-                          <p className="font-space-mono text-xs text-white/50">{log.date} • {log.intensity} Intensity</p>
+                          <h3 className="font-archivo-narrow text-lg text-white">{log.activity_type}</h3>
+                          <p className="font-space-mono text-xs text-white/50">{new Date(log.created_at).toLocaleDateString()} • {log.metadata?.intensity || 'Medium'} Intensity</p>
                         </div>
                       </div>
                       <div className="flex gap-4 items-center w-full md:w-auto justify-between md:justify-end">
-                        <span className="font-space-mono text-sm text-white/70">{log.duration} MIN</span>
+                        <span className="font-space-mono text-sm text-white/70">{log.duration_minutes} MIN</span>
                         <span className="font-space-mono text-sm font-bold text-accent-blue bg-accent-blue/10 px-3 py-1">
                           +{log.xp_earned} XP
                         </span>

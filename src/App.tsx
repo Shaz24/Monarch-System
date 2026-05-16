@@ -20,14 +20,14 @@ import Creator from './pages/Creator';
 import Profile from './pages/Profile';
 import Analytics from './pages/Analytics';
 import Landing from './pages/Landing';
+import EditProfile from './pages/EditProfile';
 import BossMode from './pages/BossMode';
 import { Navigation } from './components/Navigation';
 
-// Main Layout (authenticated shell with sidebar)
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen flex flex-col md:flex-row">
     <Navigation />
-    <main className="flex-1 md:ml-64 pb-20 md:pb-0 overflow-y-auto overflow-x-hidden relative">
+    <main className="flex-1 md:ml-28 pb-28 md:pb-0 overflow-y-auto overflow-x-hidden relative">
       {children}
     </main>
   </div>
@@ -108,6 +108,7 @@ function App() {
         <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
         <Route path="/boss-mode" element={<ProtectedLayout><BossMode /></ProtectedLayout>} />
         <Route path="/analytics" element={<ProtectedLayout><Analytics /></ProtectedLayout>} />
+        <Route path="/edit-profile" element={<ProtectedLayout><EditProfile /></ProtectedLayout>} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

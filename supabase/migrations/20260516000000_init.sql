@@ -10,12 +10,15 @@ CREATE TYPE task_difficulty_enum AS ENUM ('E', 'D', 'C', 'B', 'A', 'S');
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT NOT NULL,
+  display_name TEXT,
+  bio TEXT,
   avatar_url TEXT,
   current_level INTEGER DEFAULT 1,
   current_xp INTEGER DEFAULT 0,
   rank TEXT DEFAULT 'E',
   aura_level INTEGER DEFAULT 100,
   streak_days INTEGER DEFAULT 0,
+  visibility JSONB DEFAULT '{"show_level":true,"show_streak":true,"show_stats":false,"show_rank":true,"show_achievements":true}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

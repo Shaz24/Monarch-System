@@ -4,30 +4,29 @@ import { Video, Camera, TrendingUp, Plus } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
 import toast from 'react-hot-toast';
-
-interface CreatorLog {
-  id: string;
-  type: string;
-  duration: number;
-  xp_earned: number;
-  date: string;
-  platform: string;
-}
+import { useActivityLogs } from '../hooks/useActivityLogs';
+import { useProfile } from '../hooks/useProfile';
 
 export default function Creator() {
   const { addXpParticle } = useUIStore();
-  const [logs, setLogs] = useState<CreatorLog[]>([]);
+  const { logs, addLog } = useActivityLogs('creator');
+  const { stats } = useProfile();
   
   // Form State
   const [type, setType] = useState('Video Production');
   const [duration, setDuration] = useState('120');
   const [platform, setPlatform] = useState('YouTube');
 
-  // Dummy Stat state for UI
-  const [charismaXP, setCharismaXP] = useState(450);
-  const [wealthXP, setWealthXP] = useState(150);
+  // Helper to get real stats
+  const getStat = (name: string) => {
+    const s = stats.find(s => s.stat_name.toLowerCase() === name.toLowerCase());
+    return { level: s?.level ?? 1, xp: s?.xp ?? 0 };
+  };
 
-  const handleLogCreation = (e: React.FormEvent) => {
+  const charismaStat = getStat('charisma');
+  const wealthStat = getStat('wealth');
+
+  const handleLogCreation = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Calculate XP
@@ -35,24 +34,12 @@ export default function Creator() {
     const dur = parseInt(duration) || 0;
     const xpEarned = Math.round(base * dur);
 
-    const newLog: CreatorLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      type,
-      duration: dur,
-      xp_earned: xpEarned,
-      date: new Date().toLocaleDateString(),
-      platform
-    };
+    let statCategories = [];
+    if (type === 'Networking' || type === 'Live Streaming') statCategories = ['charisma'];
+    else if (type === 'Business Strategy' || type === 'Sponsorships') statCategories = ['wealth'];
+    else statCategories = ['charisma', 'wealth'];
 
-    setLogs([newLog, ...logs]);
-    
-    // Distribute XP
-    if (type === 'Networking' || type === 'Live Streaming') setCharismaXP(prev => prev + xpEarned);
-    else if (type === 'Business Strategy' || type === 'Sponsorships') setWealthXP(prev => prev + xpEarned);
-    else {
-      setCharismaXP(prev => prev + Math.floor(xpEarned * 0.6));
-      setWealthXP(prev => prev + Math.floor(xpEarned * 0.4));
-    }
+    await addLog(type, dur, xpEarned, { platform }, statCategories);
 
     // Visual Feedback
     const rect = (e.target as HTMLFormElement).getBoundingClientRect();
@@ -147,8 +134,8 @@ export default function Creator() {
           
           {/* Related Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatRing statName="Charisma" level={Math.floor(charismaXP / 100) + 1} xp={charismaXP % 100} />
-            <StatRing statName="Wealth" level={Math.floor(wealthXP / 100) + 1} xp={wealthXP % 100} />
+            <StatRing statName="Charisma" level={charismaStat.level} xp={charismaStat.xp % 100} />
+            <StatRing statName="Wealth" level={wealthStat.level} xp={wealthStat.xp % 100} />
           </div>
 
           {/* Log History */}
@@ -177,12 +164,12 @@ export default function Creator() {
                           <Video className="w-5 h-5 text-[#ff5a00]" />
                         </div>
                         <div>
-                          <h3 className="font-archivo-narrow text-lg text-white">{log.platform}</h3>
-                          <p className="font-space-mono text-xs text-white/50">{log.date} • {log.type}</p>
+                          <h3 className="font-archivo-narrow text-lg text-white">{log.metadata?.platform || 'Unknown Platform'}</h3>
+                          <p className="font-space-mono text-xs text-white/50">{new Date(log.created_at).toLocaleDateString()} • {log.activity_type}</p>
                         </div>
                       </div>
                       <div className="flex gap-4 items-center w-full md:w-auto justify-between md:justify-end">
-                        <span className="font-space-mono text-sm text-white/70">{log.duration} MIN</span>
+                        <span className="font-space-mono text-sm text-white/70">{log.duration_minutes} MIN</span>
                         <span className="font-space-mono text-sm font-bold text-[#ff5a00] bg-[#ff5a00]/10 px-3 py-1">
                           +{log.xp_earned} XP
                         </span>

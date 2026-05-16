@@ -30,7 +30,9 @@ export async function seedInitialData(user: User) {
       // Create Profile
       const { error: profileError } = await supabase.from('profiles').insert({
         id: user.id,
-        username: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Player',
+        username: user.user_metadata?.username || user.email?.split('@')[0] || 'Player',
+        display_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Player',
+        bio: '',
         avatar_url: user.user_metadata?.avatar_url || '',
         current_level: 1,
         current_xp: 0,
