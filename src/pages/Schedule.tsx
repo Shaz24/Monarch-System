@@ -11,7 +11,7 @@ export default function Schedule() {
   const [isUploading, setIsUploading] = useState(false);
 
   // Helper to auto-rank tasks and assign XP
-  const autoRankTask = (title: string, category: string) => {
+  const autoRankTask = (title: string) => {
     const t = title.toLowerCase();
     let difficulty: 'E' | 'D' | 'C' | 'B' | 'A' | 'S' = 'D';
     let xp = 20;
@@ -62,7 +62,7 @@ export default function Schedule() {
             stat_category = 'discipline';
           }
           
-          const { difficulty, xp_reward } = autoRankTask(title, stat_category);
+          const { difficulty, xp_reward } = autoRankTask(title);
           
           await addTask({
             time_slot,
@@ -92,7 +92,7 @@ export default function Schedule() {
     if (!title) return;
     const stat_category = prompt('Enter stat category (strength, focus, intelligence, discipline, etc):', 'discipline') || 'discipline';
     
-    const { difficulty, xp_reward } = autoRankTask(title, stat_category);
+    const { difficulty, xp_reward } = autoRankTask(title);
     addTask({ time_slot, title, stat_category, difficulty, xp_reward, is_recurring: true });
   };
 

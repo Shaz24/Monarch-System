@@ -9,7 +9,7 @@ interface Task {
   time_slot: string;
   title: string;
   xp_reward: number;
-  difficulty: string;
+  difficulty: 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
   stat_category: string;
 }
 
