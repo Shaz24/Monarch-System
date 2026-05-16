@@ -42,7 +42,7 @@ export default function Landing() {
       {/* Navigation Bar */}
       <nav className="relative z-10 flex items-center justify-between p-6 md:px-12 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <img src="/monarch-logo.webp" alt="Monarch Logo" className="w-8 h-8 rounded-full border border-accent-blue/50 shadow-[0_0_15px_rgba(0,212,255,0.3)] object-cover" />
+          <img src="/monarch-logo.png" alt="Monarch Logo" className="w-8 h-8 rounded-full border border-accent-blue/50 shadow-[0_0_15px_rgba(0,212,255,0.3)] object-cover" />
           <span className="font-orbitron font-bold text-lg tracking-widest text-white uppercase">
             Monarch <span className="text-accent-blue">System</span>
           </span>

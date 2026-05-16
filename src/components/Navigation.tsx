@@ -22,7 +22,7 @@ export const Navigation = () => {
       {/* Desktop Floating Glass Sidebar */}
       <nav className="hidden md:flex flex-col w-20 h-[calc(100vh-2rem)] fixed left-4 top-4 bg-void/40 backdrop-blur-xl border border-white/10 z-50 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
         <div className="p-4 border-b border-white/10 flex justify-center mt-2">
-          <img src="/monarch-logo.webp" alt="Monarch" className="w-10 h-10 rounded-xl border border-accent-blue/30 shadow-[0_0_15px_rgba(0,212,255,0.2)] object-cover" />
+          <img src="/monarch-logo.png" alt="Monarch" className="w-10 h-10 rounded-xl border border-accent-blue/30 shadow-[0_0_15px_rgba(0,212,255,0.2)] object-cover" />
         </div>
         <div className="flex-1 py-6 flex flex-col gap-2 items-center overflow-y-auto hide-scrollbar relative">
           {NAV_ITEMS.map((item) => {

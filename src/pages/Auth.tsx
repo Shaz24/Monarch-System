@@ -70,7 +70,7 @@ export default function Auth() {
           
           {/* Header */}
           <div className="text-center mb-10">
-            <img src="/monarch-logo.webp" alt="Monarch Logo" className="w-20 h-20 mx-auto mb-4 rounded-full border border-accent-blue/50 shadow-[0_0_20px_rgba(0,212,255,0.4)] object-cover" />
+            <img src="/monarch-logo.png" alt="Monarch Logo" className="w-20 h-20 mx-auto mb-4 rounded-full border border-accent-blue/50 shadow-[0_0_20px_rgba(0,212,255,0.4)] object-cover" />
             <h1 className="text-4xl font-orbitron font-bold tracking-widest text-white uppercase mb-2">
               Monarch <span className="text-accent-blue">System</span>
             </h1>
