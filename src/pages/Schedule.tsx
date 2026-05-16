@@ -6,7 +6,7 @@ import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function Schedule() {
-  const { tasks, loading, completeTask, addTask, updateTask, deleteTask } = useTasks();
+  const { tasks, completedTaskIds, loading, completeTask, addTask, updateTask, deleteTask } = useTasks();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -164,6 +164,7 @@ export default function Schedule() {
             <TaskRow 
               key={task.id} 
               task={task} 
+              isCompleted={completedTaskIds.has(task.id)}
               onComplete={() => completeTask(task.id, task.xp_reward)} 
               onUpdate={(updates) => updateTask(task.id, updates)}
               onDelete={() => deleteTask(task.id)}

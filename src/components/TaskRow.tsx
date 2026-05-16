@@ -15,11 +15,13 @@ interface Task {
 
 export const TaskRow = ({ 
   task, 
+  isCompleted = false,
   onComplete,
   onUpdate,
   onDelete
 }: { 
   task: Task; 
+  isCompleted?: boolean;
   onComplete?: () => void;
   onUpdate?: (updates: Partial<Task>) => void;
   onDelete?: () => void;
@@ -27,7 +29,8 @@ export const TaskRow = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editTime, setEditTime] = useState(task.time_slot);
-  const [completed, setCompleted] = useState(false);
+  const [localCompleted, setLocalCompleted] = useState(false);
+  const completed = isCompleted || localCompleted;
   const [expanded, setExpanded] = useState(false);
   const { addXpParticle, triggerLevelUp } = useUIStore();
   
@@ -70,7 +73,7 @@ export const TaskRow = ({
 
   const handleComplete = (e: React.MouseEvent) => {
     if (completed) return;
-    setCompleted(true);
+    setLocalCompleted(true);
     addXpParticle(e.clientX, e.clientY, task.xp_reward);
     
     // Call the external onComplete handler to update database

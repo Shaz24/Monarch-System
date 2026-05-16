@@ -22,6 +22,8 @@ export function useTasks() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+
   const fetchTasks = useCallback(async () => {
     if (!user || !isSupabaseConfigured) {
       setTasks([
@@ -44,6 +46,7 @@ export function useTasks() {
 
     setLoading(true);
     try {
+      // Fetch Tasks
       const { data, error } = await supabase
         .from('daily_tasks')
         .select('*')
@@ -52,6 +55,21 @@ export function useTasks() {
 
       if (error) throw error;
       setTasks(data as Task[]);
+
+      // Fetch Completions for today
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const { data: completions, error: compError } = await supabase
+        .from('task_completions')
+        .select('task_id')
+        .eq('user_id', user.id)
+        .gte('completed_at', startOfDay.toISOString());
+
+      if (!compError && completions) {
+        setCompletedTaskIds(new Set(completions.map(c => c.task_id)));
+      }
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -98,8 +116,12 @@ export function useTasks() {
 
   const completeTask = async (taskId: string, xpReward: number) => {
     if (!user || !isSupabaseConfigured) {
-      // In demo mode, just remove the task from local state
       setTasks(prev => prev.filter(t => t.id !== taskId));
+      return;
+    }
+
+    if (completedTaskIds.has(taskId)) {
+      console.warn('Task already completed today');
       return;
     }
     
@@ -124,9 +146,12 @@ export function useTasks() {
         console.error('RPC Error granting XP:', rpcError);
       }
 
-      // 3. We do NOT delete the task if it's recurring, but for simplicity here we assume it's "done" for the day
-      // In a real app, we'd filter the UI based on completions. For now, let's just refetch.
-      await fetchTasks();
+      // Update local state immediately to reflect completion
+      setCompletedTaskIds(prev => {
+        const newSet = new Set(prev);
+        newSet.add(taskId);
+        return newSet;
+      });
     } catch (err: any) {
       console.error('Complete task error:', err);
       throw err;
@@ -171,5 +196,5 @@ export function useTasks() {
     }
   };
 
-  return { tasks, loading, error, refetch: fetchTasks, addTask, completeTask, updateTask, deleteTask };
+  return { tasks, completedTaskIds, loading, error, refetch: fetchTasks, addTask, completeTask, updateTask, deleteTask };
 }
