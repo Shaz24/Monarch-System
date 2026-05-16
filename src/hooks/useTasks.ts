@@ -117,5 +117,43 @@ export function useTasks() {
     }
   };
 
-  return { tasks, loading, error, refetch: fetchTasks, addTask, completeTask };
+  const updateTask = async (taskId: string, updates: Partial<Task>) => {
+    if (!user || !isSupabaseConfigured) {
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('daily_tasks')
+        .update(updates)
+        .eq('id', taskId)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
+    } catch (err) {
+      console.error('Update task error:', err);
+      throw err;
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    if (!user || !isSupabaseConfigured) {
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('daily_tasks')
+        .delete()
+        .eq('id', taskId)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+    } catch (err) {
+      console.error('Delete task error:', err);
+      throw err;
+    }
+  };
+
+  return { tasks, loading, error, refetch: fetchTasks, addTask, completeTask, updateTask, deleteTask };
 }

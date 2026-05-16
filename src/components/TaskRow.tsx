@@ -13,7 +13,20 @@ interface Task {
   stat_category: string;
 }
 
-export const TaskRow = ({ task, onComplete }: { task: Task; onComplete?: () => void }) => {
+export const TaskRow = ({ 
+  task, 
+  onComplete,
+  onUpdate,
+  onDelete
+}: { 
+  task: Task; 
+  onComplete?: () => void;
+  onUpdate?: (updates: Partial<Task>) => void;
+  onDelete?: () => void;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(task.title);
+  const [editTime, setEditTime] = useState(task.time_slot);
   const [completed, setCompleted] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const { addXpParticle, triggerLevelUp } = useUIStore();
@@ -103,9 +116,26 @@ export const TaskRow = ({ task, onComplete }: { task: Task; onComplete?: () => v
           </div>
           
           <div className="flex-1">
-            <h3 className={`font-archivo-narrow text-lg ${completed ? 'line-through text-white/50' : 'text-white'}`}>
-              {task.title}
-            </h3>
+            {isEditing ? (
+              <div className="flex flex-col gap-2" onClick={e => e.stopPropagation()}>
+                <input 
+                  type="text" 
+                  value={editTime}
+                  onChange={e => setEditTime(e.target.value)}
+                  className="bg-void border border-white/20 p-1 text-white font-space-mono text-sm w-24"
+                />
+                <input 
+                  type="text" 
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  className="bg-void border border-white/20 p-1 text-white font-archivo-narrow text-lg w-full"
+                />
+              </div>
+            ) : (
+              <h3 className={`font-archivo-narrow text-lg ${completed ? 'line-through text-white/50' : 'text-white'}`}>
+                {task.title}
+              </h3>
+            )}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -115,6 +145,39 @@ export const TaskRow = ({ task, onComplete }: { task: Task; onComplete?: () => v
             <span className="px-2 py-1 text-xs font-space-mono bg-accent-blue/10 text-accent-blue">
               +{task.xp_reward} XP
             </span>
+            {isEditing ? (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                  if (onUpdate) onUpdate({ title: editTitle, time_slot: editTime });
+                }}
+                className="text-accent-blue hover:text-white px-2 text-xs font-space-mono"
+              >
+                SAVE
+              </button>
+            ) : (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
+                className="text-white/30 hover:text-white px-2 text-xs font-space-mono"
+              >
+                EDIT
+              </button>
+            )}
+            {onDelete && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm('Delete this directive?')) onDelete();
+                }}
+                className="text-red-500/50 hover:text-red-500 px-2 text-xs font-space-mono"
+              >
+                DEL
+              </button>
+            )}
           </div>
 
           <ChevronDown className={`w-5 h-5 text-white/50 transition-transform ${expanded ? 'rotate-180' : ''}`} />
