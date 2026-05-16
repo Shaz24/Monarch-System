@@ -64,7 +64,23 @@ export function useTasks() {
   }, [fetchTasks]);
 
   const addTask = async (taskData: Partial<Task>) => {
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured) {
+      const newTask = {
+        id: Math.random().toString(36).substring(7),
+        user_id: 'demo',
+        time_slot: taskData.time_slot || '12:00',
+        title: taskData.title || 'New Task',
+        description: taskData.description || null,
+        xp_reward: taskData.xp_reward || 10,
+        difficulty: taskData.difficulty || 'E',
+        stat_category: taskData.stat_category || 'discipline',
+        is_recurring: taskData.is_recurring ?? true,
+        notes: taskData.notes || null,
+        created_at: new Date().toISOString()
+      } as Task;
+      setTasks(prev => [...prev, newTask].sort((a, b) => a.time_slot.localeCompare(b.time_slot)));
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('daily_tasks')

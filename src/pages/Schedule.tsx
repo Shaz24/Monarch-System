@@ -78,7 +78,7 @@ export default function Schedule() {
       toast.success(`${addedCount} directives successfully uploaded and auto-ranked.`, { icon: '📝' });
     } catch (error: any) {
       console.error('CSV parse error:', error);
-      toast.error(error.message || 'Failed to parse CSV file.');
+      toast.error(`Error: ${error.message || JSON.stringify(error)}`);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
