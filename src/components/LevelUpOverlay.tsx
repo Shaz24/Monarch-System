@@ -14,8 +14,10 @@ export const LevelUpOverlay = () => {
     if (profile) {
       const currentLevel = profile.current_level;
       if (lastLevelRef.current !== null && currentLevel > lastLevelRef.current) {
-        // Trigger fullscreen overlay
-        triggerLevelUp();
+        // Trigger fullscreen overlay only for major milestones (every 10 levels)
+        if (currentLevel % 10 === 0) {
+          triggerLevelUp();
+        }
         
         // Pop visual custom toast notification
         showLevelUpToast(currentLevel);
