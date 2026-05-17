@@ -83,7 +83,11 @@ export function DailyLaws() {
         .maybeSingle();
 
       if (error) throw error;
-      if (data) setRow(data as LawRow);
+      if (data) {
+        setRow(data as LawRow);
+      } else {
+        setRow(defaultRow);
+      }
     } catch (e) {
       console.error('Failed to fetch daily laws:', e);
     } finally {

@@ -354,6 +354,10 @@ export default function EditProfile() {
                   supabase.from('boss_battles').delete().eq('user_id', targetId),
                   supabase.from('daily_laws').delete().eq('user_id', targetId),
                   supabase.from('aura_log').delete().eq('user_id', targetId),
+                  supabase.from('fitness_logs').delete().eq('user_id', targetId),
+                  supabase.from('mind_logs').delete().eq('user_id', targetId),
+                  supabase.from('coding_logs').delete().eq('user_id', targetId),
+                  supabase.from('creator_logs').delete().eq('user_id', targetId),
                   supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', targetId),
                   supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0, aura_score: 0, total_xp_alltime: 0 }).eq('id', targetId)
                 ]);
