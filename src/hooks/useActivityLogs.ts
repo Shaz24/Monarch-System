@@ -220,6 +220,11 @@ export function useActivityLogs(category: ActivityLog['category']) {
       setLogs(updatedList);
     }
 
+    // Optimistically dispatch global XP / level update event immediately
+    window.dispatchEvent(new CustomEvent('monarch-xp-granted', {
+      detail: { xpAdded: xpEarned, statNames: statCategories.map(s => s.toLowerCase()) }
+    }));
+
     if (!isSupabaseConfigured) {
       // Offline/Local Storage Fallback
       const localKey = `monarch_logs_${activeCategory}_${user.id}`;
@@ -270,8 +275,6 @@ export function useActivityLogs(category: ActivityLog['category']) {
         
         if (rpcError) {
           console.error('RPC Error granting XP:', rpcError);
-        } else {
-          window.dispatchEvent(new CustomEvent('monarch-xp-granted'));
         }
       }
 

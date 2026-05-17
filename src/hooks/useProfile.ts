@@ -203,9 +203,46 @@ export function useProfile(): UseProfileReturn {
   }, [fetchProfile]);
 
   useEffect(() => {
-    const handleXpGranted = () => {
-      console.log('XP granted event captured inside useProfile hook. Triggering profile refetch...');
-      fetchProfile(true); // run background silent refetch
+    const handleXpGranted = (e: Event) => {
+      const customEvent = e as CustomEvent<{ xpAdded: number; statNames: string[] }>;
+      const { xpAdded, statNames } = customEvent.detail || { xpAdded: 0, statNames: [] };
+
+      console.log('XP granted event captured inside useProfile hook:', xpAdded, statNames);
+      
+      // 1. Optimistic Update of User Profile
+      if (cachedProfile) {
+        const nextXp = cachedProfile.current_xp + xpAdded;
+        const nextLevel = Math.floor(nextXp / 100) + 1;
+        const nextProfile = {
+          ...cachedProfile,
+          current_xp: nextXp,
+          current_level: nextLevel
+        };
+        cachedProfile = nextProfile;
+        setProfile(nextProfile);
+      }
+
+      // 2. Optimistic Update of Stats
+      if (cachedStats.length > 0 && statNames.length > 0) {
+        const xpPerStat = Math.floor(xpAdded / statNames.length);
+        const nextStats = cachedStats.map(s => {
+          if (statNames.includes(s.stat_name.toLowerCase())) {
+            const nextStatXp = s.xp + xpPerStat;
+            const nextStatLevel = Math.floor(nextStatXp / 100) + 1;
+            return {
+              ...s,
+              xp: nextStatXp,
+              level: nextStatLevel
+            };
+          }
+          return s;
+        });
+        cachedStats = nextStats;
+        setStats(nextStats);
+      }
+
+      // 3. Silent background database sync to ensure absolute consistency
+      fetchProfile(true);
     };
 
     window.addEventListener('monarch-xp-granted', handleXpGranted);

@@ -187,6 +187,13 @@ export function useTasks() {
       cachedCompletedTaskIds = nextCompleted;
       setCompletedTaskIds(nextCompleted);
 
+      // Find stat category for task and optimistically update user level/XP instantly
+      const task = tasks.find(t => t.id === taskId);
+      const statCategories = task ? [task.stat_category] : [];
+      window.dispatchEvent(new CustomEvent('monarch-xp-granted', {
+        detail: { xpAdded: xpReward, statNames: statCategories.map(s => s.toLowerCase()) }
+      }));
+
       // 1. Record completion
       const { error: completeError } = await supabase
         .from('task_completions')
@@ -194,9 +201,6 @@ export function useTasks() {
       if (completeError) throw completeError;
 
       // 2. Grant XP via RPC
-      const task = tasks.find(t => t.id === taskId);
-      const statCategories = task ? [task.stat_category] : [];
-      
       const { error: rpcError } = await supabase.rpc('grant_xp', {
         p_user_id: user.id,
         p_xp_amount: xpReward,
@@ -205,8 +209,6 @@ export function useTasks() {
 
       if (rpcError) {
         console.error('RPC Error granting XP:', rpcError);
-      } else {
-        window.dispatchEvent(new CustomEvent('monarch-xp-granted'));
       }
     } catch (err: any) {
       console.error('Complete task error:', err);
