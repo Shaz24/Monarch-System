@@ -6,11 +6,13 @@ import { StatRing } from '../components/StatRing';
 import toast from 'react-hot-toast';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import { useProfile } from '../hooks/useProfile';
+import { SecondBodyProtocol } from '../components/enhanced/SecondBodyProtocol';
 
 export default function Fitness() {
   const { addXpParticle } = useUIStore();
   const { logs, addLog } = useActivityLogs('fitness');
-  const { stats } = useProfile();
+  const { stats, profile } = useProfile();
+  const currentLevel = profile?.current_level ?? 1;
   
   // Form State
   const [type, setType] = useState('Weightlifting');
@@ -192,6 +194,10 @@ export default function Fitness() {
         </div>
 
       </div>
+
+      {/* ── Second Body Protocol (additive) ── */}
+      <SecondBodyProtocol currentLevel={currentLevel} />
+
     </motion.div>
   );
 }

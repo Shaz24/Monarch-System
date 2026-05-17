@@ -12,7 +12,10 @@ export interface UserProfile {
   current_xp: number;
   rank: string;
   aura_level: number;
+  aura_score?: number;
   streak_days: number;
+  journey_start_date?: string | null;
+  total_xp_alltime?: number;
   visibility: {
     show_level: boolean;
     show_streak: boolean;

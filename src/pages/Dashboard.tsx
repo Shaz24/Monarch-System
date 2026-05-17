@@ -3,10 +3,14 @@ import { Flame, Shield, Target, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { StatRing } from '../components/StatRing';
 import { useUIStore } from '../store/uiStore';
-
 import { useProfile } from '../hooks/useProfile';
 import { useWeeklyActivity } from '../hooks/useWeeklyActivity';
 import { getRankFromLevel } from '../lib/rpg';
+import { JourneyTimeline } from '../components/enhanced/JourneyTimeline';
+import { DailyLaws } from '../components/enhanced/DailyLaws';
+import { BossBattles } from '../components/enhanced/BossBattles';
+import { AuraMeter } from '../components/enhanced/AuraMeter';
+
 
 export default function Dashboard() {
   const addXpParticle = useUIStore(state => state.addXpParticle);
@@ -182,6 +186,17 @@ export default function Dashboard() {
         </div>
 
       </div>
+
+      {/* ── Enhanced RPG Additions (additive only) ── */}
+      <AuraMeter aura={profile?.aura_score ?? 0} />
+      <JourneyTimeline
+        currentLevel={currentLevel}
+        currentXP={profile?.total_xp_alltime ?? currentXp}
+        avgDailyXP={200}
+      />
+      <DailyLaws />
+      <BossBattles />
+
     </motion.div>
   );
 }
