@@ -19,7 +19,24 @@ export function useActivityLogs(category: ActivityLog['category']) {
   const [loading, setLoading] = useState(true);
 
   const fetchLogs = useCallback(async () => {
-    if (!user || !isSupabaseConfigured) {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
+      // Offline/Local Storage Fallback
+      const localKey = `monarch_logs_${category}_${user.id}`;
+      try {
+        const raw = localStorage.getItem(localKey);
+        if (raw) {
+          setLogs(JSON.parse(raw) as ActivityLog[]);
+        } else {
+          setLogs([]);
+        }
+      } catch (e) {
+        console.error('Failed to load local logs:', e);
+      }
       setLoading(false);
       return;
     }
@@ -34,7 +51,6 @@ export function useActivityLogs(category: ActivityLog['category']) {
         .order('created_at', { ascending: false });
 
       if (error) {
-        // If the table doesn't exist yet, just silently fail so the UI doesn't crash
         if (error.code === '42P01') {
           console.warn('activity_logs table not found. Please run the SQL migration.');
         } else {
@@ -63,17 +79,29 @@ export function useActivityLogs(category: ActivityLog['category']) {
   ) => {
     if (!user) return;
 
-    const newLog: Partial<ActivityLog> = {
+    const newLog: ActivityLog = {
+      id: Math.random().toString(36).substring(7),
       user_id: user.id,
       category,
       activity_type: activityType,
       duration_minutes: durationMinutes,
       xp_earned: xpEarned,
       metadata,
+      created_at: new Date().toISOString()
     };
 
     if (!isSupabaseConfigured) {
-      setLogs(prev => [{ ...newLog, id: Math.random().toString(), created_at: new Date().toISOString() } as ActivityLog, ...prev]);
+      // Offline/Local Storage Fallback
+      const localKey = `monarch_logs_${category}_${user.id}`;
+      try {
+        const raw = localStorage.getItem(localKey);
+        const existing = raw ? JSON.parse(raw) as ActivityLog[] : [];
+        const updated = [newLog, ...existing];
+        localStorage.setItem(localKey, JSON.stringify(updated));
+        setLogs(updated);
+      } catch (e) {
+        console.error('Failed to save local log:', e);
+      }
       return;
     }
 
@@ -81,7 +109,16 @@ export function useActivityLogs(category: ActivityLog['category']) {
       // 1. Insert the log
       const { data, error } = await supabase
         .from('activity_logs')
-        .insert([newLog])
+        .insert([
+          {
+            user_id: newLog.user_id,
+            category: newLog.category,
+            activity_type: newLog.activity_type,
+            duration_minutes: newLog.duration_minutes,
+            xp_earned: newLog.xp_earned,
+            metadata: newLog.metadata
+          }
+        ])
         .select()
         .single();
         

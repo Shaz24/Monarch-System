@@ -18,12 +18,12 @@ import { getSecondBodyStage } from '../lib/rpgEnhanced';
 
 // ─── Type labels per workout ─────────────────────────────────────────────────
 const WORKOUT_TYPES = [
-  { label: 'Weightlifting', icon: '🏋️', stats: ['strength'] },
-  { label: 'Calisthenics',  icon: '💪', stats: ['strength', 'endurance'] },
-  { label: 'Cardio',        icon: '🏃', stats: ['endurance'] },
-  { label: 'Martial Arts',  icon: '🥊', stats: ['strength', 'endurance'] },
-  { label: 'Yoga / Stretch',icon: '🧘', stats: ['endurance'] },
-  { label: 'HIIT',          icon: '⚡', stats: ['strength', 'endurance'] },
+  { label: 'Weightlifting', icon: '🏋️', stats: ['strength'], baseXpRate: 2.5 },
+  { label: 'Calisthenics',  icon: '💪', stats: ['strength', 'endurance'], baseXpRate: 2.2 },
+  { label: 'Cardio',        icon: '🏃', stats: ['endurance'], baseXpRate: 2.0 },
+  { label: 'Martial Arts',  icon: '🥊', stats: ['strength', 'endurance'], baseXpRate: 3.0 },
+  { label: 'Yoga / Stretch',icon: '🧘', stats: ['endurance'], baseXpRate: 1.5 },
+  { label: 'HIIT',          icon: '⚡', stats: ['strength', 'endurance'], baseXpRate: 2.8 },
 ];
 
 const INTENSITY_MULTI: Record<string, number> = { Low: 0.7, Medium: 1.0, High: 1.5 };
@@ -96,9 +96,9 @@ export default function Fitness() {
     setLogging(true);
     const dur = parseInt(duration) || 0;
     const multi = INTENSITY_MULTI[intensity] ?? 1.0;
-    const xpEarned = Math.round(2 * dur * multi);
-    const wt = WORKOUT_TYPES.find(w => w.label === wType);
-    const statCats = wt?.stats ?? ['strength'];
+    const wt = WORKOUT_TYPES.find(w => w.label === wType) ?? WORKOUT_TYPES[0];
+    const xpEarned = Math.round(wt.baseXpRate * dur * multi);
+    const statCats = wt.stats;
 
     await addLog(wType, dur, xpEarned, { intensity, notes: notes.trim() }, statCats);
 
@@ -264,7 +264,7 @@ export default function Fitness() {
               <div className="flex items-center justify-between py-2 px-3" style={{ background: 'rgba(255,90,0,0.06)', border: '1px solid rgba(255,90,0,0.2)' }}>
                 <span className="font-space-mono text-xs text-white/40 uppercase">XP Preview</span>
                 <span className="font-orbitron font-bold text-[#ff5a00]">
-                  +{Math.round(2 * (parseInt(duration) || 0) * (INTENSITY_MULTI[intensity] ?? 1))} XP
+                  +{Math.round((WORKOUT_TYPES.find(w => w.label === wType)?.baseXpRate ?? 2) * (parseInt(duration) || 0) * (INTENSITY_MULTI[intensity] ?? 1))} XP
                 </span>
               </div>
 
