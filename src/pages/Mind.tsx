@@ -128,14 +128,6 @@ export default function Mind() {
                   <span className="font-orbitron font-bold text-2xl text-accent-purple">{monkTarget}<span className="text-sm text-white/50 ml-1">min</span></span>
                 </div>
                 <div className="relative flex items-center h-8">
-                  {/* Track background */}
-                  <div className="absolute inset-y-0 left-0 right-0 flex items-center">
-                    <div className="w-full h-1.5 bg-white/10 rounded-full" />
-                    <div 
-                      className="absolute h-1.5 rounded-full bg-gradient-to-r from-accent-purple to-[#b829e3]"
-                      style={{ width: `${((monkTarget - 10) / (120 - 10)) * 100}%` }}
-                    />
-                  </div>
                   <input 
                     type="range" 
                     min="10" 
@@ -143,12 +135,12 @@ export default function Mind() {
                     step="10"
                     value={monkTarget}
                     onChange={(e) => setMonkTarget(parseInt(e.target.value))}
-                    className="relative w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  {/* Thumb indicator */}
-                  <div 
-                    className="absolute w-5 h-5 rounded-full bg-accent-purple border-2 border-white shadow-[0_0_10px_rgba(123,47,255,0.8)] pointer-events-none transition-all"
-                    style={{ left: `calc(${((monkTarget - 10) / (120 - 10)) * 100}% - 10px)` }}
+                    className="w-full h-1.5 appearance-none cursor-pointer rounded-full bg-transparent focus:outline-none 
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent-purple [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-[0_0_12px_#7B2FFF]
+                      [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-accent-purple [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-[0_0_12px_#7B2FFF] [&::-moz-range-thumb]:border-none"
+                    style={{
+                      background: `linear-gradient(to right, #7B2FFF 0%, #b829e3 ${((monkTarget - 10) / (120 - 10)) * 100}%, rgba(255,255,255,0.1) ${((monkTarget - 10) / (120 - 10)) * 100}%, rgba(255,255,255,0.1) 100%)`
+                    }}
                   />
                 </div>
                 {/* Tick marks */}
