@@ -68,3 +68,36 @@
   scrollbar-width: none;
 }
 
+/* Premium Light Mode Filter Protocol */
+html.light-mode {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #030408; /* preserves matching scrollbar/overscroll behavior */
+}
+
+/* Re-invert media assets to keep original color fidelity */
+html.light-mode img,
+html.light-mode video,
+html.light-mode iframe,
+html.light-mode [data-no-invert="true"],
+html.light-mode .no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Subtle transitions for theme switching */
+html {
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+

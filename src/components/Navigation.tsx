@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User } from 'lucide-react';
+import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [
@@ -16,6 +17,20 @@ const NAV_ITEMS = [
 
 export const Navigation = () => {
   const location = useLocation();
+  const [isLightMode, setIsLightMode] = useState(() => {
+    return localStorage.getItem('monarchTheme') === 'light';
+  });
+
+  useEffect(() => {
+    const htmlEl = document.documentElement;
+    if (isLightMode) {
+      htmlEl.classList.add('light-mode');
+      localStorage.setItem('monarchTheme', 'light');
+    } else {
+      htmlEl.classList.remove('light-mode');
+      localStorage.setItem('monarchTheme', 'dark');
+    }
+  }, [isLightMode]);
 
   return (
     <>
@@ -57,6 +72,24 @@ export const Navigation = () => {
             );
           })}
         </div>
+
+        {/* Theme Toggle Button */}
+        <div className="p-4 border-t border-white/10 flex justify-center mb-2">
+          <button
+            onClick={() => setIsLightMode(!isLightMode)}
+            className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 border border-white/5 hover:border-accent-blue/30 bg-white/5 hover:bg-white/10 group relative"
+          >
+            {isLightMode ? (
+              <Sun className="w-5 h-5 text-accent-blue animate-spin-slow" />
+            ) : (
+              <Moon className="w-5 h-5 text-accent-purple" />
+            )}
+            <div className="absolute left-16 bg-void/90 backdrop-blur-md border border-white/10 px-3 py-1.5 font-space-mono text-[10px] uppercase tracking-widest text-white opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 rounded-lg shadow-xl">
+              Theme: {isLightMode ? 'Light' : 'Dark'}
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-void/90 border-l border-b border-white/10 rotate-45" />
+            </div>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Floating Glass Dock */}
@@ -90,6 +123,21 @@ export const Navigation = () => {
               </NavLink>
             );
           })}
+
+          {/* Mobile Theme Toggle Button */}
+          <button
+            onClick={() => setIsLightMode(!isLightMode)}
+            className="relative flex flex-col items-center justify-center p-2 min-w-[64px] snap-center rounded-xl mx-1 border border-white/5 bg-white/5"
+          >
+            {isLightMode ? (
+              <Sun className="w-5 h-5 mb-1 text-accent-blue" />
+            ) : (
+              <Moon className="w-5 h-5 mb-1 text-accent-purple" />
+            )}
+            <span className="text-[8px] font-space-mono uppercase tracking-wider text-white/30">
+              Theme
+            </span>
+          </button>
         </div>
       </nav>
     </>
