@@ -326,28 +326,27 @@ export default function EditProfile() {
             onClick={async () => {
               const confirmed = window.confirm('WARNING: Initiate Full System Wipe? All stats and logs will be permanently deleted. This action CANNOT be undone.');
               if (confirmed) {
+                // Instantly wipe all local storage keys starting with "monarch_"
+                Object.keys(localStorage).forEach(key => {
+                  if (key.startsWith('monarch_')) {
+                    localStorage.removeItem(key);
+                  }
+                });
+
                 if (!isSupabaseConfigured) {
-                  const userId = profile?.id ?? 'demo';
-                  const today = new Date().toISOString().split('T')[0];
-                  const currentMonthYear = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
-                  
-                  localStorage.removeItem(`monarch_logs_fitness_${userId}`);
-                  localStorage.removeItem(`monarch_logs_mind_${userId}`);
-                  localStorage.removeItem(`monarch_logs_coding_${userId}`);
-                  localStorage.removeItem(`monarch_logs_creator_${userId}`);
-                  localStorage.removeItem(`monarch_daily_laws_${userId}_${today}`);
-                  localStorage.removeItem(`monarch_boss_battles_${userId}_${currentMonthYear}`);
-                  localStorage.removeItem(`monarch_profile_${userId}`);
-                  
                   toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
                   setTimeout(() => window.location.reload(), 2000);
                   return;
                 }
 
                 try {
-                  // Wipe logs
-                  await supabase.from('activity_logs').delete().eq('user_id', profile?.id);
-                  await supabase.from('task_completions').delete().eq('user_id', profile?.id);
+                  // Wipe logs & achievements & boss battles
+                  await Promise.all([
+                    supabase.from('activity_logs').delete().eq('user_id', profile?.id),
+                    supabase.from('task_completions').delete().eq('user_id', profile?.id),
+                    supabase.from('boss_battles').delete().eq('user_id', profile?.id),
+                  ]);
+
                   // Reset Stats
                   await supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', profile?.id);
                   // Reset Profile
