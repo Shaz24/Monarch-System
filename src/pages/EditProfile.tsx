@@ -8,7 +8,7 @@ import {
 import { useProfile } from '../hooks/useProfile';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface VisibilitySettings {
   show_level: boolean;
@@ -326,6 +326,24 @@ export default function EditProfile() {
             onClick={async () => {
               const confirmed = window.confirm('WARNING: Initiate Full System Wipe? All stats and logs will be permanently deleted. This action CANNOT be undone.');
               if (confirmed) {
+                if (!isSupabaseConfigured) {
+                  const userId = profile?.id ?? 'demo';
+                  const today = new Date().toISOString().split('T')[0];
+                  const currentMonthYear = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                  
+                  localStorage.removeItem(`monarch_logs_fitness_${userId}`);
+                  localStorage.removeItem(`monarch_logs_mind_${userId}`);
+                  localStorage.removeItem(`monarch_logs_coding_${userId}`);
+                  localStorage.removeItem(`monarch_logs_creator_${userId}`);
+                  localStorage.removeItem(`monarch_daily_laws_${userId}_${today}`);
+                  localStorage.removeItem(`monarch_boss_battles_${userId}_${currentMonthYear}`);
+                  localStorage.removeItem(`monarch_profile_${userId}`);
+                  
+                  toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
+                  setTimeout(() => window.location.reload(), 2000);
+                  return;
+                }
+
                 try {
                   // Wipe logs
                   await supabase.from('activity_logs').delete().eq('user_id', profile?.id);

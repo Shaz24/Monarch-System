@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skull, Trophy, Zap } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 import { BOSS_BATTLES_TEMPLATE } from '../../lib/rpgEnhanced';
 import toast from 'react-hot-toast';
@@ -31,41 +31,102 @@ export function BossBattles() {
   const [loading, setLoading] = useState(true);
 
   const fetchOrSeed = useCallback(async () => {
-    if (!user) return;
-
-    const { data: existing } = await supabase
-      .from('boss_battles')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('month_year', MONTH_YEAR);
-
-    if (existing && existing.length > 0) {
-      setBattles(existing as BossBattle[]);
-    } else {
-      // Seed this month's battles
-      const toInsert = BOSS_BATTLES_TEMPLATE.map(t => ({
-        ...t,
-        user_id: user.id,
-        month_year: MONTH_YEAR,
-        condition_current: 0,
-        is_completed: false,
-      }));
-      const { data: inserted } = await supabase
-        .from('boss_battles')
-        .insert(toInsert)
-        .select();
-      if (inserted) setBattles(inserted as BossBattle[]);
+    if (!user) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    if (!isSupabaseConfigured) {
+      // LocalStorage offline fallback
+      const localKey = `monarch_boss_battles_${user.id}_${MONTH_YEAR}`;
+      try {
+        const raw = localStorage.getItem(localKey);
+        if (raw) {
+          setBattles(JSON.parse(raw) as BossBattle[]);
+        } else {
+          // Seed local default templates
+          const toInsert = BOSS_BATTLES_TEMPLATE.map((t, i) => ({
+            ...t,
+            id: `local_bb_${i}_${Date.now()}`,
+            user_id: user.id,
+            month_year: MONTH_YEAR,
+            condition_current: 0,
+            is_completed: false,
+          }));
+          localStorage.setItem(localKey, JSON.stringify(toInsert));
+          setBattles(toInsert as BossBattle[]);
+        }
+      } catch (e) {
+        console.error('Failed to load local boss battles:', e);
+      }
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: existing, error } = await supabase
+        .from('boss_battles')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('month_year', MONTH_YEAR);
+
+      if (error) throw error;
+
+      if (existing && existing.length > 0) {
+        setBattles(existing as BossBattle[]);
+      } else {
+        // Seed this month's battles
+        const toInsert = BOSS_BATTLES_TEMPLATE.map(t => ({
+          ...t,
+          user_id: user.id,
+          month_year: MONTH_YEAR,
+          condition_current: 0,
+          is_completed: false,
+        }));
+        const { data: inserted, error: insertError } = await supabase
+          .from('boss_battles')
+          .insert(toInsert)
+          .select();
+          
+        if (insertError) throw insertError;
+        if (inserted) setBattles(inserted as BossBattle[]);
+      }
+    } catch (e) {
+      console.error('Failed to fetch/seed boss battles:', e);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => { fetchOrSeed(); }, [fetchOrSeed]);
 
   const handleClaim = async (battle: BossBattle) => {
-    if (battle.is_completed || battle.condition_current < battle.condition_target) return;
-    await supabase.from('boss_battles').update({ is_completed: true }).eq('id', battle.id);
-    setBattles(prev => prev.map(b => b.id === battle.id ? { ...b, is_completed: true } : b));
-    toast.success(`🏆 ${battle.boss_name} DEFEATED! +${battle.reward_xp} XP`, { duration: 5000 });
+    if (!user || battle.is_completed || battle.condition_current < battle.condition_target) return;
+
+    if (!isSupabaseConfigured) {
+      // LocalStorage offline fallback
+      const localKey = `monarch_boss_battles_${user.id}_${MONTH_YEAR}`;
+      const updated = battles.map(b => b.id === battle.id ? { ...b, is_completed: true } : b);
+      localStorage.setItem(localKey, JSON.stringify(updated));
+      setBattles(updated);
+      toast.success(`🏆 ${battle.boss_name} DEFEATED! +${battle.reward_xp} XP`, { duration: 5000 });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('boss_battles')
+        .update({ is_completed: true })
+        .eq('id', battle.id);
+        
+      if (error) throw error;
+      
+      setBattles(prev => prev.map(b => b.id === battle.id ? { ...b, is_completed: true } : b));
+      toast.success(`🏆 ${battle.boss_name} DEFEATED! +${battle.reward_xp} XP`, { duration: 5000 });
+    } catch (e) {
+      console.error('Failed to claim boss battle reward:', e);
+    }
   };
 
   if (loading) {

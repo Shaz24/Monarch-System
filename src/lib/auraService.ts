@@ -1,5 +1,5 @@
 // Phase 5: Aura service — new file, does NOT edit existing lib files
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { AURA_CHANGES } from './rpgEnhanced';
 
 // ─── Update aura score ──────────────────────────────────────────────────────
@@ -10,27 +10,60 @@ export async function updateAura(
 ): Promise<void> {
   const today = new Date().toISOString().split('T')[0];
 
-  // Log the change
-  await supabase.from('aura_log').insert({
-    user_id: userId,
-    date: today,
-    aura_change: change,
-    reason,
-  });
+  if (!isSupabaseConfigured) {
+    // LocalStorage offline fallback
+    try {
+      const localLogsKey = `monarch_aura_log_${userId}`;
+      const rawLogs = localStorage.getItem(localLogsKey);
+      const logs = rawLogs ? JSON.parse(rawLogs) : [];
+      logs.push({
+        user_id: userId,
+        date: today,
+        aura_change: change,
+        reason,
+        created_at: new Date().toISOString(),
+      });
+      localStorage.setItem(localLogsKey, JSON.stringify(logs));
 
-  // Apply to profile (clamp 0–1000)
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('aura_score')
-    .eq('id', userId)
-    .single();
+      // Local storage fallback for profiles
+      const profileKey = `monarch_profile_${userId}`;
+      const rawProfile = localStorage.getItem(profileKey);
+      if (rawProfile) {
+        const p = JSON.parse(rawProfile);
+        p.aura_score = Math.max(0, Math.min(1000, (p.aura_score ?? 100) + change));
+        localStorage.setItem(profileKey, JSON.stringify(p));
+      }
+    } catch (e) {
+      console.error('Failed to log local aura change:', e);
+    }
+    return;
+  }
 
-  if (profile) {
-    const newAura = Math.max(0, Math.min(1000, (profile.aura_score ?? 0) + change));
-    await supabase
+  try {
+    // Log the change
+    await supabase.from('aura_log').insert({
+      user_id: userId,
+      date: today,
+      aura_change: change,
+      reason,
+    });
+
+    // Apply to profile (clamp 0–1000)
+    const { data: profile } = await supabase
       .from('profiles')
-      .update({ aura_score: newAura })
-      .eq('id', userId);
+      .select('aura_score')
+      .eq('id', userId)
+      .single();
+
+    if (profile) {
+      const newAura = Math.max(0, Math.min(1000, (profile.aura_score ?? 0) + change));
+      await supabase
+        .from('profiles')
+        .update({ aura_score: newAura })
+        .eq('id', userId);
+    }
+  } catch (err) {
+    console.error('Failed to update aura in database:', err);
   }
 }
 
@@ -40,14 +73,33 @@ export async function hasAuraLoggedToday(
   reason: string,
 ): Promise<boolean> {
   const today = new Date().toISOString().split('T')[0];
-  const { data } = await supabase
-    .from('aura_log')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('date', today)
-    .eq('reason', reason)
-    .maybeSingle();
-  return data !== null;
+
+  if (!isSupabaseConfigured) {
+    try {
+      const localLogsKey = `monarch_aura_log_${userId}`;
+      const rawLogs = localStorage.getItem(localLogsKey);
+      if (!rawLogs) return false;
+      const logs = JSON.parse(rawLogs);
+      return logs.some((l: any) => l.date === today && l.reason === reason);
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+  try {
+    const { data } = await supabase
+      .from('aura_log')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('date', today)
+      .eq('reason', reason)
+      .maybeSingle();
+    return data !== null;
+  } catch (err) {
+    console.error('Failed to check aura logged status:', err);
+    return false;
+  }
 }
 
 // ─── Convenience helpers ────────────────────────────────────────────────────

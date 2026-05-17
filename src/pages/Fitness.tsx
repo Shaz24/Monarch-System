@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import { useProfile } from '../hooks/useProfile';
 import { SecondBodyProtocol } from '../components/enhanced/SecondBodyProtocol';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { auraOnWorkout } from '../lib/auraService';
 import { getSecondBodyStage } from '../lib/rpgEnhanced';
@@ -123,14 +123,34 @@ export default function Fitness() {
     if (bodyFat)  payload.body_fat_pct  = parseFloat(bodyFat);
     if (sleepHrs) payload.sleep_hours   = parseFloat(sleepHrs);
 
-    const { error } = await supabase
-      .from('fitness_logs')
-      .upsert(payload, { onConflict: 'user_id,date' });
+    if (!isSupabaseConfigured) {
+      // LocalStorage offline fallback
+      try {
+        const localKey = `monarch_fitness_metrics_${user.id}_${TODAY}`;
+        localStorage.setItem(localKey, JSON.stringify(payload));
+      } catch (err) {
+        console.error('Failed to save local metrics:', err);
+      }
+      setSavingMetrics(false);
+      toast.success('Body metrics saved.');
+      setShowMetrics(false);
+      return;
+    }
 
-    setSavingMetrics(false);
-    if (error) { toast.error('Failed to save metrics.'); return; }
-    toast.success('Body metrics saved.');
-    setShowMetrics(false);
+    try {
+      const { error } = await supabase
+        .from('fitness_logs')
+        .upsert(payload, { onConflict: 'user_id,date' });
+
+      setSavingMetrics(false);
+      if (error) { toast.error('Failed to save metrics.'); return; }
+      toast.success('Body metrics saved.');
+      setShowMetrics(false);
+    } catch (err) {
+      console.error(err);
+      setSavingMetrics(false);
+      toast.error('Failed to save metrics.');
+    }
   };
 
   // ── Render ────────────────────────────────────────────────────────────────

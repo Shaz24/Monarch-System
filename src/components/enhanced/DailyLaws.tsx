@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckSquare, Square, Shield } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 import { auraOnPerfectDay } from '../../lib/auraService';
 import toast from 'react-hot-toast';
@@ -51,15 +51,44 @@ export function DailyLaws() {
   const compliance = Math.round((checkedCount / LAWS.length) * 100);
 
   const fetchToday = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('daily_laws')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('date', TODAY)
-      .maybeSingle();
-    if (data) setRow(data as LawRow);
-    setLoading(false);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
+      // LocalStorage offline fallback
+      const localKey = `monarch_daily_laws_${user.id}_${TODAY}`;
+      try {
+        const raw = localStorage.getItem(localKey);
+        if (raw) {
+          setRow(JSON.parse(raw) as LawRow);
+        } else {
+          setRow(defaultRow);
+        }
+      } catch (e) {
+        console.error('Failed to load local daily laws:', e);
+      }
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('daily_laws')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', TODAY)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) setRow(data as LawRow);
+    } catch (e) {
+      console.error('Failed to fetch daily laws:', e);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => { fetchToday(); }, [fetchToday]);
@@ -71,19 +100,36 @@ export function DailyLaws() {
     next.all_laws_completed = allDone;
     setRow(next);
 
-    // Upsert to Supabase
-    await supabase.from('daily_laws').upsert({
-      user_id: user.id,
-      date: TODAY,
-      ...next,
-    }, { onConflict: 'user_id,date' });
+    if (!isSupabaseConfigured) {
+      // LocalStorage offline fallback
+      const localKey = `monarch_daily_laws_${user.id}_${TODAY}`;
+      localStorage.setItem(localKey, JSON.stringify(next));
 
-    // Perfect day bonus
-    if (allDone && !row.all_laws_completed) {
-      setConfetti(true);
-      setTimeout(() => setConfetti(false), 3000);
-      toast.success('⚡ PERFECT DAY — +100 XP BONUS!', { duration: 5000 });
-      await auraOnPerfectDay(user.id).catch(console.error);
+      if (allDone && !row.all_laws_completed) {
+        setConfetti(true);
+        setTimeout(() => setConfetti(false), 3000);
+        toast.success('⚡ PERFECT DAY — +100 XP BONUS!', { duration: 5000 });
+        await auraOnPerfectDay(user.id).catch(console.error);
+      }
+      return;
+    }
+
+    try {
+      await supabase.from('daily_laws').upsert({
+        user_id: user.id,
+        date: TODAY,
+        ...next,
+      }, { onConflict: 'user_id,date' });
+
+      // Perfect day bonus
+      if (allDone && !row.all_laws_completed) {
+        setConfetti(true);
+        setTimeout(() => setConfetti(false), 3000);
+        toast.success('⚡ PERFECT DAY — +100 XP BONUS!', { duration: 5000 });
+        await auraOnPerfectDay(user.id).catch(console.error);
+      }
+    } catch (err) {
+      console.error('Failed to toggle daily law:', err);
     }
   };
 
