@@ -121,11 +121,14 @@ const loadState = (): BossModeState => {
 };
 
 export default function BossMode() {
-  const { addXpParticle, triggerLevelUp } = useUIStore();
+  const { addXpParticle } = useUIStore();
   const { addLog } = useActivityLogs('fitness');
 
   const [state, setState] = useState<BossModeState>(loadState);
   const [cooldown, setCooldown] = useState(0);
+  const [showVictoryOverlay, setShowVictoryOverlay] = useState(false);
+  const [defeatedBossName, setDefeatedBossName] = useState('');
+  const [defeatedBossColor, setDefeatedBossColor] = useState('');
 
   useEffect(() => {
     localStorage.setItem('monarchBossMode', JSON.stringify(state));
@@ -139,29 +142,33 @@ export default function BossMode() {
   const hpPercent = (currentHP / MAX_HP) * 100;
   const completedCount = quests.filter(q => q.completed).length;
 
+  const handleCloseVictoryOverlay = () => {
+    setShowVictoryOverlay(false);
+    if (bossIndex < BOSSES.length - 1) {
+      setState(s => ({
+        ...s,
+        bossIndex: s.bossIndex + 1,
+        bossDamage: 0,
+        defeated: false,
+        usedTitles: [],
+        quests: pickRandomQuests(5), // load fresh quests for the new boss
+      }));
+      toast(`⚠️ New Threat: ${BOSSES[bossIndex + 1].name}`, { duration: 4000 });
+    }
+  };
+
   // Boss defeated watcher
   useEffect(() => {
     if (currentHP === 0 && !defeated) {
       setState(s => ({ ...s, defeated: true }));
+      setDefeatedBossName(boss.name);
+      setDefeatedBossColor(boss.color);
       setTimeout(() => {
         toast.success(`BOSS DEFEATED: ${boss.name}!`, { duration: 5000, icon: '🏆' });
-        triggerLevelUp();
-
-        if (bossIndex < BOSSES.length - 1) {
-          setTimeout(() => {
-            setState(s => ({
-              ...s,
-              bossIndex: s.bossIndex + 1,
-              bossDamage: 0,
-              defeated: false,
-              usedTitles: [], // reset for new boss
-            }));
-            toast(`⚠️ New Threat: ${BOSSES[bossIndex + 1].name}`, { duration: 4000 });
-          }, 3000);
-        }
+        setShowVictoryOverlay(true);
       }, 1000);
     }
-  }, [currentHP, defeated, boss.name, bossIndex, triggerLevelUp]);
+  }, [currentHP, defeated, boss.name]);
 
   // Auto-reroll when all quests completed but boss still alive
   useEffect(() => {
@@ -500,6 +507,157 @@ export default function BossMode() {
             <p className="font-space-mono text-sm uppercase tracking-[0.3em]" style={{ color: `${boss.color}cc` }}>
               You have achieved the ultimate form. The system bows. The hunt continues.
             </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── CUSTOM ENHANCED BOSS DEFEATED OVERLAY ── */}
+      <AnimatePresence>
+        {showVictoryOverlay && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-xl overflow-hidden pointer-events-auto"
+          >
+            {/* Dramatic energy grid or scanlines */}
+            <div className="absolute inset-0 bg-scanline-pattern opacity-30 pointer-events-none" />
+            <div 
+              className="absolute inset-0 pointer-events-none opacity-20"
+              style={{
+                backgroundImage: `radial-gradient(circle at 50% 50%, ${defeatedBossColor}44 0%, transparent 70%)`
+              }}
+            />
+
+            {/* Glowing neon background shapes */}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.1, 0.2, 0.1],
+                rotate: [0, 180, 360]
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+              className="absolute w-[600px] h-[600px] rounded-full filter blur-[120px]"
+              style={{ background: `radial-gradient(circle, ${defeatedBossColor} 0%, transparent 70%)` }}
+            />
+
+            {/* Dynamic laser slash lines (diagonal cuts across the screen) */}
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "200%", opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="absolute h-1 bg-gradient-to-r from-transparent via-white to-transparent transform -rotate-45 z-10"
+              style={{ boxShadow: `0 0 30px 10px ${defeatedBossColor}` }}
+            />
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "200%", opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 0.8, delay: 0.25, ease: "easeInOut" }}
+              className="absolute h-1 bg-gradient-to-r from-transparent via-white to-transparent transform rotate-45 z-10"
+              style={{ boxShadow: `0 0 30px 10px ${defeatedBossColor}` }}
+            />
+
+            {/* Particle stars rising */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(24)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ 
+                    x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000), 
+                    y: (typeof window !== 'undefined' ? window.innerHeight : 800) + 100,
+                    scale: Math.random() * 0.6 + 0.4,
+                    opacity: 0
+                  }}
+                  animate={{ 
+                    y: -100, 
+                    opacity: [0, 1, 1, 0],
+                    x: `calc(10px + ${Math.sin(i) * 50}px)`
+                  }}
+                  transition={{ 
+                    duration: Math.random() * 3 + 2, 
+                    repeat: Infinity,
+                    delay: Math.random() * 2 
+                  }}
+                  className="absolute w-2 h-2 rounded-full"
+                  style={{ backgroundColor: defeatedBossColor }}
+                />
+              ))}
+            </div>
+
+            {/* Content Card */}
+            <motion.div
+              initial={{ scale: 0.7, y: 80, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 1.15, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 180, damping: 18, delay: 0.3 }}
+              className="relative max-w-xl w-full mx-4 p-8 md:p-12 text-center rounded-2xl border"
+              style={{
+                background: 'rgba(5, 5, 5, 0.9)',
+                borderColor: `${defeatedBossColor}33`,
+                boxShadow: `0 0 50px ${defeatedBossColor}22`
+              }}
+            >
+              {/* Rotating target reticle */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-6 border border-dashed rounded-full opacity-20 pointer-events-none"
+                style={{ borderColor: defeatedBossColor }}
+              />
+
+              <div className="relative mb-6">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-20 h-20 mx-auto flex items-center justify-center rounded-full bg-black border-2"
+                  style={{ borderColor: defeatedBossColor, boxShadow: `0 0 20px ${defeatedBossColor}44` }}
+                >
+                  <Swords className="w-10 h-10" style={{ color: defeatedBossColor }} />
+                </motion.div>
+              </div>
+
+              <h2 
+                className="font-orbitron text-3xl md:text-5xl font-black uppercase tracking-wider mb-2 text-white"
+                style={{ textShadow: `0 0 30px ${defeatedBossColor}` }}
+              >
+                THREAT ELIMINATED
+              </h2>
+
+              <p className="font-space-mono text-sm tracking-[0.2em] text-white/50 uppercase mb-8">
+                Target Code: <span style={{ color: defeatedBossColor }}>{defeatedBossName}</span>
+              </p>
+
+              {/* Status and rewards block */}
+              <div className="bg-black/60 border border-white/5 rounded-lg p-6 mb-8 text-left space-y-4 font-space-mono">
+                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                  <span className="text-white/40 text-xs uppercase">Confrontation Status</span>
+                  <span className="text-emerald-400 text-xs uppercase font-bold">100% COMPLETE</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                  <span className="text-white/40 text-xs uppercase">Tactical Rewards Gained</span>
+                  <span className="text-white text-xs font-bold font-orbitron">+2,500 XP / ALL STATS</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/40 text-xs uppercase">Sector Status</span>
+                  <span className="text-xs font-bold" style={{ color: defeatedBossColor }}>
+                    {bossIndex < BOSSES.length - 1 ? "NEXT ZONE UNLOCKED" : "ALL BOSSES CONQUERED"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full py-4 rounded-lg font-orbitron font-bold uppercase tracking-wider text-black text-sm transition-all duration-300 pointer-events-auto cursor-pointer"
+                style={{ 
+                  background: `linear-gradient(90deg, #ffffff, ${defeatedBossColor})` 
+                }}
+                onClick={handleCloseVictoryOverlay}
+              >
+                {bossIndex < BOSSES.length - 1 ? "Commence Next Sector" : "Claim Ultimate Victory"}
+              </motion.button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
