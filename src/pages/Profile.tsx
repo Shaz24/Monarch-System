@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { User, LogOut, Shield, Trophy, Settings, Star, Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useProfile } from '../hooks/useProfile';
 import { showAchievementToast } from '../components/AchievementToast';
@@ -187,21 +187,57 @@ export default function Profile() {
                 onClick={async () => {
                   const confirmed = window.confirm('WARNING: Initiate Full System Wipe? All stats and logs will be permanently deleted. This action CANNOT be undone.');
                   if (confirmed) {
-                    try {
-                      // Wipe logs
-                      await supabase.from('activity_logs').delete().eq('user_id', profile?.id);
-                      await supabase.from('task_completions').delete().eq('user_id', profile?.id);
-                      // Reset Stats
-                      await supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', profile?.id);
-                      // Reset Profile
-                      await supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0 }).eq('id', profile?.id);
-                      // Clear local BossMode data
-                      localStorage.removeItem('monarchBossMode');
-                      
+                    // Instantly wipe all local storage keys starting with "monarch"
+                    Object.keys(localStorage).forEach(key => {
+                      if (key.toLowerCase().startsWith('monarch')) {
+                        localStorage.removeItem(key);
+                      }
+                    });
+
+                    if (!isSupabaseConfigured) {
                       toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
-                      setTimeout(() => window.location.reload(), 2000);
-                    } catch (err) {
-                      toast.error('System Wipe Failed');
+                      setTimeout(() => window.location.reload(), 1500);
+                      return;
+                    }
+
+                    const targetId = user?.id ?? profile?.id;
+                    if (!targetId) {
+                      toast.error('No authenticated user session found.', { icon: '🚫' });
+                      return;
+                    }
+
+                    toast.loading('Initiating data purge across tables...', { id: 'purge-toast' });
+
+                    // Execute each database operation independently to be completely fault-tolerant
+                    const results = await Promise.allSettled([
+                      supabase.from('activity_logs').delete().eq('user_id', targetId),
+                      supabase.from('task_completions').delete().eq('user_id', targetId),
+                      supabase.from('boss_battles').delete().eq('user_id', targetId),
+                      supabase.from('daily_laws').delete().eq('user_id', targetId),
+                      supabase.from('aura_log').delete().eq('user_id', targetId),
+                      supabase.from('fitness_logs').delete().eq('user_id', targetId),
+                      supabase.from('mind_logs').delete().eq('user_id', targetId),
+                      supabase.from('coding_logs').delete().eq('user_id', targetId),
+                      supabase.from('creator_logs').delete().eq('user_id', targetId),
+                      supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', targetId),
+                      supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0, aura_score: 0, total_xp_alltime: 0 }).eq('id', targetId)
+                    ]);
+
+                    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && (r.value as any).error));
+
+                    if (failed.length > 0) {
+                      console.error('Wipe partial errors:', failed);
+                      toast.dismiss('purge-toast');
+                      toast.error(
+                        'Database reset partially blocked by Supabase. Please ensure you have run the RLS Delete Policy migration in your Supabase SQL Editor.',
+                        { duration: 8000 }
+                      );
+                      // Reload anyway to refresh UI state
+                      setTimeout(() => window.location.reload(), 3000);
+                    } else {
+                      toast.dismiss('purge-toast');
+                      toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
+                      setTimeout(() => window.location.reload(), 1500);
                     }
                   }
                 }}
