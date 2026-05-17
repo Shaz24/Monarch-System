@@ -50,6 +50,7 @@ const BOSSES = [
   { name: 'Park Hyung-Seok', hp: 8000, desc: 'Trained from poverty to perfection.', color: '#ff5a00' },
   { name: 'Gun Park', hp: 12000, desc: 'Unmatched raw power and discipline.', color: '#ff003c' },
   { name: 'Daniel Park', hp: 15000, desc: 'FINAL FORM — The body every hunter seeks.', color: '#b829e3' },
+  { name: 'Yu - The Boxer', hp: 20000, desc: 'ULTIMATE THREAT — Speed godlike, precision immaculate.', color: '#ff3333' },
 ];
 
 function pickRandomQuests(n: number, excludeTitles: string[] = []): BossQuest[] {
