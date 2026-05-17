@@ -55,6 +55,13 @@ function App() {
     }
   }, [theme]);
 
+  // Request native browser notification permissions on launch
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(console.error);
+    }
+  }, []);
+
   useEffect(() => {
     const handleOnline = () => setOffline(false);
     const handleOffline = () => setOffline(true);

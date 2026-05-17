@@ -1,10 +1,31 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '../store/uiStore';
 import { Zap } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useProfile } from '../hooks/useProfile';
+import { showLevelUpToast, showBrowserNotification } from './LevelUpToast';
 
 export const LevelUpOverlay = () => {
-  const { isLevelUp, closeLevelUp } = useUIStore();
+  const { isLevelUp, triggerLevelUp, closeLevelUp } = useUIStore();
+  const { profile } = useProfile();
+  const lastLevelRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (profile) {
+      const currentLevel = profile.current_level;
+      if (lastLevelRef.current !== null && currentLevel > lastLevelRef.current) {
+        // Trigger fullscreen overlay
+        triggerLevelUp();
+        
+        // Pop visual custom toast notification
+        showLevelUpToast(currentLevel);
+
+        // Pop native OS browser notification
+        showBrowserNotification(currentLevel);
+      }
+      lastLevelRef.current = currentLevel;
+    }
+  }, [profile, triggerLevelUp]);
 
   useEffect(() => {
     if (isLevelUp) {
