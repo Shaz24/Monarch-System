@@ -205,6 +205,8 @@ export function useTasks() {
 
       if (rpcError) {
         console.error('RPC Error granting XP:', rpcError);
+      } else {
+        window.dispatchEvent(new CustomEvent('monarch-xp-granted'));
       }
     } catch (err: any) {
       console.error('Complete task error:', err);

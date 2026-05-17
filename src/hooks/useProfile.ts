@@ -202,6 +202,18 @@ export function useProfile(): UseProfileReturn {
     }
   }, [fetchProfile]);
 
+  useEffect(() => {
+    const handleXpGranted = () => {
+      console.log('XP granted event captured inside useProfile hook. Triggering profile refetch...');
+      fetchProfile(true); // run background silent refetch
+    };
+
+    window.addEventListener('monarch-xp-granted', handleXpGranted);
+    return () => {
+      window.removeEventListener('monarch-xp-granted', handleXpGranted);
+    };
+  }, [fetchProfile]);
+
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return;
 

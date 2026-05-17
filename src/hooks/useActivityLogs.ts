@@ -270,6 +270,8 @@ export function useActivityLogs(category: ActivityLog['category']) {
         
         if (rpcError) {
           console.error('RPC Error granting XP:', rpcError);
+        } else {
+          window.dispatchEvent(new CustomEvent('monarch-xp-granted'));
         }
       }
 
