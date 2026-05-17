@@ -195,6 +195,8 @@ export default function Profile() {
                       await supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', profile?.id);
                       // Reset Profile
                       await supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0 }).eq('id', profile?.id);
+                      // Clear local BossMode data
+                      localStorage.removeItem('monarchBossMode');
                       
                       toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
                       setTimeout(() => window.location.reload(), 2000);
