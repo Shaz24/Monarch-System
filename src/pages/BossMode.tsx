@@ -56,6 +56,7 @@ const BOSSES = [
   { name: 'Roronoa Zoro', hp: 60000, desc: 'THE GREATEST SWORDSMAN — Top-tier Haki mastery, unrivaled physical, immense speed.', color: '#00cc52', image: '/boss-6.jpg' },
   { name: 'The Shadow Monarch Sung Jinwoo', hp: 100000, desc: 'THE SHADOW MONARCH — God-tier Shadow Authority, overwhelming physical, immense agility, unyielding willpower.', color: '#9D4EDD', image: '/boss-7.jpg' },
   { name: 'Jin Mori', hp: 150000, desc: 'THE SUPREME GOD — Unmeasurable power, MFTL speed, supreme endurance, absolute willpower.', color: '#00d2ff', image: '/boss-8.jpg' },
+  { name: 'Son Goku', hp: 250000, desc: 'THE HOPE OF THE UNIVERSE — Unmeasurable power, MFTL speed, supreme endurance, absolute willpower.', color: '#38b6ff', image: '/boss-9.jpg' },
 ];
 
 function pickRandomQuests(n: number, excludeTitles: string[] = []): BossQuest[] {
