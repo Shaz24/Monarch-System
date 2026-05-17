@@ -7,11 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        void: '#030408',
-        panel: '#080D1A',
-        'accent-blue': '#00D4FF',
-        'accent-purple': '#7B2FFF',
-        'accent-glow': 'rgba(0,212,255,0.15)',
+        void: 'rgb(var(--color-void) / <alpha-value>)',
+        panel: 'rgb(var(--color-panel) / <alpha-value>)',
+        'accent-blue': 'rgb(var(--color-accent-blue) / <alpha-value>)',
+        'accent-purple': 'rgb(var(--color-accent-purple) / <alpha-value>)',
+        'accent-glow': 'rgba(var(--color-accent-blue), 0.15)',
+        white: 'rgb(var(--color-white) / <alpha-value>)',
         
         // adding Stitch design colors for completeness
         primary: '#a8e8ff',
@@ -28,11 +29,11 @@ export default {
         'space-mono': ['"Space Mono"', 'monospace'],
       },
       backgroundImage: {
-        'scanline-pattern': 'linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)',
+        'scanline-pattern': 'linear-gradient(to bottom, rgba(var(--color-white) / 0.03) 1px, transparent 1px)',
       },
       boxShadow: {
-        'neon-blue': '0 0 5px rgba(0,212,255,0.4), 0 0 10px rgba(0,212,255,0.2)',
-        'neon-purple': '0 0 5px rgba(123,47,255,0.4), 0 0 10px rgba(123,47,255,0.2)',
+        'neon-blue': '0 0 5px rgba(var(--color-accent-blue), 0.4), 0 0 10px rgba(var(--color-accent-blue), 0.2)',
+        'neon-purple': '0 0 5px rgba(var(--color-accent-purple), 0.4), 0 0 10px rgba(var(--color-accent-purple), 0.2)',
         'neon-red': '0 0 5px rgba(255,47,47,0.4), 0 0 10px rgba(255,47,47,0.2)',
       }
     },

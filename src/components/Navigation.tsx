@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useUIStore } from '../store/uiStore';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -17,20 +17,8 @@ const NAV_ITEMS = [
 
 export const Navigation = () => {
   const location = useLocation();
-  const [isLightMode, setIsLightMode] = useState(() => {
-    return localStorage.getItem('monarchTheme') === 'light';
-  });
-
-  useEffect(() => {
-    const htmlEl = document.documentElement;
-    if (isLightMode) {
-      htmlEl.classList.add('light-mode');
-      localStorage.setItem('monarchTheme', 'light');
-    } else {
-      htmlEl.classList.remove('light-mode');
-      localStorage.setItem('monarchTheme', 'dark');
-    }
-  }, [isLightMode]);
+  const { theme, toggleTheme } = useUIStore();
+  const isLightMode = theme === 'light';
 
   return (
     <>
@@ -76,7 +64,7 @@ export const Navigation = () => {
         {/* Theme Toggle Button */}
         <div className="p-4 border-t border-white/10 flex justify-center mb-2">
           <button
-            onClick={() => setIsLightMode(!isLightMode)}
+            onClick={toggleTheme}
             className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 border border-white/5 hover:border-accent-blue/30 bg-white/5 hover:bg-white/10 group relative"
           >
             {isLightMode ? (
@@ -126,7 +114,7 @@ export const Navigation = () => {
 
           {/* Mobile Theme Toggle Button */}
           <button
-            onClick={() => setIsLightMode(!isLightMode)}
+            onClick={toggleTheme}
             className="relative flex flex-col items-center justify-center p-2 min-w-[64px] snap-center rounded-xl mx-1 border border-white/5 bg-white/5"
           >
             {isLightMode ? (

@@ -2,11 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Default Dark Mode RGB Values */
+  --color-void: 3 4 8;            /* #030408 */
+  --color-panel: 8 13 26;          /* #080D1A */
+  --color-accent-blue: 0 212 255;    /* #00D4FF */
+  --color-accent-purple: 123 47 255;  /* #7B2FFF */
+  --color-white: 255 255 255;      /* #ffffff */
+}
+
+html.light-mode {
+  /* Premium Light Mode RGB Values */
+  --color-void: 245 247 250;       /* Sleek Cool Light Gray #f5f7fa */
+  --color-panel: 255 255 255;      /* Pure White Glass Panels */
+  --color-accent-blue: 0 102 204;   /* High Contrast Premium Blue #0066cc */
+  --color-accent-purple: 98 0 238;   /* Deep Vibrant Purple #6200ee */
+  --color-white: 10 15 29;         /* High Contrast Obsidian Text/Borders #0a0f1d */
+}
+
 @layer base {
   body {
     @apply bg-void text-white font-rajdhani overflow-x-hidden;
-    background-color: #030408; /* Fallback */
-    color: #dee2f5;
+    background-color: rgb(var(--color-void));
+    color: rgb(var(--color-white));
   }
   
   body::after {
@@ -18,7 +36,7 @@
     height: 100vh;
     pointer-events: none;
     z-index: 50;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background: linear-gradient(to bottom, rgba(var(--color-white), 0.03) 1px, transparent 1px);
     background-size: 100% 4px;
     opacity: 0.5;
   }
@@ -39,12 +57,12 @@
 
   .neon-text-blue {
     @apply text-accent-blue;
-    text-shadow: 0 0 5px rgba(0,212,255,0.4), 0 0 10px rgba(0,212,255,0.2);
+    text-shadow: 0 0 5px rgba(var(--color-accent-blue), 0.4), 0 0 10px rgba(var(--color-accent-blue), 0.2);
   }
 
   .neon-text-purple {
     @apply text-accent-purple;
-    text-shadow: 0 0 5px rgba(123,47,255,0.4), 0 0 10px rgba(123,47,255,0.2);
+    text-shadow: 0 0 5px rgba(var(--color-accent-purple), 0.4), 0 0 10px rgba(var(--color-accent-purple), 0.2);
   }
   
   .clipped-corner {
@@ -68,24 +86,13 @@
   scrollbar-width: none;
 }
 
-/* Premium Light Mode Filter Protocol */
-html.light-mode {
-  filter: invert(1) hue-rotate(180deg);
-  background-color: #030408; /* preserves matching scrollbar/overscroll behavior */
-}
-
-/* Re-invert media assets to keep original color fidelity */
-html.light-mode img,
-html.light-mode video,
-html.light-mode iframe,
-html.light-mode [data-no-invert="true"],
-html.light-mode .no-invert {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-/* Subtle transitions for theme switching */
-html {
-  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* Elegant theme transition defaults */
+body, nav, main, .glass-panel, h1, h2, h3, p, span, button, input, select, textarea, svg, label {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              text-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes spin-slow {
@@ -100,4 +107,3 @@ html {
 .animate-spin-slow {
   animation: spin-slow 12s linear infinite;
 }
-

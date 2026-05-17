@@ -8,6 +8,7 @@ import { seedInitialData } from './lib/seeder';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { XpParticles } from './components/XpParticles';
 import { LevelUpOverlay } from './components/LevelUpOverlay';
+import { useUIStore } from './store/uiStore';
 
 // Pages
 import Auth from './pages/Auth';
@@ -43,6 +44,16 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
 function App() {
   const setOffline = useAppStore(state => state.setOffline);
   const { user, setUser, setSession, setLoading } = useAuthStore();
+  const theme = useUIStore(state => state.theme);
+
+  useEffect(() => {
+    const htmlEl = document.documentElement;
+    if (theme === 'light') {
+      htmlEl.classList.add('light-mode');
+    } else {
+      htmlEl.classList.remove('light-mode');
+    }
+  }, [theme]);
 
   useEffect(() => {
     const handleOnline = () => setOffline(false);
