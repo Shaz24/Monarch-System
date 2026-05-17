@@ -54,6 +54,7 @@ const BOSSES = [
   { name: 'Asta - The Wizard King', hp: 30000, desc: 'CLASS-S THREAT — Infinite willpower, physical unrivaled.', color: '#b30909' },
   { name: 'Toji Fushiguro', hp: 45000, desc: 'THE SORCERER KILLER — Unrivaled physical prowess, infinite willpower.', color: '#d62424', image: '/boss-5.jpg' },
   { name: 'Roronoa Zoro', hp: 60000, desc: 'THE GREATEST SWORDSMAN — Top-tier Haki mastery, unrivaled physical, immense speed.', color: '#00cc52', image: '/boss-6.jpg' },
+  { name: 'The Shadow Monarch Sung Jinwoo', hp: 100000, desc: 'THE SHADOW MONARCH — God-tier Shadow Authority, overwhelming physical, immense agility, unyielding willpower.', color: '#9D4EDD', image: '/boss-7.jpg' },
 ];
 
 function pickRandomQuests(n: number, excludeTitles: string[] = []): BossQuest[] {
