@@ -326,9 +326,9 @@ export default function EditProfile() {
             onClick={async () => {
               const confirmed = window.confirm('WARNING: Initiate Full System Wipe? All stats and logs will be permanently deleted. This action CANNOT be undone.');
               if (confirmed) {
-                // Instantly wipe all local storage keys starting with "monarch_"
+                // Instantly wipe all local storage keys starting with "monarch"
                 Object.keys(localStorage).forEach(key => {
-                  if (key.startsWith('monarch_')) {
+                  if (key.toLowerCase().startsWith('monarch')) {
                     localStorage.removeItem(key);
                   }
                 });

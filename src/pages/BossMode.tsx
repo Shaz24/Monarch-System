@@ -160,6 +160,21 @@ export default function BossMode() {
     }
   }, [completedCount, quests.length, defeated]);
 
+  // Self-healing migration for previously defeated bosses when new bosses are added
+  useEffect(() => {
+    if (defeated && bossIndex < BOSSES.length - 1) {
+      setState(s => ({
+        ...s,
+        bossIndex: s.bossIndex + 1,
+        bossDamage: 0,
+        defeated: false,
+        usedTitles: [],
+        quests: pickRandomQuests(5),
+      }));
+      toast(`⚠️ New Threat Unlocked: ${BOSSES[bossIndex + 1].name}`, { duration: 6000, icon: '👾' });
+    }
+  }, [defeated, bossIndex]);
+
   // Cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -479,10 +494,10 @@ export default function BossMode() {
             <Zap className="w-16 h-16 mx-auto mb-5 animate-pulse" style={{ color: boss.color }} />
             <h2 className="font-orbitron text-4xl font-bold text-white uppercase tracking-widest mb-4"
               style={{ textShadow: `0 0 40px ${boss.color}` }}>
-              Daniel Park Achieved
+              {boss.name} Conquered
             </h2>
             <p className="font-space-mono text-sm uppercase tracking-[0.3em]" style={{ color: `${boss.color}cc` }}>
-              You have forged the body. The system bows. The hunt continues.
+              You have achieved the ultimate form. The system bows. The hunt continues.
             </p>
           </motion.div>
         )}
