@@ -51,6 +51,7 @@ const BOSSES = [
   { name: 'Gun Park', hp: 12000, desc: 'Unmatched raw power and discipline.', color: '#ff003c' },
   { name: 'Daniel Park', hp: 15000, desc: 'FINAL FORM — The body every hunter seeks.', color: '#b829e3' },
   { name: 'Yu - The Boxer', hp: 20000, desc: 'ULTIMATE THREAT — Speed godlike, precision immaculate.', color: '#ff3333' },
+  { name: 'Asta - The Wizard King', hp: 30000, desc: 'CLASS-S THREAT — Infinite willpower, physical unrivaled.', color: '#b30909' },
 ];
 
 function pickRandomQuests(n: number, excludeTitles: string[] = []): BossQuest[] {
