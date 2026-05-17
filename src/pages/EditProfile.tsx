@@ -335,27 +335,42 @@ export default function EditProfile() {
 
                 if (!isSupabaseConfigured) {
                   toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
-                  setTimeout(() => window.location.reload(), 2000);
+                  setTimeout(() => window.location.reload(), 1500);
                   return;
                 }
 
-                try {
-                  // Wipe logs & achievements & boss battles
-                  await Promise.all([
-                    supabase.from('activity_logs').delete().eq('user_id', profile?.id),
-                    supabase.from('task_completions').delete().eq('user_id', profile?.id),
-                    supabase.from('boss_battles').delete().eq('user_id', profile?.id),
-                  ]);
+                const targetId = user?.id ?? profile?.id;
+                if (!targetId) {
+                  toast.error('No authenticated user session found.', { icon: '🚫' });
+                  return;
+                }
 
-                  // Reset Stats
-                  await supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', profile?.id);
-                  // Reset Profile
-                  await supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0 }).eq('id', profile?.id);
-                  
+                toast.loading('Initiating data purge across tables...', { id: 'purge-toast' });
+
+                // Execute each database operation independently to be completely fault-tolerant
+                const results = await Promise.allSettled([
+                  supabase.from('activity_logs').delete().eq('user_id', targetId),
+                  supabase.from('task_completions').delete().eq('user_id', targetId),
+                  supabase.from('boss_battles').delete().eq('user_id', targetId),
+                  supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', targetId),
+                  supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0 }).eq('id', targetId)
+                ]);
+
+                const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && (r.value as any).error));
+
+                if (failed.length > 0) {
+                  console.error('Wipe partial errors:', failed);
+                  toast.dismiss('purge-toast');
+                  toast.error(
+                    'Database reset partially blocked by Supabase. Please ensure you have run the RLS Delete Policy migration in your Supabase SQL Editor.',
+                    { duration: 8000 }
+                  );
+                  // Reload anyway to refresh UI state
+                  setTimeout(() => window.location.reload(), 3000);
+                } else {
+                  toast.dismiss('purge-toast');
                   toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
-                  setTimeout(() => window.location.reload(), 2000);
-                } catch (err) {
-                  toast.error('System Wipe Failed');
+                  setTimeout(() => window.location.reload(), 1500);
                 }
               }
             }}
