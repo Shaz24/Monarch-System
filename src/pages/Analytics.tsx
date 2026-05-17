@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Activity, Target } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
+import { useUIStore } from '../store/uiStore';
 
 const XP_HISTORY = [
   { date: 'May 01', xp: 4000 },
@@ -15,6 +16,15 @@ const XP_HISTORY = [
 
 export default function Analytics() {
   const { stats } = useProfile();
+  const theme = useUIStore((state) => state.theme);
+  const isLight = theme === 'light';
+
+  // Dynamic theme colors for charts
+  const gridColor = isLight ? 'rgba(10, 15, 29, 0.12)' : 'rgba(255, 255, 255, 0.1)';
+  const labelColor = isLight ? 'rgba(10, 15, 29, 0.7)' : 'rgba(255, 255, 255, 0.6)';
+  const tooltipBg = isLight ? '#ffffff' : '#080D1A';
+  const tooltipBorder = isLight ? '#0066cc' : '#b829e3';
+  const axisColor = isLight ? '#555555' : '#888888';
 
   // Create a mapping of stat_name to level/xp
   const statsMap = stats.reduce((acc, s) => {
@@ -68,13 +78,13 @@ export default function Analytics() {
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={STATS_MATRIX}>
-                <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'Space Mono' }} />
+                <PolarGrid stroke={gridColor} />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: labelColor, fontSize: 12, fontFamily: 'Space Mono' }} />
                 <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
-                <Radar name="Player" dataKey="A" stroke="#00D4FF" fill="#b829e3" fillOpacity={0.4} />
+                <Radar name="Player" dataKey="A" stroke="rgb(var(--color-accent-blue))" fill="rgb(var(--color-accent-purple))" fillOpacity={0.4} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#080D1A', border: '1px solid #b829e3', borderRadius: 0, fontFamily: 'Space Mono' }} 
-                  itemStyle={{ color: '#00D4FF' }}
+                  contentStyle={{ backgroundColor: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 0, fontFamily: 'Space Mono', color: 'rgb(var(--color-white))' }} 
+                  itemStyle={{ color: 'rgb(var(--color-accent-blue))' }}
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -92,17 +102,18 @@ export default function Analytics() {
               <AreaChart data={XP_HISTORY}>
                 <defs>
                   <linearGradient id="colorXp" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00D4FF" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#00D4FF" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="rgb(var(--color-accent-blue))" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="rgb(var(--color-accent-blue))" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="date" stroke="#555" tick={{ fill: '#888', fontSize: 10, fontFamily: 'Space Mono' }} tickLine={false} axisLine={false} />
-                <YAxis stroke="#555" tick={{ fill: '#888', fontSize: 10, fontFamily: 'Space Mono' }} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                <XAxis dataKey="date" stroke={axisColor} tick={{ fill: axisColor, fontSize: 10, fontFamily: 'Space Mono' }} tickLine={false} axisLine={false} />
+                <YAxis stroke={axisColor} tick={{ fill: axisColor, fontSize: 10, fontFamily: 'Space Mono' }} tickLine={false} axisLine={false} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#080D1A', border: '1px solid #00D4FF', borderRadius: 0, fontFamily: 'Space Mono' }} 
+                  contentStyle={{ backgroundColor: tooltipBg, border: `1px solid rgb(var(--color-accent-blue))`, borderRadius: 0, fontFamily: 'Space Mono', color: 'rgb(var(--color-white))' }} 
+                  itemStyle={{ color: 'rgb(var(--color-accent-blue))' }}
                 />
-                <Area type="monotone" dataKey="xp" stroke="#00D4FF" fillOpacity={1} fill="url(#colorXp)" strokeWidth={2} />
+                <Area type="monotone" dataKey="xp" stroke="rgb(var(--color-accent-blue))" fillOpacity={1} fill="url(#colorXp)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
