@@ -13,29 +13,30 @@ interface BossQuest {
   damage: number;
   completed: boolean;
   icon: string;
+  duration?: number;
 }
 
 const QUEST_POOL: Omit<BossQuest, 'id' | 'completed'>[] = [
-  { title: '100 Push-ups — No Mercy', category: 'strength', icon: '💪', xp: 120, damage: 1800 },
-  { title: '200 Bodyweight Squats', category: 'strength', icon: '🦵', xp: 150, damage: 2000 },
-  { title: '50 Pull-ups (any grip)', category: 'strength', icon: '🏋️', xp: 180, damage: 2500 },
-  { title: '10-minute Plank Challenge', category: 'endurance', icon: '🧱', xp: 140, damage: 1900 },
-  { title: '5KM Run — Sub 25 minutes', category: 'endurance', icon: '🏃', xp: 160, damage: 2200 },
-  { title: '1000 Calf Raises (Park Protocol)', category: 'strength', icon: '🦶', xp: 100, damage: 1500 },
-  { title: '3 Sets of Dips to Failure', category: 'strength', icon: '🤸', xp: 90, damage: 1200 },
-  { title: '50 Burpees — Full Extension', category: 'endurance', icon: '⚡', xp: 130, damage: 1700 },
-  { title: '200 Sit-ups — Lookism Style', category: 'strength', icon: '🔥', xp: 110, damage: 1600 },
-  { title: '30-min Shadow Boxing', category: 'endurance', icon: '🥊', xp: 120, damage: 1700 },
-  { title: 'Wall Sit — 5 minutes total', category: 'strength', icon: '🧗', xp: 80, damage: 1100 },
-  { title: '100 Jump Squats — Explosive', category: 'endurance', icon: '💨', xp: 130, damage: 1800 },
-  { title: 'Ice Cold Shower — No hesitation', category: 'discipline', icon: '🧊', xp: 60, damage: 800 },
-  { title: 'Wake at 5AM — Protocol Active', category: 'discipline', icon: '🌅', xp: 80, damage: 1000 },
-  { title: '1-Hour No-Phone Morning', category: 'discipline', icon: '📵', xp: 70, damage: 900 },
-  { title: 'Meditate for 20 minutes', category: 'mind', icon: '🧘', xp: 60, damage: 800 },
-  { title: 'Journal 3 pages — Full honesty', category: 'mind', icon: '📖', xp: 50, damage: 700 },
-  { title: 'Eat Zero Processed Food today', category: 'discipline', icon: '🥗', xp: 90, damage: 1100 },
-  { title: 'No Social Media for 12 hours', category: 'discipline', icon: '🚫', xp: 75, damage: 950 },
-  { title: '1 Hour Deep Reading — No distractions', category: 'mind', icon: '📚', xp: 80, damage: 1000 },
+  { title: '100 Push-ups — No Mercy', category: 'strength', icon: '💪', xp: 120, damage: 1800, duration: 15 },
+  { title: '200 Bodyweight Squats', category: 'strength', icon: '🦵', xp: 150, damage: 2000, duration: 20 },
+  { title: '50 Pull-ups (any grip)', category: 'strength', icon: '🏋️', xp: 180, damage: 2500, duration: 15 },
+  { title: '10-minute Plank Challenge', category: 'endurance', icon: '🧱', xp: 140, damage: 1900, duration: 10 },
+  { title: '5KM Run — Sub 25 minutes', category: 'endurance', icon: '🏃', xp: 160, damage: 2200, duration: 25 },
+  { title: '1000 Calf Raises (Park Protocol)', category: 'strength', icon: '🦶', xp: 100, damage: 1500, duration: 20 },
+  { title: '3 Sets of Dips to Failure', category: 'strength', icon: '🤸', xp: 90, damage: 1200, duration: 10 },
+  { title: '50 Burpees — Full Extension', category: 'endurance', icon: '⚡', xp: 130, damage: 1700, duration: 15 },
+  { title: '200 Sit-ups — Lookism Style', category: 'strength', icon: '🔥', xp: 110, damage: 1600, duration: 15 },
+  { title: '30-min Shadow Boxing', category: 'endurance', icon: '🥊', xp: 120, damage: 1700, duration: 30 },
+  { title: 'Wall Sit — 5 minutes total', category: 'strength', icon: '🧗', xp: 80, damage: 1100, duration: 5 },
+  { title: '100 Jump Squats — Explosive', category: 'endurance', icon: '💨', xp: 130, damage: 1800, duration: 15 },
+  { title: 'Ice Cold Shower — No hesitation', category: 'discipline', icon: '🧊', xp: 60, damage: 800, duration: 5 },
+  { title: 'Wake at 5AM — Protocol Active', category: 'discipline', icon: '🌅', xp: 80, damage: 1000, duration: 5 },
+  { title: '1-Hour No-Phone Morning', category: 'discipline', icon: '📵', xp: 70, damage: 900, duration: 60 },
+  { title: 'Meditate for 20 minutes', category: 'mind', icon: '🧘', xp: 60, damage: 800, duration: 20 },
+  { title: 'Journal 3 pages — Full honesty', category: 'mind', icon: '📖', xp: 50, damage: 700, duration: 15 },
+  { title: 'Eat Zero Processed Food today', category: 'discipline', icon: '🥗', xp: 90, damage: 1100, duration: 10 },
+  { title: 'No Social Media for 12 hours', category: 'discipline', icon: '🚫', xp: 75, damage: 950, duration: 0 },
+  { title: '1 Hour Deep Reading — No distractions', category: 'mind', icon: '📚', xp: 80, damage: 1000, duration: 60 },
 ];
 
 const CATEGORY_COLOR: Record<string, string> = {
@@ -189,8 +190,19 @@ export default function BossMode() {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     addXpParticle(rect.left + rect.width / 2, rect.top, quest.xp);
 
-    // Log to Supabase (fire-and-forget)
-    addLog(quest.title, 0, quest.xp, {}, [quest.category]).catch(console.error);
+    // Map quest category to unified activity log category
+    const mapQuestCategoryToActivityCategory = (questCat: string): 'fitness' | 'mind' => {
+      if (questCat === 'strength' || questCat === 'endurance') {
+        return 'fitness';
+      }
+      return 'mind';
+    };
+
+    const targetCat = mapQuestCategoryToActivityCategory(quest.category);
+    const durationMins = quest.duration ?? 0;
+
+    // Log with correct category and duration (fire-and-forget)
+    addLog(quest.title, durationMins, quest.xp, { isBossQuest: true }, [quest.category], targetCat).catch(console.error);
 
     toast(`⚔️ ${quest.icon} ${quest.damage.toLocaleString()} DMG`, { duration: 2500 });
 
