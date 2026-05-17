@@ -52,6 +52,7 @@ const BOSSES = [
   { name: 'Daniel Park', hp: 15000, desc: 'FINAL FORM — The body every hunter seeks.', color: '#b829e3' },
   { name: 'Yu - The Boxer', hp: 20000, desc: 'ULTIMATE THREAT — Speed godlike, precision immaculate.', color: '#ff3333' },
   { name: 'Asta - The Wizard King', hp: 30000, desc: 'CLASS-S THREAT — Infinite willpower, physical unrivaled.', color: '#b30909' },
+  { name: 'Toji Fushiguro', hp: 45000, desc: 'THE SORCERER KILLER — Unrivaled physical prowess, infinite willpower.', color: '#d62424', image: '/boss-5.jpg' },
 ];
 
 function pickRandomQuests(n: number, excludeTitles: string[] = []): BossQuest[] {
@@ -283,7 +284,7 @@ export default function BossMode() {
             <AnimatePresence mode="wait">
               <motion.img
                 key={bossIndex}
-                src={`/boss-${bossIndex}.png`}
+                src={boss.image ?? `/boss-${bossIndex}.png`}
                 alt={boss.name}
                 initial={{ opacity: 0, scale: 1.05, filter: 'blur(8px)' }}
                 animate={{
