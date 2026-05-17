@@ -95,6 +95,18 @@ const loadState = (): BossModeState => {
       if (parsed.rerolls?.date !== today) {
         parsed.rerolls = { date: today, count: 0 };
       }
+
+      // Self-healing migration for previously defeated bosses when new bosses are added:
+      // If the loaded state has defeated: true, but we have more bosses in the registry,
+      // safely advance the bossIndex to the next unlocked threat, reset damage and defeated status.
+      if (parsed.defeated && parsed.bossIndex < BOSSES.length - 1) {
+        parsed.bossIndex = parsed.bossIndex + 1;
+        parsed.bossDamage = 0;
+        parsed.defeated = false;
+        parsed.usedTitles = [];
+        parsed.quests = pickRandomQuests(5);
+      }
+
       return { ...defaultState, ...parsed, rerolls: parsed.rerolls, usedTitles: parsed.usedTitles ?? [] };
     } catch (e) {
       return defaultState;
@@ -159,22 +171,6 @@ export default function BossMode() {
       return () => clearTimeout(t);
     }
   }, [completedCount, quests.length, defeated]);
-
-  // Self-healing migration for previously defeated bosses when new bosses are added
-  useEffect(() => {
-    if (defeated && bossIndex < BOSSES.length - 1) {
-      setState(s => ({
-        ...s,
-        bossIndex: s.bossIndex + 1,
-        bossDamage: 0,
-        defeated: false,
-        usedTitles: [],
-        quests: pickRandomQuests(5),
-      }));
-      toast(`⚠️ New Threat Unlocked: ${BOSSES[bossIndex + 1].name}`, { duration: 6000, icon: '👾' });
-    }
-  }, [defeated, bossIndex]);
-
   // Cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return;
