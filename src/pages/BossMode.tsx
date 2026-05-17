@@ -111,7 +111,7 @@ export default function BossMode() {
     localStorage.setItem('monarchBossMode', JSON.stringify(state));
   }, [state]);
 
-  const { bossIndex, quests, bossDamage, defeated, rerolls, usedTitles } = state;
+  const { bossIndex, quests, bossDamage, defeated, rerolls } = state;
   const boss = BOSSES[bossIndex];
   const MAX_HP = boss.hp;
 
@@ -387,7 +387,6 @@ export default function BossMode() {
                     }`}
                     style={{
                       background: quest.completed ? 'rgba(0,0,0,0.3)' : `rgba(0,0,0,0.5)`,
-                      borderLeft: `3px solid ${quest.completed ? 'rgba(255,255,255,0.05)' : color}`,
                       border: `1px solid ${quest.completed ? 'rgba(255,255,255,0.04)' : `${color}22`}`,
                       borderLeft: `3px solid ${quest.completed ? 'rgba(255,255,255,0.05)' : color}`,
                     }}
