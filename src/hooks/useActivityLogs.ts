@@ -103,16 +103,26 @@ function healLocalStorageLogs(userId: string) {
   }
 }
 
+// Global memory cache for SWR logs
+const cachedActivityLogs: Record<string, ActivityLog[]> = {};
+const cachedLogsLoaded: Record<string, boolean> = {};
+
 export function useActivityLogs(category: ActivityLog['category']) {
   const { user } = useAuthStore();
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = user ? `${category}_${user.id}` : '';
+  
+  const [logs, setLogs] = useState<ActivityLog[]>(
+    cacheKey ? (cachedActivityLogs[cacheKey] || []) : []
+  );
+  const [loading, setLoading] = useState(!cacheKey || !cachedLogsLoaded[cacheKey]);
 
-  const fetchLogs = useCallback(async () => {
+  const fetchLogs = useCallback(async (isSilent = false) => {
     if (!user) {
       setLoading(false);
       return;
     }
+
+    const currentKey = `${category}_${user.id}`;
 
     if (!isSupabaseConfigured) {
       // Run self-healing migration once on fetch to fix legacy local storage logs
@@ -123,8 +133,13 @@ export function useActivityLogs(category: ActivityLog['category']) {
       try {
         const raw = localStorage.getItem(localKey);
         if (raw) {
-          setLogs(JSON.parse(raw) as ActivityLog[]);
+          const parsed = JSON.parse(raw) as ActivityLog[];
+          cachedActivityLogs[currentKey] = parsed;
+          cachedLogsLoaded[currentKey] = true;
+          setLogs(parsed);
         } else {
+          cachedActivityLogs[currentKey] = [];
+          cachedLogsLoaded[currentKey] = true;
           setLogs([]);
         }
       } catch (e) {
@@ -134,7 +149,10 @@ export function useActivityLogs(category: ActivityLog['category']) {
       return;
     }
 
-    setLoading(true);
+    if (!isSilent && !cachedLogsLoaded[currentKey]) {
+      setLoading(true);
+    }
+
     try {
       const { data, error } = await supabase
         .from('activity_logs')
@@ -149,8 +167,11 @@ export function useActivityLogs(category: ActivityLog['category']) {
         } else {
           throw error;
         }
-      } else {
-        setLogs(data as ActivityLog[]);
+      } else if (data) {
+        const loadedLogs = data as ActivityLog[];
+        cachedActivityLogs[currentKey] = loadedLogs;
+        cachedLogsLoaded[currentKey] = true;
+        setLogs(loadedLogs);
       }
     } catch (err) {
       console.error('Fetch logs error:', err);
@@ -160,8 +181,13 @@ export function useActivityLogs(category: ActivityLog['category']) {
   }, [user, category]);
 
   useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+    if (cacheKey && cachedLogsLoaded[cacheKey]) {
+      setLogs(cachedActivityLogs[cacheKey]);
+      fetchLogs(true); // background silent fetch
+    } else {
+      fetchLogs(false);
+    }
+  }, [fetchLogs, cacheKey]);
 
   const addLog = async (
     activityType: string,
@@ -174,6 +200,7 @@ export function useActivityLogs(category: ActivityLog['category']) {
     if (!user) return;
 
     const activeCategory = customCategory ?? category;
+    const currentKey = `${activeCategory}_${user.id}`;
 
     const newLog: ActivityLog = {
       id: Math.random().toString(36).substring(7),
@@ -186,6 +213,13 @@ export function useActivityLogs(category: ActivityLog['category']) {
       created_at: new Date().toISOString()
     };
 
+    // Optimistically update memory cache and state
+    if (activeCategory === category) {
+      const updatedList = [newLog, ...logs];
+      cachedActivityLogs[currentKey] = updatedList;
+      setLogs(updatedList);
+    }
+
     if (!isSupabaseConfigured) {
       // Offline/Local Storage Fallback
       const localKey = `monarch_logs_${activeCategory}_${user.id}`;
@@ -194,11 +228,6 @@ export function useActivityLogs(category: ActivityLog['category']) {
         const existing = raw ? JSON.parse(raw) as ActivityLog[] : [];
         const updated = [newLog, ...existing];
         localStorage.setItem(localKey, JSON.stringify(updated));
-        
-        // Only update local state if activeCategory matches the current hook's category
-        if (activeCategory === category) {
-          setLogs(updated);
-        }
       } catch (e) {
         console.error('Failed to save local log:', e);
       }
@@ -224,8 +253,11 @@ export function useActivityLogs(category: ActivityLog['category']) {
         
       if (error) throw error;
       
-      if (activeCategory === category) {
-        setLogs(prev => [data as ActivityLog, ...prev]);
+      // Update memory cache and state with DB response to preserve precise DB ID and timestamps
+      if (data && activeCategory === category) {
+        const freshLogs = logs.map(l => l.id === newLog.id ? (data as ActivityLog) : l);
+        cachedActivityLogs[currentKey] = freshLogs;
+        setLogs(freshLogs);
       }
 
       // 2. Update the stats via RPC
@@ -246,5 +278,10 @@ export function useActivityLogs(category: ActivityLog['category']) {
     }
   };
 
-  return { logs, loading, addLog, refetch: fetchLogs };
+  return { 
+    logs, 
+    loading: !cachedLogsLoaded[cacheKey] && loading, // Only block UI if we have absolutely nothing loaded
+    addLog, 
+    refetch: () => fetchLogs(false) 
+  };
 }

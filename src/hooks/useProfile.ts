@@ -41,17 +41,26 @@ interface UseProfileReturn {
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
+// Stale-While-Revalidate Module-Level Cache
+let cachedProfile: UserProfile | null = null;
+let cachedStats: StatEntry[] = [];
+
 export function useProfile(): UseProfileReturn {
   const { user } = useAuthStore();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [stats, setStats] = useState<StatEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(cachedProfile);
+  const [stats, setStats] = useState<StatEntry[]>(cachedStats);
+  const [loading, setLoading] = useState(!cachedProfile);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProfile = useCallback(async () => {
-    if (!user || !isSupabaseConfigured) {
+  const fetchProfile = useCallback(async (isSilent = false) => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
       const emailHandle = user?.email?.split('@')[0] ?? 'player_01';
-      setProfile({
+      const mockProfile: UserProfile = {
         id: user?.id ?? 'demo',
         username: user?.user_metadata?.username ?? emailHandle,
         display_name: user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? emailHandle,
@@ -70,23 +79,33 @@ export function useProfile(): UseProfileReturn {
           show_achievements: true,
         },
         created_at: new Date().toISOString(),
-      });
+      };
+      
+      cachedProfile = mockProfile;
+      cachedStats = [];
+      setProfile(mockProfile);
       setStats([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!isSilent && !cachedProfile) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
-      let profileData = null;
-      let statsData = null;
+      // Parallelize queries to double database retrieval speed
+      const [profileResponse, statsResponse] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('stats').select('stat_name, level, xp').eq('user_id', user.id)
+      ]);
 
-      const profileResponse = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      let profileData = null;
+      let statsData = statsResponse.data;
 
       if (profileResponse.error) {
-        // PGRST116 means zero rows returned (profile doesn't exist yet)
+        // PGRST116 means profile doesn't exist yet
         if (profileResponse.error.code === 'PGRST116') {
           const emailHandle = user?.email?.split('@')[0] ?? 'player_01';
           const newProfile = {
@@ -120,7 +139,8 @@ export function useProfile(): UseProfileReturn {
             xp: 0
           }));
           
-          await supabase.from('stats').insert(defaultStats);
+          const { data: seededStats } = await supabase.from('stats').insert(defaultStats).select();
+          statsData = seededStats || defaultStats;
         } else {
           throw profileResponse.error;
         }
@@ -128,12 +148,9 @@ export function useProfile(): UseProfileReturn {
         profileData = profileResponse.data;
       }
 
-      const statsResponse = await supabase.from('stats').select('stat_name, level, xp').eq('user_id', user.id);
       if (statsResponse.error) throw statsResponse.error;
-      statsData = statsResponse.data;
 
-      // Merge fallbacks: DB value wins, falls back to user metadata or sensible defaults.
-      // This handles the case where display_name / bio / visibility columns don't exist yet.
+      // Merge fallbacks
       const defaultVisibility = {
         show_level: true,
         show_streak: true,
@@ -141,10 +158,10 @@ export function useProfile(): UseProfileReturn {
         show_rank: true,
         show_achievements: true,
       };
+      
       const p = profileData as any;
       const merged: UserProfile = {
         ...p,
-        // Text fields: DB first, then user_metadata, then email-derived
         display_name:
           p.display_name ??
           user.user_metadata?.full_name ??
@@ -156,12 +173,16 @@ export function useProfile(): UseProfileReturn {
           p.avatar_url ||
           user.user_metadata?.avatar_url ||
           null,
-        // JSONB field: DB first, then defaults
         visibility: p.visibility ?? defaultVisibility,
       };
 
+      // Update Cache
+      cachedProfile = merged;
+      cachedStats = (statsData ?? []) as StatEntry[];
+
+      // Update State
       setProfile(merged);
-      setStats((statsData ?? []) as StatEntry[]);
+      setStats(cachedStats);
     } catch (err: any) {
       setError(err.message);
       console.error('useProfile fetch error:', err);
@@ -171,14 +192,27 @@ export function useProfile(): UseProfileReturn {
   }, [user]);
 
   useEffect(() => {
-    fetchProfile();
+    // SWR pattern: load from cache instantly, fetch fresh in background
+    if (cachedProfile) {
+      setProfile(cachedProfile);
+      setStats(cachedStats);
+      fetchProfile(true); // background update
+    } else {
+      fetchProfile(false);
+    }
   }, [fetchProfile]);
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return;
 
+    // Optimistically update cache and state
+    if (cachedProfile) {
+      const nextProfile = { ...cachedProfile, ...updates };
+      cachedProfile = nextProfile;
+      setProfile(nextProfile);
+    }
+
     if (!isSupabaseConfigured) {
-      setProfile(prev => prev ? { ...prev, ...updates } : null);
       return;
     }
 
@@ -188,8 +222,14 @@ export function useProfile(): UseProfileReturn {
       .eq('id', user.id);
 
     if (error) throw error;
-    setProfile(prev => prev ? { ...prev, ...updates } : null);
   };
 
-  return { profile, stats, loading, error, refetch: fetchProfile, updateProfile };
+  return { 
+    profile, 
+    stats, 
+    loading: !profile && loading, // Only block UI if we don't have profile data yet
+    error, 
+    refetch: () => fetchProfile(false), 
+    updateProfile 
+  };
 }

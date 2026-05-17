@@ -1,41 +1,57 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 
+export interface WeeklyChartData {
+  day: string;
+  score: number;
+  fullDate: string;
+}
+
+// SWR Module Cache for weekly activities
+let cachedWeeklyData: WeeklyChartData[] | null = null;
+let cachedGrade: string = 'N/A';
+
 export function useWeeklyActivity() {
   const { user } = useAuthStore();
-  const [weeklyData, setWeeklyData] = useState([
-    { day: 'M', score: 0, fullDate: '' },
-    { day: 'T', score: 0, fullDate: '' },
-    { day: 'W', score: 0, fullDate: '' },
-    { day: 'T', score: 0, fullDate: '' },
-    { day: 'F', score: 0, fullDate: '' },
-    { day: 'S', score: 0, fullDate: '' },
-    { day: 'S', score: 0, fullDate: '' },
-  ]);
-  const [grade, setGrade] = useState('N/A');
+  const [weeklyData, setWeeklyData] = useState<WeeklyChartData[]>(
+    cachedWeeklyData || [
+      { day: 'M', score: 0, fullDate: '' },
+      { day: 'T', score: 0, fullDate: '' },
+      { day: 'W', score: 0, fullDate: '' },
+      { day: 'T', score: 0, fullDate: '' },
+      { day: 'F', score: 0, fullDate: '' },
+      { day: 'S', score: 0, fullDate: '' },
+      { day: 'S', score: 0, fullDate: '' },
+    ]
+  );
+  const [grade, setGrade] = useState<string>(cachedGrade);
 
-  useEffect(() => {
-    async function fetchActivity() {
-      if (!user || !isSupabaseConfigured) return;
+  const fetchActivity = useCallback(async () => {
+    if (!user || !isSupabaseConfigured) return;
 
-      const now = new Date();
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(now.getDate() - 6);
-      sevenDaysAgo.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
 
-      // We'll approximate total score by adding activity_logs xp and task_completions xp
-      const { data: activities } = await supabase
-        .from('activity_logs')
-        .select('created_at, xp_earned')
-        .eq('user_id', user.id)
-        .gte('created_at', sevenDaysAgo.toISOString());
+    try {
+      // Parallelize both database query operations to cut roundtrip time in half
+      const [activitiesRes, tasksRes] = await Promise.all([
+        supabase
+          .from('activity_logs')
+          .select('created_at, xp_earned')
+          .eq('user_id', user.id)
+          .gte('created_at', sevenDaysAgo.toISOString()),
+        supabase
+          .from('task_completions')
+          .select('completed_at, xp_earned')
+          .eq('user_id', user.id)
+          .gte('completed_at', sevenDaysAgo.toISOString())
+      ]);
 
-      const { data: tasks } = await supabase
-        .from('task_completions')
-        .select('completed_at, xp_earned')
-        .eq('user_id', user.id)
-        .gte('completed_at', sevenDaysAgo.toISOString());
+      const activities = activitiesRes.data;
+      const tasks = tasksRes.data;
 
       const dailyScores: Record<string, number> = {};
 
@@ -79,19 +95,29 @@ export function useWeeklyActivity() {
         };
       });
 
-      setWeeklyData(chartData);
-
       // Grade logic based on total XP over 7 days
-      if (totalXP > 500) setGrade('S');
-      else if (totalXP > 300) setGrade('A');
-      else if (totalXP > 150) setGrade('B');
-      else if (totalXP > 50) setGrade('C');
-      else if (totalXP > 0) setGrade('D');
-      else setGrade('F');
-    }
+      let nextGrade = 'F';
+      if (totalXP > 500) nextGrade = 'S';
+      else if (totalXP > 300) nextGrade = 'A';
+      else if (totalXP > 150) nextGrade = 'B';
+      else if (totalXP > 50) nextGrade = 'C';
+      else if (totalXP > 0) nextGrade = 'D';
 
-    fetchActivity();
+      // Cache the results
+      cachedWeeklyData = chartData;
+      cachedGrade = nextGrade;
+
+      // Update State
+      setWeeklyData(chartData);
+      setGrade(nextGrade);
+    } catch (e) {
+      console.error('Failed to fetch weekly activity metrics:', e);
+    }
   }, [user]);
 
-  return { weeklyData, grade };
+  useEffect(() => {
+    fetchActivity();
+  }, [fetchActivity]);
+
+  return { weeklyData, grade, refetch: fetchActivity };
 }

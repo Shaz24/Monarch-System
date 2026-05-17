@@ -16,17 +16,41 @@ export interface Task {
   created_at: string;
 }
 
+// SWR Cache for tasks and completed tasks
+let cachedTasks: Task[] | null = null;
+let cachedCompletedTaskIds: Set<string> = new Set();
+let isInitialFetched = false;
+
 export function useTasks() {
   const { user } = useAuthStore();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<Task[]>(
+    cachedTasks || [
+      {
+        id: '1', user_id: 'demo', time_slot: '05:00', title: 'Awaken & Hydrate', description: null,
+        xp_reward: 10, difficulty: 'E', stat_category: 'discipline', is_recurring: true, notes: null, created_at: new Date().toISOString()
+      },
+      {
+        id: '2', user_id: 'demo', time_slot: '06:00', title: 'Deep Work Block 1', description: 'Focus without distraction',
+        xp_reward: 50, difficulty: 'B', stat_category: 'focus', is_recurring: true, notes: null, created_at: new Date().toISOString()
+      },
+      {
+        id: '3', user_id: 'demo', time_slot: '17:00', title: 'Physical Conditioning', description: 'Strength training',
+        xp_reward: 40, difficulty: 'C', stat_category: 'strength', is_recurring: true, notes: null, created_at: new Date().toISOString()
+      }
+    ]
+  );
+  const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(cachedCompletedTaskIds);
+  const [loading, setLoading] = useState(!cachedTasks);
   const [error, setError] = useState<string | null>(null);
 
-  const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+  const fetchTasks = useCallback(async (isSilent = false) => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-  const fetchTasks = useCallback(async () => {
-    if (!user || !isSupabaseConfigured) {
-      setTasks([
+    if (!isSupabaseConfigured) {
+      const mockTasks: Task[] = [
         {
           id: '1', user_id: 'demo', time_slot: '05:00', title: 'Awaken & Hydrate', description: null,
           xp_reward: 10, difficulty: 'E', stat_category: 'discipline', is_recurring: true, notes: null, created_at: new Date().toISOString()
@@ -39,37 +63,53 @@ export function useTasks() {
           id: '3', user_id: 'demo', time_slot: '17:00', title: 'Physical Conditioning', description: 'Strength training',
           xp_reward: 40, difficulty: 'C', stat_category: 'strength', is_recurring: true, notes: null, created_at: new Date().toISOString()
         }
-      ]);
+      ];
+      cachedTasks = mockTasks;
+      setTasks(mockTasks);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!isSilent && !cachedTasks) {
+      setLoading(true);
+    }
+    setError(null);
+
     try {
-      // Fetch Tasks
-      const { data, error } = await supabase
-        .from('daily_tasks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('time_slot', { ascending: true });
-
-      if (error) throw error;
-      setTasks(data as Task[]);
-
-      // Fetch Completions for today
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      
-      const { data: completions, error: compError } = await supabase
-        .from('task_completions')
-        .select('task_id')
-        .eq('user_id', user.id)
-        .gte('completed_at', startOfDay.toISOString());
 
-      if (!compError && completions) {
-        setCompletedTaskIds(new Set(completions.map(c => c.task_id)));
+      // Parallelize queries to get tasks and daily completions at the same time
+      const [tasksRes, completionsRes] = await Promise.all([
+        supabase
+          .from('daily_tasks')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('time_slot', { ascending: true }),
+        supabase
+          .from('task_completions')
+          .select('task_id')
+          .eq('user_id', user.id)
+          .gte('completed_at', startOfDay.toISOString())
+      ]);
+
+      if (tasksRes.error) throw tasksRes.error;
+
+      const loadedTasks = tasksRes.data as Task[];
+      const loadedCompletedIds = new Set<string>();
+
+      if (!completionsRes.error && completionsRes.data) {
+        completionsRes.data.forEach(c => loadedCompletedIds.add(c.task_id));
       }
 
+      // Update Cache
+      cachedTasks = loadedTasks;
+      cachedCompletedTaskIds = loadedCompletedIds;
+      isInitialFetched = true;
+
+      // Update State
+      setTasks(loadedTasks);
+      setCompletedTaskIds(loadedCompletedIds);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -78,7 +118,14 @@ export function useTasks() {
   }, [user]);
 
   useEffect(() => {
-    fetchTasks();
+    // SWR Pattern: load cached instantly, fetch fresh in background
+    if (cachedTasks) {
+      setTasks(cachedTasks);
+      setCompletedTaskIds(cachedCompletedTaskIds);
+      fetchTasks(true); // silent background fetch
+    } else {
+      fetchTasks(false);
+    }
   }, [fetchTasks]);
 
   const addTask = async (taskData: Partial<Task>) => {
@@ -96,7 +143,10 @@ export function useTasks() {
         notes: taskData.notes || null,
         created_at: new Date().toISOString()
       } as Task;
-      setTasks(prev => [...prev, newTask].sort((a, b) => a.time_slot.localeCompare(b.time_slot)));
+      
+      const updatedTasks = [...tasks, newTask].sort((a, b) => a.time_slot.localeCompare(b.time_slot));
+      cachedTasks = updatedTasks;
+      setTasks(updatedTasks);
       return;
     }
     try {
@@ -107,7 +157,10 @@ export function useTasks() {
         .single();
       
       if (error) throw error;
-      setTasks(prev => [...prev, data as Task].sort((a, b) => a.time_slot.localeCompare(b.time_slot)));
+      
+      const updatedTasks = [...tasks, data as Task].sort((a, b) => a.time_slot.localeCompare(b.time_slot));
+      cachedTasks = updatedTasks;
+      setTasks(updatedTasks);
     } catch (err: any) {
       console.error('Add task error:', err);
       throw err;
@@ -116,7 +169,9 @@ export function useTasks() {
 
   const completeTask = async (taskId: string, xpReward: number) => {
     if (!user || !isSupabaseConfigured) {
-      setTasks(prev => prev.filter(t => t.id !== taskId));
+      const updatedTasks = tasks.filter(t => t.id !== taskId);
+      cachedTasks = updatedTasks;
+      setTasks(updatedTasks);
       return;
     }
 
@@ -126,6 +181,12 @@ export function useTasks() {
     }
     
     try {
+      // Optimistically update UI state
+      const nextCompleted = new Set(completedTaskIds);
+      nextCompleted.add(taskId);
+      cachedCompletedTaskIds = nextCompleted;
+      setCompletedTaskIds(nextCompleted);
+
       // 1. Record completion
       const { error: completeError } = await supabase
         .from('task_completions')
@@ -145,13 +206,6 @@ export function useTasks() {
       if (rpcError) {
         console.error('RPC Error granting XP:', rpcError);
       }
-
-      // Update local state immediately to reflect completion
-      setCompletedTaskIds(prev => {
-        const newSet = new Set(prev);
-        newSet.add(taskId);
-        return newSet;
-      });
     } catch (err: any) {
       console.error('Complete task error:', err);
       throw err;
@@ -159,10 +213,13 @@ export function useTasks() {
   };
 
   const updateTask = async (taskId: string, updates: Partial<Task>) => {
-    if (!user || !isSupabaseConfigured) {
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
-      return;
-    }
+    // Optimistically update
+    const updatedTasks = tasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
+    cachedTasks = updatedTasks;
+    setTasks(updatedTasks);
+
+    if (!user || !isSupabaseConfigured) return;
+
     try {
       const { error } = await supabase
         .from('daily_tasks')
@@ -170,7 +227,6 @@ export function useTasks() {
         .eq('id', taskId)
         .eq('user_id', user.id);
       if (error) throw error;
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
     } catch (err) {
       console.error('Update task error:', err);
       throw err;
@@ -178,10 +234,13 @@ export function useTasks() {
   };
 
   const deleteTask = async (taskId: string) => {
-    if (!user || !isSupabaseConfigured) {
-      setTasks(prev => prev.filter(t => t.id !== taskId));
-      return;
-    }
+    // Optimistically update
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    cachedTasks = updatedTasks;
+    setTasks(updatedTasks);
+
+    if (!user || !isSupabaseConfigured) return;
+
     try {
       const { error } = await supabase
         .from('daily_tasks')
@@ -189,12 +248,21 @@ export function useTasks() {
         .eq('id', taskId)
         .eq('user_id', user.id);
       if (error) throw error;
-      setTasks(prev => prev.filter(t => t.id !== taskId));
     } catch (err) {
       console.error('Delete task error:', err);
       throw err;
     }
   };
 
-  return { tasks, completedTaskIds, loading, error, refetch: fetchTasks, addTask, completeTask, updateTask, deleteTask };
+  return { 
+    tasks, 
+    completedTaskIds, 
+    loading: !isInitialFetched && loading, // Only block UI if we don't have task data yet
+    error, 
+    refetch: () => fetchTasks(false), 
+    addTask, 
+    completeTask, 
+    updateTask, 
+    deleteTask 
+  };
 }
