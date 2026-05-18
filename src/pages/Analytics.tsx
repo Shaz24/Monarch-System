@@ -7,6 +7,20 @@ import { useAuthStore } from '../store/authStore';
 import { useState, useEffect, useMemo } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
+const EmptyChartState = ({ message }: { message: string }) => (
+  <div className="absolute inset-0 flex flex-col items-center justify-center bg-void/50 backdrop-blur-[2px] p-6 text-center z-10 border border-white/5 rounded-lg">
+    <div className="w-12 h-12 rounded-full border border-dashed border-white/20 flex items-center justify-center mb-3">
+      <Activity className="w-6 h-6 text-white/30 animate-pulse" />
+    </div>
+    <p className="font-orbitron text-xs font-semibold tracking-widest text-white/70 uppercase mb-1">
+      Telemetry Offline
+    </p>
+    <p className="font-space-mono text-[10px] text-white/40 uppercase tracking-wider max-w-xs leading-relaxed">
+      {message}
+    </p>
+  </div>
+);
+
 export default function Analytics() {
   const { stats, profile } = useProfile();
   const { user } = useAuthStore();
@@ -93,13 +107,17 @@ export default function Analytics() {
       else if (cat === 'creator') categories.Creator += log.xp_earned || 0;
     });
 
-    // Make sure we have fallbacks so chart doesn't render empty
+    const total = categories.Fitness + categories.Discipline + categories.Coding + categories.Creator;
+    if (total === 0) {
+      return [];
+    }
+
     return [
-      { name: 'Fitness (Physical)', value: categories.Fitness || 120 },
-      { name: 'Discipline (Mind)', value: categories.Discipline || 200 },
-      { name: 'Coding (Intelligence)', value: categories.Coding || 350 },
-      { name: 'Creator (Broadcast)', value: categories.Creator || 80 }
-    ];
+      { name: 'Fitness (Physical)', value: categories.Fitness },
+      { name: 'Discipline (Mind)', value: categories.Discipline },
+      { name: 'Coding (Intelligence)', value: categories.Coding },
+      { name: 'Creator (Broadcast)', value: categories.Creator }
+    ].filter(item => item.value > 0);
   }, [allLogs]);
 
   const COLORS = ['#EC4899', '#7C3AED', '#06B6D4', '#F59E0B'];
@@ -117,12 +135,7 @@ export default function Analytics() {
     // Return last 10 points
     const result = dates.map(d => ({ date: d, xp: dailySums[d] }));
     if (result.length === 0) {
-      return [
-        { date: 'Day 1', xp: 50 },
-        { date: 'Day 2', xp: 120 },
-        { date: 'Day 3', xp: 210 },
-        { date: 'Day 4', xp: 450 }
-      ];
+      return [];
     }
     return result.slice(-10);
   }, [allLogs]);
@@ -187,10 +200,10 @@ export default function Analytics() {
     const totalFocusMinutes = allLogs.reduce((sum, log) => sum + (log.duration_minutes || 0), 0);
 
     return {
-      maxXP: maxSingleDay || 100,
-      totalXp: totalXp || profile?.total_xp_alltime || 3500,
-      focusHours: Math.round((totalFocusMinutes || 240) / 60),
-      totalLogs: allLogs.length || 12
+      maxXP: maxSingleDay,
+      totalXp: totalXp || profile?.total_xp_alltime || 0,
+      focusHours: Math.round(totalFocusMinutes / 60),
+      totalLogs: allLogs.length
     };
   }, [allLogs, profile]);
 
@@ -292,12 +305,15 @@ export default function Analytics() {
         </div>
 
         {/* XP Source Donut/Pie Chart */}
-        <div className="glass-panel p-6 border-t-2 border-t-cyan-500 print:border-black print:shadow-none">
+        <div className="glass-panel p-6 border-t-2 border-t-cyan-500 relative print:border-black print:shadow-none">
           <h2 className="font-orbitron text-base font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-white print:text-black">
             <Activity className="w-5 h-5 text-cyan-400 print:text-black" />
             XP Allocation Vector
           </h2>
-          <div className="h-[350px] w-full flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="h-[350px] w-full flex flex-col md:flex-row items-center justify-between gap-4 relative">
+            {allLogs.length === 0 && (
+              <EmptyChartState message="No quest data allocated. Synchronize system activities to plot allocation vector." />
+            )}
             <div className="w-full md:w-3/5 h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -321,13 +337,17 @@ export default function Analytics() {
             
             {/* Custom Pie Legend */}
             <div className="w-full md:w-2/5 space-y-3 font-space-mono text-[10px] text-white/60 print:text-black">
-              {pieData.map((d, index) => (
-                <div key={d.name} className="flex items-center gap-2.5">
-                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: COLORS[index] }} />
-                  <span className="flex-1 uppercase tracking-wider">{d.name}</span>
-                  <span className="font-bold text-white print:text-black">{d.value} XP</span>
-                </div>
-              ))}
+              {pieData.length === 0 ? (
+                <div className="text-white/30 uppercase tracking-widest text-[9px]">Offline</div>
+              ) : (
+                pieData.map((d, index) => (
+                  <div key={d.name} className="flex items-center gap-2.5">
+                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: COLORS[index] }} />
+                    <span className="flex-1 uppercase tracking-wider">{d.name}</span>
+                    <span className="font-bold text-white print:text-black">{d.value} XP</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -338,11 +358,14 @@ export default function Analytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:grid-cols-1">
         
         {/* XP Trajectory Timeline Area */}
-        <div className="glass-panel p-6 border-t-2 border-t-[#EC4899] print:border-black print:shadow-none">
+        <div className="glass-panel p-6 border-t-2 border-t-[#EC4899] relative print:border-black print:shadow-none">
           <h2 className="font-orbitron text-base font-bold uppercase tracking-widest mb-6 text-white print:text-black">
             XP Telemetry Trajectory
           </h2>
-          <div className="h-[350px] w-full">
+          <div className="h-[350px] w-full relative">
+            {allLogs.length === 0 && (
+              <EmptyChartState message="No cumulative telemetry records found. Track training sessions to initialize progression trajectory." />
+            )}
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={areaData}>
                 <defs>
@@ -362,11 +385,14 @@ export default function Analytics() {
         </div>
 
         {/* Grouped Comparative Weekly Bar Chart */}
-        <div className="glass-panel p-6 border-t-2 border-t-gold print:border-black print:shadow-none">
+        <div className="glass-panel p-6 border-t-2 border-t-gold relative print:border-black print:shadow-none">
           <h2 className="font-orbitron text-base font-bold uppercase tracking-widest mb-6 text-white print:text-black">
             Actual XP vs Daily Target quota
           </h2>
-          <div className="h-[350px] w-full">
+          <div className="h-[350px] w-full relative">
+            {allLogs.length === 0 && (
+              <EmptyChartState message="No weekly active logs registered. Complete daily objectives to evaluate quotas." />
+            )}
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />

@@ -147,12 +147,40 @@ export default function Auth() {
             Continue with Google
           </button>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center flex flex-col gap-3">
             <button
+              type="button"
               onClick={() => setIsLogin(!isLogin)}
               className="text-sm font-space-mono text-accent-blue/60 hover:text-accent-blue hover:underline uppercase tracking-wider transition-colors"
             >
               {isLogin ? 'Create a new account' : 'Already have an account?'}
+            </button>
+            
+            <button
+              type="button"
+              onClick={async () => {
+                const guestUser = {
+                  id: 'guest-player-1337',
+                  email: 'guest@monarch.system',
+                  aud: 'authenticated',
+                  role: 'authenticated',
+                  app_metadata: {},
+                  user_metadata: {},
+                  created_at: new Date().toISOString()
+                };
+                useAuthStore.getState().setUser(guestUser as any);
+                useAuthStore.getState().setSession({
+                  access_token: 'guest-token',
+                  token_type: 'bearer',
+                  expires_in: 3600,
+                  refresh_token: 'guest-refresh',
+                  user: guestUser as any
+                });
+                toast.success('Offline System Activated. Welcome, guest-player-1337.');
+              }}
+              className="text-[10px] font-space-mono text-monarch/70 hover:text-monarch hover:underline uppercase tracking-widest transition-colors block mx-auto py-1 border border-dashed border-monarch/20 hover:border-monarch/50 px-3 rounded mt-2"
+            >
+              [ BYPASS SECURITY: ENTER AS GUEST ]
             </button>
           </div>
         </div>

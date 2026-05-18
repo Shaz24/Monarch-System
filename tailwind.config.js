@@ -7,32 +7,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        void: '#080B12',          // deepest background
-        abyss: '#0D1117',         // main background
-        surface: '#111827',       // card background
-        glass: 'rgba(255,255,255,0.04)',
-        border: 'rgba(255,255,255,0.08)',
-        'border-bright': 'rgba(255,255,255,0.15)',
+        void: 'var(--color-void)',          // deepest background
+        abyss: 'var(--color-abyss)',         // main background
+        surface: 'var(--color-surface)',       // card background
+        glass: 'var(--color-glass)',
+        border: 'var(--color-border)',
+        'border-bright': 'var(--color-border-bright)',
         
-        monarch: '#7C3AED',       // primary purple (power)
-        'monarch-glow': '#A78BFA',  // lighter purple for glows
-        'monarch-dim': '#4C1D95',   // dark purple for fills
+        monarch: 'var(--color-monarch)',       // primary purple (power)
+        'monarch-glow': 'var(--color-monarch-glow)',  // lighter purple for glows
+        'monarch-dim': 'var(--color-monarch-dim)',   // dark purple for fills
         
-        gold: '#F59E0B',          // XP / achievement accent
-        'gold-glow': '#FDE68A',     // light gold
+        gold: 'var(--color-gold)',          // XP / achievement accent
+        'gold-glow': 'var(--color-gold-glow)',     // light gold
         
-        cyan: '#06B6D4',          // stat accent
-        'cyan-glow': '#67E8F9',     // glow variant
+        cyan: 'var(--color-cyan)',          // stat accent
+        'cyan-glow': 'var(--color-cyan-glow)',     // glow variant
         
-        danger: '#EF4444',
-        success: '#10B981',
+        danger: 'var(--color-danger)',
+        success: 'var(--color-success)',
         
-        'text-primary': '#F1F5F9',
-        'text-secondary': '#94A3B8',
-        'text-muted': '#475569',
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
+        'text-muted': 'var(--color-text-muted)',
         
-        'accent-blue': '#06B6D4',
-        'accent-purple': '#7C3AED',
+        'accent-blue': 'var(--color-accent-blue)',
+        'accent-purple': 'var(--color-accent-purple)',
       },
       fontFamily: {
         display: ['Orbitron', 'sans-serif'],    // headings, stat numbers, level badges

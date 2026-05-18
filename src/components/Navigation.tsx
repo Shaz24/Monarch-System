@@ -55,7 +55,7 @@ export const Navigation = () => {
       {/* Desktop Sidebar (240px) */}
       <nav 
         className="hidden md:flex flex-col w-60 h-screen fixed left-0 top-0 bg-abyss/85 backdrop-blur-xl border-r border-white/5 z-50 p-5 justify-between"
-        style={{ background: 'rgba(13, 17, 23, 0.8)', borderRight: '1px solid rgba(255, 255, 255, 0.06)' }}
+        style={{ background: 'var(--color-abyss)', borderRight: '1px solid var(--color-border)' }}
       >
         <div className="space-y-8 flex flex-col flex-1 overflow-hidden">
           {/* Logo Section */}

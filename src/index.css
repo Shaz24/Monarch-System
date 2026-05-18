@@ -2,6 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-void: #080B12;
+  --color-abyss: #0D1117;
+  --color-surface: #111827;
+  --color-glass: rgba(255, 255, 255, 0.04);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-bright: rgba(255, 255, 255, 0.15);
+  
+  --color-monarch: #7C3AED;
+  --color-monarch-glow: #A78BFA;
+  --color-monarch-dim: #4C1D95;
+  
+  --color-gold: #F59E0B;
+  --color-gold-glow: #FDE68A;
+  
+  --color-cyan: #06B6D4;
+  --color-cyan-glow: #67E8F9;
+  
+  --color-danger: #EF4444;
+  --color-success: #10B981;
+  
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #475569;
+  
+  --color-accent-blue: #06B6D4;
+  --color-accent-purple: #7C3AED;
+  
+  --bg-gradient-top: rgba(124, 58, 237, 0.12);
+  --dot-grid-opacity: 0.03;
+  --shadow-ambient: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+.light-mode {
+  --color-void: #F8FAFC;
+  --color-abyss: #F1F5F9;
+  --color-surface: #FFFFFF;
+  --color-glass: rgba(255, 255, 255, 0.65);
+  --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-bright: rgba(0, 0, 0, 0.12);
+  
+  --color-monarch: #6D28D9;
+  --color-monarch-glow: #8B5CF6;
+  --color-monarch-dim: #DDD6FE;
+  
+  --color-gold: #D97706;
+  --color-gold-glow: #FEF3C7;
+  
+  --color-cyan: #0891B2;
+  --color-cyan-glow: #CFFAFE;
+  
+  --color-danger: #DC2626;
+  --color-success: #059669;
+  
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94A3B8;
+  
+  --color-accent-blue: #0891B2;
+  --color-accent-purple: #6D28D9;
+  
+  --bg-gradient-top: rgba(109, 40, 217, 0.06);
+  --dot-grid-opacity: 0.04;
+  --shadow-ambient: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -11,14 +77,15 @@ html {
 }
 
 body {
-  background-color: #080B12;
-  color: #F1F5F9;
+  background-color: var(--color-void);
+  color: var(--color-text-primary);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   /* Subtle dot-grid texture overlay */
-  background-image: radial-gradient(circle, rgba(124,58,237,0.03) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(124,58,237, var(--dot-grid-opacity)) 1px, transparent 1px);
   background-size: 32px 32px;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Ambient glow at top of page */
@@ -30,7 +97,7 @@ body::before {
   transform: translateX(-50%);
   width: 800px;
   height: 400px;
-  background: radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 70%);
+  background: radial-gradient(ellipse, var(--bg-gradient-top) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -44,16 +111,17 @@ body::before {
 @layer components {
   /* Glassmorphism card utility */
   .glass-card {
-    background: rgba(255,255,255,0.04);
+    background: var(--color-glass);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--color-border);
     border-radius: 16px;
-    transition: all 0.2s ease;
+    box-shadow: var(--shadow-ambient);
+    transition: all 0.3s ease;
   }
   
   .glass-card:hover {
-    border-color: rgba(167,139,250,0.2);
+    border-color: var(--color-monarch-glow);
     box-shadow: 0 0 24px rgba(124,58,237,0.1);
   }
 
@@ -61,9 +129,9 @@ body::before {
     background: rgba(124,58,237,0.08);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(167,139,250,0.2);
+    border: 1px solid var(--color-border-bright);
     border-radius: 16px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
   }
 
   /* Map existing classes for full backwards compatibility */
@@ -82,7 +150,7 @@ body::before {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #7C3AED, transparent);
+    background: linear-gradient(90deg, var(--color-monarch), transparent);
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
     z-index: 10;
@@ -176,10 +244,10 @@ body::before {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #080B12;
+  background: var(--color-void);
 }
 ::-webkit-scrollbar-thumb {
-  background: #4C1D95;
+  background: var(--color-monarch-dim);
   border-radius: 2px;
 }
 
@@ -206,14 +274,14 @@ input[type="email"],
 input[type="password"],
 textarea,
 select {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--color-glass) !important;
+  border: 1px solid var(--color-border) !important;
   border-radius: 8px !important;
-  color: #F1F5F9 !important;
+  color: var(--color-text-primary) !important;
   padding: 10px 14px !important;
   font-family: 'Inter', sans-serif !important;
   font-weight: 400 !important;
-  transition: all 0.2s ease-in-out !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 input[type="text"]:focus,
@@ -223,14 +291,267 @@ input[type="email"]:focus,
 input[type="password"]:focus,
 textarea:focus,
 select:focus {
-  border-color: #7C3AED !important;
+  border-color: var(--color-monarch) !important;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15) !important;
   outline: none !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #475569 !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* Light mode dynamic token overrides for generic Tailwind layouts */
+
+/* Remove/hide all floating ambient purple background orbs to keep the Celestial Light Mode pure slate-white */
+.light-mode body::before {
+  display: none !important;
+}
+
+.light-mode [class*="blur-[80px]"],
+.light-mode [class*="blur-[100px]"],
+.light-mode [class*="blur-[120px]"],
+.light-mode [class*="rounded-full"][class*="blur-"],
+.light-mode [class*="rounded-full"][class*="bg-accent-"],
+.light-mode [class*="rounded-full"][class*="bg-monarch/"] {
+  display: none !important;
+}
+
+/* 1. Global Typography Contrast Maps */
+.light-mode .text-white,
+.light-mode [class*="text-white"] {
+  color: var(--color-text-primary) !important;
+}
+
+.light-mode [class*="text-white/90"],
+.light-mode [class*="text-white/80"],
+.light-mode [class*="text-[#F1F5F9]"],
+.light-mode [class*="text-[#f1f5f9]"] {
+  color: var(--color-text-primary) !important;
+}
+
+.light-mode .text-slate-200,
+.light-mode .text-slate-300,
+.light-mode .text-zinc-200,
+.light-mode .text-zinc-300,
+.light-mode [class*="text-[#94A3B8]"],
+.light-mode [class*="text-[#94a3b8]"],
+.light-mode [class*="text-white/70"],
+.light-mode [class*="text-white/60"],
+.light-mode [class*="text-white/50"] {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-mode .text-slate-400,
+.light-mode .text-slate-500,
+.light-mode .text-zinc-400,
+.light-mode .text-zinc-500,
+.light-mode [class*="text-white/40"],
+.light-mode [class*="text-white/30"],
+.light-mode [class*="text-white/20"] {
+  color: var(--color-text-muted) !important;
+}
+
+.light-mode [class*="text-white/10"] {
+  color: rgba(15, 23, 42, 0.12) !important;
+}
+
+.light-mode [class*="text-[#A78BFA]"],
+.light-mode [class*="text-[#a78bfa]"] {
+  color: var(--color-monarch) !important;
+}
+
+/* Hover/Group-Hover State Overrides: Elevate text opacity and color to full crispness when hovered! */
+.light-mode [class*="text-white/"]:hover,
+.light-mode [class*="text-slate-"]:hover,
+.light-mode [class*="text-zinc-"]:hover,
+.light-mode [class*="text-cyan-"]:hover,
+.light-mode [class*="text-[#94A3B8]"]:hover,
+.light-mode [class*="text-[#94a3b8]"]:hover,
+.light-mode [class*="hover:text-white"]:hover,
+.light-mode [class*="hover:text-slate-100"]:hover,
+.light-mode [class*="hover:text-slate-200"]:hover,
+.light-mode [class*="hover:text-[#F1F5F9]"]:hover,
+.light-mode [class*="hover:text-[#f1f5f9]"]:hover,
+.light-mode .group:hover [class*="group-hover:text-white"],
+.light-mode .group:hover [class*="group-hover:text-[#F1F5F9]"],
+.light-mode .group:hover [class*="group-hover:text-[#f1f5f9]"] {
+  color: var(--color-text-primary) !important;
+  opacity: 1 !important;
+}
+
+.light-mode [class*="hover:text-cyan"]:hover,
+.light-mode [class*="hover:text-accent-blue"]:hover,
+.light-mode [class*="hover:text-monarch"]:hover,
+.light-mode [class*="hover:text-[#A78BFA]"]:hover,
+.light-mode [class*="hover:text-[#a78bfa]"]:hover,
+.light-mode .group:hover [class*="group-hover:text-[#A78BFA]"],
+.light-mode .group:hover [class*="group-hover:text-[#a78bfa]"] {
+  color: var(--color-monarch) !important;
+  opacity: 1 !important;
+}
+
+/* 2. Specific Component text tweaks (Heatmap labels, Stat details) */
+.light-mode label,
+.light-mode .text-accent-blue\/70,
+.light-mode .text-monarch\/70,
+.light-mode [class*="text-accent-blue/"],
+.light-mode [class*="text-monarch/"] {
+  color: var(--color-text-secondary) !important;
+}
+
+/* 3. Invert standard overlay/grid borders to match sleek gray in light-mode */
+.light-mode [class*="border-white/"],
+.light-mode [class*="border-r-white/"],
+.light-mode [class*="border-b-white/"],
+.light-mode [class*="border-t-white/"],
+.light-mode [class*="border-l-white/"] {
+  border-color: var(--color-border) !important;
+}
+
+.light-mode [class*="border-white/20"],
+.light-mode [class*="border-white/30"] {
+  border-color: var(--color-border-bright) !important;
+}
+
+/* 4. Background glass / dark panel inversion */
+.light-mode [class*="bg-black/"],
+.light-mode [class*="bg-white/0.0"],
+.light-mode [class*="bg-white/5"],
+.light-mode [class*="bg-white/10"],
+.light-mode [class*="bg-white/[0.02]"] {
+  background-color: var(--color-glass) !important;
+  border-color: var(--color-border) !important;
+}
+
+.light-mode [class*="bg-void/80"],
+.light-mode [class*="bg-void/90"],
+.light-mode [class*="bg-abyss/85"] {
+  background-color: var(--color-abyss) !important;
+}
+
+/* 5. Custom Button Styling: Maintain crisp white text ONLY on primary actions.
+   Ghost, outline and inactive choices automatically become readable dark slate! */
+.light-mode .btn-primary, 
+.light-mode .btn-monarch,
+.light-mode [class*="bg-monarch"],
+.light-mode [class*="bg-accent-purple"],
+.light-mode [class*="bg-accent-blue"],
+.light-mode .bg-gradient-to-r,
+.light-mode .text-white-keep {
+  background-image: none !important;
+  background-color: var(--color-monarch) !important;
+  color: #ffffff !important;
+  border-color: var(--color-monarch-glow) !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15) !important;
+}
+
+.light-mode .btn-primary *,
+.light-mode .btn-monarch *,
+.light-mode [class*="bg-monarch"] *,
+.light-mode [class*="bg-accent-purple"] *,
+.light-mode [class*="bg-accent-blue"] *,
+.light-mode .text-white-keep * {
+  color: #ffffff !important;
+}
+
+/* Secondary, Ghost, and Tab buttons should show readable dark gray/slate! */
+.light-mode button:not(.btn-primary):not(.btn-monarch):not([class*="bg-monarch"]):not([class*="bg-accent"]):not(.bg-gradient-to-r):not(.text-white-keep),
+.light-mode a[class*="btn-ghost"],
+.light-mode button[class*="btn-ghost"] {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-mode button:not(.btn-primary):not(.btn-monarch):not([class*="bg-monarch"]):not([class*="bg-accent"]):not(.bg-gradient-to-r):not(.text-white-keep) *,
+.light-mode a[class*="btn-ghost"] *,
+.light-mode button[class*="btn-ghost"] * {
+  color: var(--color-text-primary) !important;
+}
+
+.light-mode button:not(.btn-primary):not(.btn-monarch):not([class*="bg-monarch"]):not([class*="bg-accent"]):not(.bg-gradient-to-r):not(.text-white-keep):hover,
+.light-mode a[class*="btn-ghost"]:hover,
+.light-mode button[class*="btn-ghost"]:hover {
+  background-color: rgba(124, 58, 237, 0.08) !important;
+  color: var(--color-monarch) !important;
+  border-color: var(--color-monarch-glow) !important;
+}
+
+.light-mode button:not(.btn-primary):not(.btn-monarch):not([class*="bg-monarch"]):not([class*="bg-accent"]):not(.bg-gradient-to-r):not(.text-white-keep):hover *,
+.light-mode a[class*="btn-ghost"]:hover *,
+.light-mode button[class*="btn-ghost"]:hover * {
+  color: var(--color-monarch) !important;
+}
+
+/* 6. Form input elements - beautiful crisp contrast */
+.light-mode input[type="text"],
+.light-mode input[type="number"],
+.light-mode input[type="time"],
+.light-mode input[type="email"],
+.light-mode input[type="password"],
+.light-mode textarea,
+.light-mode select {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-mode input::placeholder,
+.light-mode textarea::placeholder {
+  color: var(--color-text-muted) !important;
+  opacity: 0.8;
+}
+
+/* 7. Navigation specific overrides */
+.light-mode nav,
+.light-mode [style*="var(--color-abyss)"] {
+  background-color: var(--color-surface) !important;
+  border-right: 1px solid var(--color-border) !important;
+}
+
+.light-mode nav a div:not([class*="bg-monarch/15"]) {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-mode nav a div:not([class*="bg-monarch/15"]):hover {
+  background-color: rgba(124, 58, 237, 0.08) !important;
+  color: var(--color-monarch) !important;
+}
+
+.light-mode nav a div:not([class*="bg-monarch/15"]):hover svg {
+  color: var(--color-monarch) !important;
+}
+
+.light-mode .active span,
+.light-mode a.active span {
+  color: var(--color-monarch) !important;
+  font-weight: 600 !important;
+}
+
+.light-mode .active svg,
+.light-mode a.active svg {
+  color: var(--color-monarch) !important;
+}
+
+/* 8. Glow, Shadows, and Accent specific enhancements */
+.light-mode .glow-text {
+  text-shadow: 0 0 12px rgba(124, 58, 237, 0.1) !important;
+  color: var(--color-monarch) !important;
+}
+
+.light-mode .glow-gold {
+  text-shadow: 0 0 12px rgba(217, 119, 6, 0.1) !important;
+  color: var(--color-gold) !important;
+}
+
+.light-mode [class*="shadow-neon-"] {
+  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.08), 0 8px 10px -6px rgba(124, 58, 237, 0.05) !important;
+}
+
+.light-mode .glass-card:hover {
+  border-color: var(--color-monarch-glow) !important;
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.12) !important;
 }
 
 /* Custom Visual Overhaul Keyframes & Styles */
