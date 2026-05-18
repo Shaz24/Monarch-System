@@ -7,41 +7,54 @@ export default {
   theme: {
     extend: {
       colors: {
-        void: 'rgb(var(--color-void) / <alpha-value>)',
-        panel: 'rgb(var(--color-panel) / <alpha-value>)',
-        'accent-blue': 'rgb(var(--color-accent-blue) / <alpha-value>)',
-        'accent-purple': 'rgb(var(--color-accent-purple) / <alpha-value>)',
-        'accent-glow': 'rgba(var(--color-accent-blue), 0.15)',
-        white: 'rgb(var(--color-white) / <alpha-value>)',
+        void: '#080B12',          // deepest background
+        abyss: '#0D1117',         // main background
+        surface: '#111827',       // card background
+        glass: 'rgba(255,255,255,0.04)',
+        border: 'rgba(255,255,255,0.08)',
+        'border-bright': 'rgba(255,255,255,0.15)',
         
-        // custom design system tokens
-        primary: '#00d4ff',
-        surface: '#0b1120',
-        muted: '#64748b',
-        border: 'rgba(255, 255, 255, 0.1)',
-        destructive: '#ef4444',
-
-        'primary-container': '#00d4ff',
-        secondary: '#d1bcff',
-        'secondary-container': '#6800ec',
+        monarch: '#7C3AED',       // primary purple (power)
+        'monarch-glow': '#A78BFA',  // lighter purple for glows
+        'monarch-dim': '#4C1D95',   // dark purple for fills
+        
+        gold: '#F59E0B',          // XP / achievement accent
+        'gold-glow': '#FDE68A',     // light gold
+        
+        cyan: '#06B6D4',          // stat accent
+        'cyan-glow': '#67E8F9',     // glow variant
+        
+        danger: '#EF4444',
+        success: '#10B981',
+        
+        'text-primary': '#F1F5F9',
+        'text-secondary': '#94A3B8',
+        'text-muted': '#475569',
+        
+        'accent-blue': '#06B6D4',
+        'accent-purple': '#7C3AED',
       },
       fontFamily: {
+        display: ['Orbitron', 'sans-serif'],    // headings, stat numbers, level badges
+        body: ['Inter', 'sans-serif'],          // body text
+        mono: ['"JetBrains Mono"', 'monospace'], // data, percentages
+        
         orbitron: ['Orbitron', 'sans-serif'],
         rajdhani: ['Rajdhani', 'sans-serif'],
         'share-tech-mono': ['"Share Tech Mono"', 'monospace'],
         'space-grotesk': ['"Space Grotesk"', 'sans-serif'],
         'archivo-narrow': ['"Archivo Narrow"', 'sans-serif'],
         'space-mono': ['"Space Mono"', 'monospace'],
-        display: ['Sora', 'sans-serif'],
-        body: ['"DM Sans"', 'sans-serif'],
       },
-      backgroundImage: {
-        'scanline-pattern': 'linear-gradient(to bottom, rgba(var(--color-white) / 0.03) 1px, transparent 1px)',
+      borderRadius: {
+        glass: '16px',
+        card: '12px',
+        pill: '999px',
       },
       boxShadow: {
-        'neon-blue': '0 0 5px rgba(var(--color-accent-blue), 0.4), 0 0 10px rgba(var(--color-accent-blue), 0.2)',
-        'neon-purple': '0 0 5px rgba(var(--color-accent-purple), 0.4), 0 0 10px rgba(var(--color-accent-purple), 0.2)',
-        'neon-red': '0 0 5px rgba(255,47,47,0.4), 0 0 10px rgba(255,47,47,0.2)',
+        'neon-blue': '0 0 5px rgba(6,182,212,0.4), 0 0 10px rgba(6,182,212,0.2)',
+        'neon-purple': '0 0 5px rgba(124,58,237,0.4), 0 0 10px rgba(124,58,237,0.2)',
+        'neon-red': '0 0 5px rgba(239,68,68,0.4), 0 0 10px rgba(239,68,68,0.2)',
       }
     },
   },

@@ -1,7 +1,9 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '../store/uiStore';
+import { useProfile } from '../hooks/useProfile';
+import { useState } from 'react';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -15,119 +17,273 @@ const NAV_ITEMS = [
   { path: '/profile', icon: User, label: 'Profile' },
 ];
 
+const CrownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-gold glow-gold mr-2 flex-shrink-0 animate-pulse">
+    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" />
+    <path d="M3 20h18" />
+  </svg>
+);
+
 export const Navigation = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useUIStore();
+  const { profile } = useProfile();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const isLightMode = theme === 'light';
+
+  // Get active user data
+  const userName = profile?.display_name || profile?.username || 'Shadow Monarch';
+  const userLevel = profile?.current_level || 1;
+  const userXp = profile?.current_xp || 0;
+  const nextLevelXp = userLevel * 100;
+  const xpPercent = Math.min(100, Math.max(0, (userXp / nextLevelXp) * 100));
+
+  // Initials for avatar
+  const initials = userName
+    .split(' ')
+    .map((n: string) => n[0] || '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleNavClick = () => {
+    setIsMobileOpen(false);
+  };
 
   return (
     <>
-      {/* Desktop Floating Glass Sidebar */}
-      <nav className="hidden md:flex flex-col w-20 h-[calc(100vh-2rem)] fixed left-4 top-4 bg-void/40 backdrop-blur-xl border border-white/10 z-50 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
-        <div className="p-4 border-b border-white/10 flex justify-center mt-2">
-          <img src="/monarch-logo.png" alt="Monarch" className="w-10 h-10 rounded-xl border border-accent-blue/30 shadow-[0_0_15px_rgba(0,212,255,0.2)] object-cover" />
-        </div>
-        <div className="flex-1 py-6 flex flex-col gap-2 items-center overflow-y-auto hide-scrollbar relative">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className="relative flex items-center justify-center w-12 h-12 rounded-xl group"
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="active-nav-desktop"
-                    className="absolute inset-0 bg-accent-blue/10 border border-accent-blue/50 rounded-xl shadow-[0_0_15px_rgba(0,212,255,0.2)]"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <Icon 
-                  className={`w-5 h-5 relative z-10 transition-colors duration-300 ${
-                    isActive ? 'text-accent-blue' : 'text-white/40 group-hover:text-white'
-                  }`} 
-                />
-                
-                {/* Tooltip */}
-                <div className="absolute left-16 bg-void/90 backdrop-blur-md border border-white/10 px-3 py-1.5 font-space-mono text-[10px] uppercase tracking-widest text-white opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 rounded-lg shadow-xl">
-                  {item.label}
-                  <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-void/90 border-l border-b border-white/10 rotate-45" />
-                </div>
-              </NavLink>
-            );
-          })}
-        </div>
-
-        {/* Theme Toggle Button */}
-        <div className="p-4 border-t border-white/10 flex justify-center mb-2">
-          <button
-            onClick={toggleTheme}
-            className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 border border-white/5 hover:border-accent-blue/30 bg-white/5 hover:bg-white/10 group relative"
-          >
-            {isLightMode ? (
-              <Sun className="w-5 h-5 text-accent-blue animate-spin-slow" />
-            ) : (
-              <Moon className="w-5 h-5 text-accent-purple" />
-            )}
-            <div className="absolute left-16 bg-void/90 backdrop-blur-md border border-white/10 px-3 py-1.5 font-space-mono text-[10px] uppercase tracking-widest text-white opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 rounded-lg shadow-xl">
-              Theme: {isLightMode ? 'Light' : 'Dark'}
-              <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-void/90 border-l border-b border-white/10 rotate-45" />
-            </div>
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Floating Glass Dock */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-void/60 backdrop-blur-xl border border-white/10 z-50 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
-        <div className="flex overflow-x-auto hide-scrollbar px-2 py-2 snap-x items-center">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className="relative flex flex-col items-center justify-center p-2 min-w-[64px] snap-center rounded-xl mx-1"
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="active-nav-mobile"
-                    className="absolute inset-0 bg-accent-blue/10 border border-accent-blue/30 rounded-xl"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <Icon 
-                  className={`w-5 h-5 mb-1 relative z-10 transition-colors duration-300 ${
-                    isActive ? 'text-accent-blue' : 'text-white/40'
-                  }`} 
-                />
-                <span className={`text-[8px] font-space-mono uppercase tracking-wider relative z-10 transition-colors duration-300 ${isActive ? 'text-accent-blue' : 'text-white/30'}`}>
-                  {item.label}
-                </span>
-              </NavLink>
-            );
-          })}
-
-          {/* Mobile Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className="relative flex flex-col items-center justify-center p-2 min-w-[64px] snap-center rounded-xl mx-1 border border-white/5 bg-white/5"
-          >
-            {isLightMode ? (
-              <Sun className="w-5 h-5 mb-1 text-accent-blue" />
-            ) : (
-              <Moon className="w-5 h-5 mb-1 text-accent-purple" />
-            )}
-            <span className="text-[8px] font-space-mono uppercase tracking-wider text-white/30">
-              Theme
+      {/* Desktop Sidebar (240px) */}
+      <nav 
+        className="hidden md:flex flex-col w-60 h-screen fixed left-0 top-0 bg-abyss/85 backdrop-blur-xl border-r border-white/5 z-50 p-5 justify-between"
+        style={{ background: 'rgba(13, 17, 23, 0.8)', borderRight: '1px solid rgba(255, 255, 255, 0.06)' }}
+      >
+        <div className="space-y-8 flex flex-col flex-1 overflow-hidden">
+          {/* Logo Section */}
+          <div className="flex items-center px-2 py-3">
+            <CrownIcon />
+            <span className="font-display font-bold text-[13px] tracking-[0.15em] text-[#A78BFA] glow-text uppercase">
+              Monarch System
             </span>
-          </button>
+          </div>
+
+          {/* Navigation Items */}
+          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 hide-scrollbar">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className="block"
+                >
+                  <motion.div
+                    whileTap={{ scale: 0.97 }}
+                    className={`flex items-center px-4 py-3 rounded-lg transition-all duration-150 group cursor-pointer ${
+                      isActive 
+                        ? 'bg-monarch/15 border-l-2 border-[#7C3AED] text-[#A78BFA]' 
+                        : 'text-[#94A3B8] hover:bg-white/5 hover:text-[#F1F5F9]'
+                    }`}
+                  >
+                    <Icon 
+                      className={`w-[18px] h-[18px] mr-3 transition-colors duration-150 ${
+                        isActive ? 'text-[#7C3AED]' : 'text-[#94A3B8] group-hover:text-[#F1F5F9]'
+                      }`}
+                    />
+                    <span className="font-body text-xs font-medium tracking-wide">
+                      {item.label}
+                    </span>
+                  </motion.div>
+                </NavLink>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-white/5 space-y-4">
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between px-2">
+            <span className="font-body text-xs text-[#94A3B8]">Aesthetic Node</span>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 text-[#94A3B8] hover:text-[#F1F5F9] transition-colors"
+            >
+              {isLightMode ? (
+                <Sun className="w-4 h-4 text-cyan" />
+              ) : (
+                <Moon className="w-4 h-4 text-[#A78BFA]" />
+              )}
+            </button>
+          </div>
+
+          {/* Player Card */}
+          <div className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-3 space-y-2">
+            <div className="flex items-center space-y-0 gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#4C1D95] border border-[#A78BFA]/50 flex items-center justify-center text-xs font-display font-semibold text-white/90 shadow-md">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-body text-xs font-semibold text-[#F1F5F9] truncate">
+                  {userName}
+                </p>
+                <p className="font-display text-[9px] text-[#A78BFA] tracking-wider font-bold">
+                  SHADOW MONARCH
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex justify-between items-center text-[9px] font-display">
+                <span className="text-[#94A3B8]">SYSTEM INTEGRITY</span>
+                <span className="text-[#F59E0B] font-bold">LVL {userLevel}</span>
+              </div>
+              <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden relative">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${xpPercent}%` }}
+                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                  className="h-full bg-gradient-to-r from-[#F59E0B] to-[#FDE68A] shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </nav>
+
+      {/* Mobile Top Navigation Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-void/80 backdrop-blur-xl border-b border-white/5 z-40 flex items-center justify-between px-5">
+        <div className="flex items-center">
+          <CrownIcon />
+          <span className="font-display font-bold text-[12px] tracking-[0.12em] text-[#A78BFA] glow-text uppercase">
+            Monarch System
+          </span>
+        </div>
+        <button
+          onClick={() => setIsMobileOpen(true)}
+          className="p-2 bg-white/5 border border-white/10 text-white rounded-lg"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Mobile Drawer Overlay */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.7 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileOpen(false)}
+              className="fixed inset-0 z-50 bg-black backdrop-blur-sm md:hidden"
+            />
+            <motion.nav
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 left-0 bottom-0 w-64 bg-abyss border-r border-white/5 p-5 z-50 flex flex-col justify-between md:hidden"
+            >
+              <div className="space-y-6 flex flex-col flex-1 overflow-hidden">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center">
+                    <CrownIcon />
+                    <span className="font-display font-bold text-[12px] tracking-[0.12em] text-[#A78BFA] glow-text uppercase">
+                      Monarch
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileOpen(false)}
+                    className="p-1 text-[#94A3B8] hover:text-[#F1F5F9] transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 hide-scrollbar">
+                  {NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+
+                    return (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        onClick={handleNavClick}
+                        className="block"
+                      >
+                        <motion.div
+                          whileTap={{ scale: 0.97 }}
+                          className={`flex items-center px-4 py-3 rounded-lg transition-all duration-150 ${
+                            isActive 
+                              ? 'bg-monarch/15 border-l-2 border-[#7C3AED] text-[#A78BFA]' 
+                              : 'text-[#94A3B8] hover:bg-white/5 hover:text-[#F1F5F9]'
+                          }`}
+                        >
+                          <Icon 
+                            className={`w-[18px] h-[18px] mr-3 transition-colors duration-150 ${
+                              isActive ? 'text-[#7C3AED]' : 'text-[#94A3B8]'
+                            }`}
+                          />
+                          <span className="font-body text-xs font-medium tracking-wide">
+                            {item.label}
+                          </span>
+                        </motion.div>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <span className="font-body text-xs text-[#94A3B8]">Aesthetic Node</span>
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 text-[#94A3B8] hover:text-[#F1F5F9] transition-colors"
+                  >
+                    {isLightMode ? (
+                      <Sun className="w-4 h-4 text-cyan" />
+                    ) : (
+                      <Moon className="w-4 h-4 text-[#A78BFA]" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#4C1D95] border border-[#A78BFA]/50 flex items-center justify-center text-xs font-display font-semibold text-white/90">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body text-xs font-semibold text-[#F1F5F9] truncate">
+                        {userName}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-[9px] font-display">
+                      <span className="text-[#94A3B8]">SYSTEM INTEGRITY</span>
+                      <span className="text-[#F59E0B] font-bold">LVL {userLevel}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden relative">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#F59E0B] to-[#FDE68A] shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                        style={{ width: `${xpPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Adjust mobile page padding to support top fixed navigation header */}
+      <div className="h-16 md:hidden" />
     </>
   );
 };

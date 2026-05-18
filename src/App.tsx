@@ -28,9 +28,9 @@ const EditProfile = lazy(() => import('./pages/EditProfile'));
 const BossMode = lazy(() => import('./pages/BossMode'));
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen flex flex-col md:flex-row">
+  <div className="min-h-screen flex flex-col md:flex-row bg-void">
     <Navigation />
-    <main className="flex-1 md:ml-28 pb-28 md:pb-0 overflow-y-auto overflow-x-hidden relative">
+    <main className="flex-1 md:ml-64 pb-28 md:pb-0 overflow-y-auto overflow-x-hidden relative z-10">
       {children}
     </main>
   </div>
@@ -96,13 +96,21 @@ function AppContent() {
         position="top-right" 
         toastOptions={{
           style: {
-            background: '#0b1120',
-            color: '#00d4ff',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '0.5rem',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-            fontFamily: 'DM Sans, sans-serif',
-          }
+            background: 'rgba(17,24,39,0.95)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: '#F1F5F9',
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '13px',
+            borderRadius: '12px',
+            boxShadow: '0 0 24px rgba(0,0,0,0.4)',
+          },
+          success: {
+            iconTheme: { primary: '#10B981', secondary: '#080B12' },
+          },
+          error: {
+            iconTheme: { primary: '#EF4444', secondary: '#080B12' },
+          },
         }} 
       />
     </div>

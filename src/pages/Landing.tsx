@@ -42,9 +42,9 @@ export default function Landing() {
       {/* Navigation Bar */}
       <nav className="relative z-10 flex items-center justify-between p-6 md:px-12 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <img src="/monarch-logo.png" alt="Monarch Logo" className="w-8 h-8 rounded-full border border-accent-blue/50 shadow-[0_0_15px_rgba(0,212,255,0.3)] object-cover" />
-          <span className="font-orbitron font-bold text-lg tracking-widest text-white uppercase">
-            Monarch <span className="text-accent-blue">System</span>
+          <img src="/monarch-logo.png" alt="Monarch Logo" className="w-8 h-8 rounded-full border border-cyan/50 shadow-[0_0_15px_rgba(6,182,212,0.3)] object-cover" />
+          <span className="font-display font-bold text-lg tracking-widest text-white uppercase">
+            Monarch <span className="text-cyan">System</span>
           </span>
         </div>
         <div>
@@ -68,12 +68,12 @@ export default function Landing() {
           transition={{ duration: 0.8 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="inline-block mb-4 px-4 py-1 bg-accent-blue/10 border border-accent-blue/30 font-space-mono text-accent-blue text-xs uppercase tracking-[0.3em] rounded-full">
+          <div className="inline-block mb-4 px-4 py-1 bg-cyan/10 border border-cyan/30 font-display text-cyan text-xs uppercase tracking-[0.3em] rounded-full">
             Protocol V1.0 Online
           </div>
-          <h1 className="font-orbitron text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-white mb-6 leading-none">
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-white mb-6 leading-none">
             Gamify Your <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-purple drop-shadow-[0_0_15px_rgba(0,212,255,0.5)]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan to-monarch drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]">
               Reality
             </span>
           </h1>
