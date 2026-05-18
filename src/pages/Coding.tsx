@@ -6,6 +6,7 @@ import { StatRing } from '../components/StatRing';
 import toast from 'react-hot-toast';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import { useProfile } from '../hooks/useProfile';
+import { EmptyState } from '../components/ui/EmptyState';
 
 export default function Coding() {
   const { addXpParticle } = useUIStore();
@@ -146,9 +147,11 @@ export default function Coding() {
             </h2>
             
             {logs.length === 0 ? (
-              <div className="text-center py-12 text-white/30 font-space-mono text-sm uppercase tracking-widest border border-dashed border-white/10">
-                No commits found in the current branch.
-              </div>
+              <EmptyState
+                icon={Code2}
+                title="No commits found in active branch"
+                description="Your engineering history is clear. Commit your first lines of code to log physical progress in intelligence and creativity."
+              />
             ) : (
               <div className="space-y-3">
                 <AnimatePresence>

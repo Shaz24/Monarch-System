@@ -119,11 +119,14 @@ export function DailyLaws() {
     }
 
     try {
-      await supabase.from('daily_laws').upsert({
+      const { error } = await supabase.from('daily_laws').upsert({
         user_id: user.id,
         date: TODAY,
         ...next,
       }, { onConflict: 'user_id,date' });
+
+      if (error) throw error;
+      toast.success('Protocol updated.');
 
       // Perfect day bonus
       if (allDone && !row.all_laws_completed) {
@@ -132,8 +135,9 @@ export function DailyLaws() {
         toast.success('⚡ PERFECT DAY — +100 XP BONUS!', { duration: 5000 });
         await auraOnPerfectDay(user.id).catch(console.error);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to toggle daily law:', err);
+      toast.error(err.message || 'Failed to update protocol.');
     }
   };
 

@@ -7,6 +7,7 @@ import { MonkModeOverlay } from '../components/MonkModeOverlay';
 import toast from 'react-hot-toast';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import { useProfile } from '../hooks/useProfile';
+import { EmptyState } from '../components/ui/EmptyState';
 
 export default function Mind() {
   const { addXpParticle, triggerLevelUp } = useUIStore();
@@ -221,9 +222,11 @@ export default function Mind() {
               </h2>
               
               {logs.length === 0 ? (
-                <div className="text-center py-12 text-white/30 font-space-mono text-sm uppercase tracking-widest border border-dashed border-white/10">
-                  Mind is a blank slate.
-                </div>
+                <EmptyState
+                  icon={Brain}
+                  title="Mind is a blank slate"
+                  description="Begin your mindfulness protocol. Enter Lockdown Mode or log a deep focus session to record training logs."
+                />
               ) : (
                 <div className="space-y-3">
                   <AnimatePresence>

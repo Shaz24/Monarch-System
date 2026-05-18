@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import toast from 'react-hot-toast';
 
 export interface UserProfile {
   id: string;
@@ -262,15 +263,23 @@ export function useProfile(): UseProfileReturn {
     }
 
     if (!isSupabaseConfigured) {
+      toast.success('Profile updated (Demo Mode)!');
       return;
     }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id);
 
-    if (error) throw error;
+      if (error) throw error;
+      toast.success('Profile updated successfully!');
+    } catch (err: any) {
+      console.error('Update profile error:', err);
+      toast.error(err.message || 'Failed to update profile.');
+      throw err;
+    }
   };
 
   return { 

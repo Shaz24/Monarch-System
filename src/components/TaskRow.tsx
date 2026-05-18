@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckSquare, Square, ChevronDown, Clock, Play, Pause, RotateCcw, PenTool } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import toast from 'react-hot-toast';
+import { ConfirmDialog } from './ui/ConfirmDialog';
 
 interface Task {
   id: string;
@@ -32,6 +33,7 @@ export const TaskRow = ({
   const [localCompleted, setLocalCompleted] = useState(false);
   const completed = isCompleted || localCompleted;
   const [expanded, setExpanded] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const { addXpParticle, triggerLevelUp } = useUIStore();
   
   // Pomodoro State
@@ -174,7 +176,7 @@ export const TaskRow = ({
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm('Delete this directive?')) onDelete();
+                  setIsDeleteConfirmOpen(true);
                 }}
                 className="text-red-500/50 hover:text-red-500 px-2 text-xs font-space-mono"
               >
@@ -241,6 +243,19 @@ export const TaskRow = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        isOpen={isDeleteConfirmOpen}
+        title="DELETE QUEST DIRECTIVE"
+        message={`Are you sure you want to delete "${task.title}"? This directive and its XP value will be permanently removed from your log.`}
+        confirmLabel="DELETE DIRECTIVE"
+        cancelLabel="ABORT"
+        onConfirm={() => {
+          setIsDeleteConfirmOpen(false);
+          if (onDelete) onDelete();
+        }}
+        onCancel={() => setIsDeleteConfirmOpen(false)}
+      />
     </motion.div>
   );
 };

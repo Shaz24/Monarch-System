@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import toast from 'react-hot-toast';
 
 export interface ActivityLog {
   id: string;
@@ -233,8 +234,10 @@ export function useActivityLogs(category: ActivityLog['category']) {
         const existing = raw ? JSON.parse(raw) as ActivityLog[] : [];
         const updated = [newLog, ...existing];
         localStorage.setItem(localKey, JSON.stringify(updated));
-      } catch (e) {
+        toast.success('Activity recorded successfully (Demo Mode)!');
+      } catch (e: any) {
         console.error('Failed to save local log:', e);
+        toast.error('Failed to save local activity.');
       }
       return;
     }
@@ -277,9 +280,10 @@ export function useActivityLogs(category: ActivityLog['category']) {
           console.error('RPC Error granting XP:', rpcError);
         }
       }
-
-    } catch (err) {
+      toast.success('Activity recorded successfully!');
+    } catch (err: any) {
       console.error('Add log error:', err);
+      toast.error(err.message || 'Failed to record activity.');
     }
   };
 

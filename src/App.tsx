@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from './store';
 import { useAuthStore } from './store/authStore';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
@@ -9,21 +10,22 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { XpParticles } from './components/XpParticles';
 import { LevelUpOverlay } from './components/LevelUpOverlay';
 import { useUIStore } from './store/uiStore';
-
-// Pages
-import Auth from './pages/Auth';
-import Dashboard from './pages/Dashboard';
-import Schedule from './pages/Schedule';
-import Fitness from './pages/Fitness';
-import Mind from './pages/Mind';
-import Coding from './pages/Coding';
-import Creator from './pages/Creator';
-import Profile from './pages/Profile';
-import Analytics from './pages/Analytics';
-import Landing from './pages/Landing';
-import EditProfile from './pages/EditProfile';
-import BossMode from './pages/BossMode';
 import { Navigation } from './components/Navigation';
+import { SkeletonCard } from './components/ui/Skeleton';
+
+// Lazy-loaded Pages
+const Auth = lazy(() => import('./pages/Auth'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Schedule = lazy(() => import('./pages/Schedule'));
+const Fitness = lazy(() => import('./pages/Fitness'));
+const Mind = lazy(() => import('./pages/Mind'));
+const Coding = lazy(() => import('./pages/Coding'));
+const Creator = lazy(() => import('./pages/Creator'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Landing = lazy(() => import('./pages/Landing'));
+const EditProfile = lazy(() => import('./pages/EditProfile'));
+const BossMode = lazy(() => import('./pages/BossMode'));
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen flex flex-col md:flex-row">
@@ -34,16 +36,82 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-// Protected layout: guards route + injects navigation
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>
     <Layout>{children}</Layout>
   </ProtectedRoute>
 );
 
+const PageTransition = ({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -8 }}
+    transition={{ duration: 0.25, ease: 'easeOut' }}
+  >
+    {children}
+  </motion.div>
+);
+
+const LazyPage = ({ Component }: { Component: React.ComponentType }) => (
+  <Suspense fallback={
+    <div className="p-8">
+      <SkeletonCard height="h-64" />
+    </div>
+  }>
+    <PageTransition>
+      <Component />
+    </PageTransition>
+  </Suspense>
+);
+
+function AppContent() {
+  const { user } = useAuthStore();
+  const location = useLocation();
+
+  return (
+    <div className="relative min-h-screen">
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<LazyPage Component={Landing} />} />
+          <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <LazyPage Component={Auth} />} />
+          
+          <Route path="/dashboard" element={<ProtectedLayout><LazyPage Component={Dashboard} /></ProtectedLayout>} />
+          <Route path="/schedule" element={<ProtectedLayout><LazyPage Component={Schedule} /></ProtectedLayout>} />
+          <Route path="/fitness" element={<ProtectedLayout><LazyPage Component={Fitness} /></ProtectedLayout>} />
+          <Route path="/mind" element={<ProtectedLayout><LazyPage Component={Mind} /></ProtectedLayout>} />
+          <Route path="/coding" element={<ProtectedLayout><LazyPage Component={Coding} /></ProtectedLayout>} />
+          <Route path="/creator" element={<ProtectedLayout><LazyPage Component={Creator} /></ProtectedLayout>} />
+          <Route path="/profile" element={<ProtectedLayout><LazyPage Component={Profile} /></ProtectedLayout>} />
+          <Route path="/boss-mode" element={<ProtectedLayout><LazyPage Component={BossMode} /></ProtectedLayout>} />
+          <Route path="/analytics" element={<ProtectedLayout><LazyPage Component={Analytics} /></ProtectedLayout>} />
+          <Route path="/edit-profile" element={<ProtectedLayout><LazyPage Component={EditProfile} /></ProtectedLayout>} />
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+      <XpParticles />
+      <LevelUpOverlay />
+      <Toaster 
+        position="top-right" 
+        toastOptions={{
+          style: {
+            background: '#0b1120',
+            color: '#00d4ff',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '0.5rem',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+            fontFamily: 'DM Sans, sans-serif',
+          }
+        }} 
+      />
+    </div>
+  );
+}
+
 function App() {
   const setOffline = useAppStore(state => state.setOffline);
-  const { user, setUser, setSession, setLoading } = useAuthStore();
+  const { setUser, setSession, setLoading } = useAuthStore();
   const theme = useUIStore(state => state.theme);
 
   useEffect(() => {
@@ -55,7 +123,6 @@ function App() {
     }
   }, [theme]);
 
-  // Request native browser notification permissions on launch
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch(console.error);
@@ -77,7 +144,6 @@ function App() {
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
-      // No valid Supabase config — skip auth, render app unauthenticated
       setLoading(false);
       return;
     }
@@ -113,36 +179,7 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <Auth />} />
-        
-        <Route path="/dashboard" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
-        <Route path="/schedule" element={<ProtectedLayout><Schedule /></ProtectedLayout>} />
-        <Route path="/fitness" element={<ProtectedLayout><Fitness /></ProtectedLayout>} />
-        <Route path="/mind" element={<ProtectedLayout><Mind /></ProtectedLayout>} />
-        <Route path="/coding" element={<ProtectedLayout><Coding /></ProtectedLayout>} />
-        <Route path="/creator" element={<ProtectedLayout><Creator /></ProtectedLayout>} />
-        <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
-        <Route path="/boss-mode" element={<ProtectedLayout><BossMode /></ProtectedLayout>} />
-        <Route path="/analytics" element={<ProtectedLayout><Analytics /></ProtectedLayout>} />
-        <Route path="/edit-profile" element={<ProtectedLayout><EditProfile /></ProtectedLayout>} />
-        
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <XpParticles />
-      <LevelUpOverlay />
-      <Toaster 
-        position="top-right" 
-        toastOptions={{
-          style: {
-            background: '#080D1A',
-            color: '#00D4FF',
-            border: '1px solid #00D4FF',
-            fontFamily: 'Share Tech Mono, monospace',
-          }
-        }} 
-      />
+      <AppContent />
     </Router>
   );
 }

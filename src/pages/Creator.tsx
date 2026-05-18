@@ -6,6 +6,7 @@ import { StatRing } from '../components/StatRing';
 import toast from 'react-hot-toast';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import { useProfile } from '../hooks/useProfile';
+import { EmptyState } from '../components/ui/EmptyState';
 
 export default function Creator() {
   const { addXpParticle } = useUIStore();
@@ -146,9 +147,11 @@ export default function Creator() {
             </h2>
             
             {logs.length === 0 ? (
-              <div className="text-center py-12 text-white/30 font-space-mono text-sm uppercase tracking-widest border border-dashed border-white/10">
-                No recent transmissions.
-              </div>
+              <EmptyState
+                icon={Video}
+                title="No recent transmissions"
+                description="Your content stream is silent. Initiate a broadcast or log a strategic sponsoring/networking session to begin."
+              />
             ) : (
               <div className="space-y-3">
                 <AnimatePresence>

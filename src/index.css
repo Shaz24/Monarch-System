@@ -20,11 +20,25 @@ html.light-mode {
   --color-white: 10 15 29;         /* High Contrast Obsidian Text/Borders #0a0f1d */
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+*:focus-visible {
+  outline: 2px solid #00d4ff !important;
+  outline-offset: 2px !important;
+}
+
 @layer base {
   body {
-    @apply bg-void text-white font-rajdhani overflow-x-hidden;
+    @apply bg-void text-white overflow-x-hidden;
+    font-family: 'DM Sans', sans-serif;
     background-color: rgb(var(--color-void));
     color: rgb(var(--color-white));
+  }
+
+  h1, h2, h3 {
+    font-family: 'Sora', sans-serif;
   }
   
   body::after {

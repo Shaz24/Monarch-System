@@ -75,9 +75,9 @@ export default function Analytics() {
             <Target className="w-5 h-5 text-accent-purple" />
             Stat Matrix
           </h2>
-          <div className="h-[400px] w-full">
+          <div className="h-[400px] w-full" aria-label="Radar chart showing core hunter attributes">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={STATS_MATRIX}>
+              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={STATS_MATRIX} aria-label="Hunter Stat Matrix Radar Chart">
                 <PolarGrid stroke={gridColor} />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: labelColor, fontSize: 12, fontFamily: 'Space Mono' }} />
                 <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
@@ -97,9 +97,9 @@ export default function Analytics() {
             <Activity className="w-5 h-5 text-accent-blue" />
             XP Trajectory
           </h2>
-          <div className="h-[400px] w-full mt-4">
+          <div className="h-[400px] w-full mt-4" aria-label="Area chart showing hunter XP trajectory over time">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={XP_HISTORY}>
+              <AreaChart data={XP_HISTORY} aria-label="XP Progression over time Area Chart">
                 <defs>
                   <linearGradient id="colorXp" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="rgb(var(--color-accent-blue))" stopOpacity={0.3}/>

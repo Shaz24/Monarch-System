@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import toast from 'react-hot-toast';
 
 export interface Task {
   id: string;
@@ -147,6 +148,7 @@ export function useTasks() {
       const updatedTasks = [...tasks, newTask].sort((a, b) => a.time_slot.localeCompare(b.time_slot));
       cachedTasks = updatedTasks;
       setTasks(updatedTasks);
+      toast.success('Task created successfully (Demo Mode)');
       return;
     }
     try {
@@ -161,8 +163,10 @@ export function useTasks() {
       const updatedTasks = [...tasks, data as Task].sort((a, b) => a.time_slot.localeCompare(b.time_slot));
       cachedTasks = updatedTasks;
       setTasks(updatedTasks);
+      toast.success('Task created successfully!');
     } catch (err: any) {
       console.error('Add task error:', err);
+      toast.error(err.message || 'Failed to create task.');
       throw err;
     }
   };
@@ -172,6 +176,7 @@ export function useTasks() {
       const updatedTasks = tasks.filter(t => t.id !== taskId);
       cachedTasks = updatedTasks;
       setTasks(updatedTasks);
+      toast.success('Task completed (Demo Mode)');
       return;
     }
 
@@ -210,8 +215,10 @@ export function useTasks() {
       if (rpcError) {
         console.error('RPC Error granting XP:', rpcError);
       }
+      toast.success('Directive completed! XP gained.');
     } catch (err: any) {
       console.error('Complete task error:', err);
+      toast.error(err.message || 'Failed to complete task.');
       throw err;
     }
   };
@@ -222,7 +229,10 @@ export function useTasks() {
     cachedTasks = updatedTasks;
     setTasks(updatedTasks);
 
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured) {
+      toast.success('Task updated (Demo Mode)');
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -231,8 +241,10 @@ export function useTasks() {
         .eq('id', taskId)
         .eq('user_id', user.id);
       if (error) throw error;
-    } catch (err) {
+      toast.success('Task updated successfully!');
+    } catch (err: any) {
       console.error('Update task error:', err);
+      toast.error(err.message || 'Failed to update task.');
       throw err;
     }
   };
@@ -243,7 +255,10 @@ export function useTasks() {
     cachedTasks = updatedTasks;
     setTasks(updatedTasks);
 
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured) {
+      toast.success('Task deleted (Demo Mode)');
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -252,8 +267,10 @@ export function useTasks() {
         .eq('id', taskId)
         .eq('user_id', user.id);
       if (error) throw error;
-    } catch (err) {
+      toast.success('Task deleted successfully!');
+    } catch (err: any) {
       console.error('Delete task error:', err);
+      toast.error(err.message || 'Failed to delete task.');
       throw err;
     }
   };

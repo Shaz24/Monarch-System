@@ -124,8 +124,9 @@ export function BossBattles() {
       
       setBattles(prev => prev.map(b => b.id === battle.id ? { ...b, is_completed: true } : b));
       toast.success(`🏆 ${battle.boss_name} DEFEATED! +${battle.reward_xp} XP`, { duration: 5000 });
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to claim boss battle reward:', e);
+      toast.error(e.message || 'Failed to claim reward.');
     }
   };
 

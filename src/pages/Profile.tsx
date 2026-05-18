@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { User, LogOut, Shield, Trophy, Settings, Star, Loader2, AlertCircle } from 'lucide-react';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useProfile } from '../hooks/useProfile';
@@ -22,6 +24,7 @@ export default function Profile() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { profile, stats, loading, error } = useProfile();
+  const [isWipeConfirmOpen, setIsWipeConfirmOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -184,63 +187,7 @@ export default function Profile() {
                 Notification Preferences
               </button>
               <button 
-                onClick={async () => {
-                  const confirmed = window.confirm('WARNING: Initiate Full System Wipe? All stats and logs will be permanently deleted. This action CANNOT be undone.');
-                  if (confirmed) {
-                    // Instantly wipe all local storage keys starting with "monarch"
-                    Object.keys(localStorage).forEach(key => {
-                      if (key.toLowerCase().startsWith('monarch')) {
-                        localStorage.removeItem(key);
-                      }
-                    });
-
-                    if (!isSupabaseConfigured) {
-                      toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
-                      setTimeout(() => window.location.reload(), 1500);
-                      return;
-                    }
-
-                    const targetId = user?.id ?? profile?.id;
-                    if (!targetId) {
-                      toast.error('No authenticated user session found.', { icon: '🚫' });
-                      return;
-                    }
-
-                    toast.loading('Initiating data purge across tables...', { id: 'purge-toast' });
-
-                    // Execute each database operation independently to be completely fault-tolerant
-                    const results = await Promise.allSettled([
-                      supabase.from('activity_logs').delete().eq('user_id', targetId),
-                      supabase.from('task_completions').delete().eq('user_id', targetId),
-                      supabase.from('boss_battles').delete().eq('user_id', targetId),
-                      supabase.from('daily_laws').delete().eq('user_id', targetId),
-                      supabase.from('aura_log').delete().eq('user_id', targetId),
-                      supabase.from('fitness_logs').delete().eq('user_id', targetId),
-                      supabase.from('mind_logs').delete().eq('user_id', targetId),
-                      supabase.from('coding_logs').delete().eq('user_id', targetId),
-                      supabase.from('creator_logs').delete().eq('user_id', targetId),
-                      supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', targetId),
-                      supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0, aura_score: 0, total_xp_alltime: 0 }).eq('id', targetId)
-                    ]);
-
-                    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && (r.value as any).error));
-
-                    if (failed.length > 0) {
-                      console.error('Wipe partial errors:', failed);
-                      toast.dismiss('purge-toast');
-                      toast.error(
-                        'Database reset partially blocked by Supabase. Please ensure you have run the RLS Delete Policy migration in your Supabase SQL Editor.',
-                        { duration: 8000 }
-                      );
-                      // Reload anyway to refresh UI state
-                      setTimeout(() => window.location.reload(), 3000);
-                    } else {
-                      toast.dismiss('purge-toast');
-                      toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
-                      setTimeout(() => window.location.reload(), 1500);
-                    }
-                  }
-                }}
+                onClick={() => setIsWipeConfirmOpen(true)}
                 className="w-full text-left font-space-mono text-xs uppercase tracking-widest text-[#ff5a00]/50 hover:text-[#ff5a00] py-2 transition-colors"
               >
                 Danger Zone (Reset Data)
@@ -313,6 +260,70 @@ export default function Profile() {
 
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isWipeConfirmOpen}
+        title="SYSTEM OVERRIDE DETECTED"
+        message="WARNING: Initiate Full System Wipe? All stats, activity logs, and boss battle historical logs will be permanently deleted. This action CANNOT be undone. Proceeding will purge data across all associated databases."
+        confirmLabel="PURGE SYSTEM"
+        cancelLabel="ABORT PROTOCOL"
+        onConfirm={async () => {
+          setIsWipeConfirmOpen(false);
+          // Instantly wipe all local storage keys starting with "monarch"
+          Object.keys(localStorage).forEach(key => {
+            if (key.toLowerCase().startsWith('monarch')) {
+              localStorage.removeItem(key);
+            }
+          });
+
+          if (!isSupabaseConfigured) {
+            toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
+            setTimeout(() => window.location.reload(), 1500);
+            return;
+          }
+
+          const targetId = user?.id ?? profile?.id;
+          if (!targetId) {
+            toast.error('No authenticated user session found.', { icon: '🚫' });
+            return;
+          }
+
+          toast.loading('Initiating data purge across tables...', { id: 'purge-toast' });
+
+          // Execute each database operation independently to be completely fault-tolerant
+          const results = await Promise.allSettled([
+            supabase.from('activity_logs').delete().eq('user_id', targetId),
+            supabase.from('task_completions').delete().eq('user_id', targetId),
+            supabase.from('boss_battles').delete().eq('user_id', targetId),
+            supabase.from('daily_laws').delete().eq('user_id', targetId),
+            supabase.from('aura_log').delete().eq('user_id', targetId),
+            supabase.from('fitness_logs').delete().eq('user_id', targetId),
+            supabase.from('mind_logs').delete().eq('user_id', targetId),
+            supabase.from('coding_logs').delete().eq('user_id', targetId),
+            supabase.from('creator_logs').delete().eq('user_id', targetId),
+            supabase.from('stats').update({ xp: 0, level: 1 }).eq('user_id', targetId),
+            supabase.from('profiles').update({ current_xp: 0, current_level: 1, streak_days: 0, aura_score: 0, total_xp_alltime: 0 }).eq('id', targetId)
+          ]);
+
+          const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && (r.value as any).error));
+
+          if (failed.length > 0) {
+            console.error('Wipe partial errors:', failed);
+            toast.dismiss('purge-toast');
+            toast.error(
+              'Database reset partially blocked by Supabase. Please ensure you have run the RLS Delete Policy migration in your Supabase SQL Editor.',
+              { duration: 8000 }
+            );
+            // Reload anyway to refresh UI state
+            setTimeout(() => window.location.reload(), 3000);
+          } else {
+            toast.dismiss('purge-toast');
+            toast.success('System Wipe Complete. Reinitializing...', { duration: 4000 });
+            setTimeout(() => window.location.reload(), 1500);
+          }
+        }}
+        onCancel={() => setIsWipeConfirmOpen(false)}
+      />
     </motion.div>
   );
 }

@@ -14,8 +14,13 @@ export default {
         'accent-glow': 'rgba(var(--color-accent-blue), 0.15)',
         white: 'rgb(var(--color-white) / <alpha-value>)',
         
-        // adding Stitch design colors for completeness
-        primary: '#a8e8ff',
+        // custom design system tokens
+        primary: '#00d4ff',
+        surface: '#0b1120',
+        muted: '#64748b',
+        border: 'rgba(255, 255, 255, 0.1)',
+        destructive: '#ef4444',
+
         'primary-container': '#00d4ff',
         secondary: '#d1bcff',
         'secondary-container': '#6800ec',
@@ -27,6 +32,8 @@ export default {
         'space-grotesk': ['"Space Grotesk"', 'sans-serif'],
         'archivo-narrow': ['"Archivo Narrow"', 'sans-serif'],
         'space-mono': ['"Space Mono"', 'monospace'],
+        display: ['Sora', 'sans-serif'],
+        body: ['"DM Sans"', 'sans-serif'],
       },
       backgroundImage: {
         'scanline-pattern': 'linear-gradient(to bottom, rgba(var(--color-white) / 0.03) 1px, transparent 1px)',

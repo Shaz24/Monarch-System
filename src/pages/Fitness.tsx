@@ -15,6 +15,8 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { auraOnWorkout } from '../lib/auraService';
 import { getSecondBodyStage } from '../lib/rpgEnhanced';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonRow } from '../components/ui/Skeleton';
 
 // ─── Type labels per workout ─────────────────────────────────────────────────
 const WORKOUT_TYPES = [
@@ -375,9 +377,9 @@ export default function Fitness() {
               </h3>
               <span className="font-space-mono text-xs text-white/30">{thisWeekSessions} active days</span>
             </div>
-            <div className="h-44 w-full">
+            <div className="h-44 w-full" aria-label="Weekly physical conditioning output bar chart">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyChart} barSize={24}>
+                <BarChart data={weeklyChart} barSize={24} aria-label="Weekly physical output Bar Chart">
                   <XAxis dataKey="day" stroke="#333" tick={{ fill: '#666', fontSize: 10, fontFamily: 'Space Mono' }} tickLine={false} axisLine={false} />
                   <Tooltip
                     cursor={{ fill: 'rgba(255,90,0,0.06)' }}
@@ -409,13 +411,17 @@ export default function Fitness() {
             </h3>
 
             {logsLoading ? (
-              <div className="py-10 text-center font-space-mono text-xs text-white/20 uppercase tracking-widest animate-pulse">Loading records...</div>
-            ) : logs.length === 0 ? (
-              <div className="py-10 text-center border border-dashed border-white/08">
-                <Dumbbell className="w-10 h-10 mx-auto mb-3 text-white/10" />
-                <p className="font-space-mono text-xs text-white/20 uppercase tracking-widest">No conditioning records found.</p>
-                <p className="font-space-mono text-[10px] text-white/10 mt-1">Log your first session above.</p>
+              <div className="space-y-2">
+                <SkeletonRow />
+                <SkeletonRow />
+                <SkeletonRow />
               </div>
+            ) : logs.length === 0 ? (
+              <EmptyState
+                icon={Dumbbell}
+                title="No Conditioning Records"
+                description="Initialize your body conditioning sequence. Log your first workout to start tracking and earn XP."
+              />
             ) : (
               <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1"
                 style={{ scrollbarWidth: 'thin', scrollbarColor: '#ff5a0033 transparent' }}>

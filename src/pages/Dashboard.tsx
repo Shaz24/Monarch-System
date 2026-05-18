@@ -170,9 +170,9 @@ export default function Dashboard() {
             <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest mb-4 text-white/70">
               7-Day Output
             </h2>
-            <div className="h-40 w-full">
+            <div className="h-40 w-full" aria-label="7-day productivity output bar chart">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData}>
+                <BarChart data={weeklyData} aria-label="7-Day Productivity Output Bar Chart">
                   <Tooltip 
                     cursor={{ fill: 'rgba(0, 212, 255, 0.1)' }} 
                     contentStyle={{ backgroundColor: '#080D1A', border: '1px solid #00D4FF', borderRadius: 0, fontFamily: 'Space Mono' }} 
