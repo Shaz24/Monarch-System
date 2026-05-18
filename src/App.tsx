@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from './store';
 import { useAuthStore } from './store/authStore';
@@ -12,6 +12,13 @@ import { LevelUpOverlay } from './components/LevelUpOverlay';
 import { useUIStore } from './store/uiStore';
 import { Navigation } from './components/Navigation';
 import { SkeletonCard } from './components/ui/Skeleton';
+
+// Global Overhaul Elements
+import { SystemBootFlash } from './components/SystemBootFlash';
+import { CommandPalette } from './components/CommandPalette';
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
+import { NotificationDrawer } from './components/NotificationDrawer';
+import { Bell, Search, Keyboard } from 'lucide-react';
 
 // Lazy-loaded Pages
 const Auth = lazy(() => import('./pages/Auth'));
@@ -44,10 +51,10 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
 
 const PageTransition = ({ children }: { children: React.ReactNode }) => (
   <motion.div
-    initial={{ opacity: 0, y: 16 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -8 }}
-    transition={{ duration: 0.25, ease: 'easeOut' }}
+    initial={{ opacity: 0, x: -20 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: 20 }}
+    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
   >
     {children}
   </motion.div>
@@ -68,9 +75,65 @@ const LazyPage = ({ Component }: { Component: React.ComponentType }) => (
 function AppContent() {
   const { user } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore shortcuts if in inputs
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+      if (isCmdOrCtrl && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen((prev) => !prev);
+      } else if (e.key === '?') {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+      } else {
+        const key = e.key.toLowerCase();
+        if (key === 'b') {
+          navigate('/boss-mode');
+        } else if (key === 's') {
+          navigate('/schedule');
+        } else if (key === 'm') {
+          navigate('/mind');
+        } else if (key === 'f') {
+          navigate('/fitness');
+        } else if (key === 'c') {
+          navigate('/coding');
+        } else if (key === 'r') {
+          navigate('/creator');
+        } else if (key === 'd') {
+          navigate('/dashboard');
+        } else if (key === 'p') {
+          navigate('/profile');
+        } else if (key === 'a') {
+          navigate('/analytics');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
 
   return (
     <div className="relative min-h-screen">
+      <SystemBootFlash />
+      
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<LazyPage Component={Landing} />} />
@@ -90,6 +153,41 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
+
+      {/* Floating Control Hub */}
+      {user && (
+        <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 flex flex-col gap-3">
+          <button
+            onClick={() => setIsPaletteOpen(true)}
+            className="w-11 h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-cyan-400 hover:text-cyan-300 hover:border-cyan-500/30 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all cursor-pointer"
+            title="Search command palette (Ctrl+K)"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          
+          <button
+            onClick={() => setIsShortcutsOpen(true)}
+            className="w-11 h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-monarch hover:text-monarch/80 hover:border-monarch/30 hover:shadow-[0_0_15px_rgba(124,58,237,0.3)] transition-all cursor-pointer"
+            title="Keyboard shortcuts (?)"
+          >
+            <Keyboard className="w-5 h-5" />
+          </button>
+
+          <button
+            onClick={() => setIsDrawerOpen(true)}
+            className="w-11 h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-gold hover:text-gold/80 hover:border-gold/30 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all cursor-pointer"
+            title="System notifications"
+          >
+            <Bell className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Overlays / Drawers */}
+      <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+      <NotificationDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+
       <XpParticles />
       <LevelUpOverlay />
       <Toaster 

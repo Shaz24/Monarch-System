@@ -4,6 +4,7 @@ import { Zap } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useProfile } from '../hooks/useProfile';
 import { showLevelUpToast, showBrowserNotification } from './LevelUpToast';
+import { sounds } from '../lib/sound';
 
 export const LevelUpOverlay = () => {
   const { isLevelUp, triggerLevelUp, closeLevelUp } = useUIStore();
@@ -24,6 +25,14 @@ export const LevelUpOverlay = () => {
 
         // Pop native OS browser notification
         showBrowserNotification(currentLevel);
+
+        // Play level up audio fanfare
+        sounds.playFanfare();
+
+        // Dispatch level up event to trigger XP Rain and Drawer logger
+        window.dispatchEvent(new CustomEvent('monarch-level-up-notif', {
+          detail: { newLevel: currentLevel }
+        }));
       }
       lastLevelRef.current = currentLevel;
     }

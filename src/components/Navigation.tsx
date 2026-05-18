@@ -179,12 +179,22 @@ export const Navigation = () => {
               className="fixed inset-0 z-50 bg-black backdrop-blur-sm md:hidden"
             />
             <motion.nav
+              drag="x"
+              dragConstraints={{ left: -256, right: 0 }}
+              dragElastic={0.1}
+              onDragEnd={(_e, info) => {
+                if (info.offset.x < -80) {
+                  setIsMobileOpen(false);
+                }
+              }}
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 bottom-0 w-64 bg-abyss border-r border-white/5 p-5 z-50 flex flex-col justify-between md:hidden"
+              className="fixed top-0 left-0 bottom-0 w-64 bg-abyss border-r border-white/5 p-5 z-50 flex flex-col justify-between md:hidden cursor-grab active:cursor-grabbing"
             >
+              {/* Drag indicator line on the right */}
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-10 rounded-full bg-white/10" />
               <div className="space-y-6 flex flex-col flex-1 overflow-hidden">
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center">
