@@ -12,12 +12,12 @@ import { getRankFromLevel } from '../lib/rpg';
 import toast from 'react-hot-toast';
 
 const ACHIEVEMENTS = [
-  { id: '1', title: 'Awakening', description: 'Initialize system connection.', icon: '⚡', condition: 'always' },
-  { id: '2', title: 'First Blood', description: 'Complete your first daily directive.', icon: '🗡️', condition: 'always' },
-  { id: '3', title: 'Discipline Adept', description: 'Maintain a 7-day streak.', icon: '🔥', condition: 'streak_7' },
-  { id: '4', title: 'C-Rank Hunter', description: 'Reach Level 35.', icon: '🛡️', condition: 'level_35' },
-  { id: '5', title: 'Monk Mode', description: 'Complete a 120-minute focus session.', icon: '🧠', condition: 'never' },
-  { id: '6', title: 'Architect', description: 'Merge 50 code commits.', icon: '💻', condition: 'never' },
+  { id: '1', title: 'Awakening', description: 'Initialize system connection.', icon: '⚡', condition: 'always', xp_reward: 100 },
+  { id: '2', title: 'First Blood', description: 'Complete your first daily directive.', icon: '🗡️', condition: 'always', xp_reward: 150 },
+  { id: '3', title: 'Discipline Adept', description: 'Maintain a 7-day streak.', icon: '🔥', condition: 'streak_7', xp_reward: 300 },
+  { id: '4', title: 'C-Rank Hunter', description: 'Reach Level 35.', icon: '🛡️', condition: 'level_35', xp_reward: 500 },
+  { id: '5', title: 'Monk Mode', description: 'Complete a 120-minute focus session.', icon: '🧠', condition: 'never', xp_reward: 400 },
+  { id: '6', title: 'Architect', description: 'Merge 50 code commits.', icon: '💻', condition: 'never', xp_reward: 600 },
 ];
 
 export default function Profile() {
@@ -25,6 +25,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { profile, stats, loading, error } = useProfile();
   const [isWipeConfirmOpen, setIsWipeConfirmOpen] = useState(false);
+  const [isHoveredSettings, setIsHoveredSettings] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -55,6 +56,17 @@ export default function Profile() {
     return false;
   };
 
+  const getRankColor = (rankLetter: string) => {
+    switch (rankLetter.toUpperCase()) {
+      case 'S': return { fill: '#ff003c', glow: 'shadow-[0_0_15px_#ff003c]' };
+      case 'A': return { fill: '#FFD700', glow: 'shadow-[0_0_15px_#FFD700]' };
+      case 'B': return { fill: '#7B2FFF', glow: 'shadow-[0_0_15px_#7B2FFF]' };
+      case 'C': return { fill: '#00D4FF', glow: 'shadow-[0_0_15px_#00D4FF]' };
+      case 'D': return { fill: '#00ff88', glow: 'shadow-[0_0_15px_#00ff88]' };
+      default: return { fill: '#666666', glow: 'shadow-[0_0_10px_rgba(255,255,255,0.1)]' };
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -83,34 +95,68 @@ export default function Profile() {
   const xpForNextLevel = (profile?.current_level ?? 1) * 100;
   const xpPercent = Math.min(100, Math.round(((profile?.current_xp ?? 0) % xpForNextLevel) / xpForNextLevel * 100));
   const rank = getRankFromLevel(profile?.current_level ?? 1);
+  const rankStyle = getRankColor(rank);
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8"
+      initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-void border border-accent-blue flex items-center justify-center shadow-neon-blue overflow-hidden relative">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-8 h-8 text-accent-blue" />
-            )}
+      {/* Header zone with rotating avatar border */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
+        <div className="flex items-center gap-5">
+          
+          {/* Conic Gradient rotating border avatar wrapper */}
+          <div className="relative group/avatar cursor-pointer" onClick={() => navigate('/edit-profile')}>
+            <div 
+              className="absolute -inset-0.5 rounded-full opacity-70 blur-sm transition duration-500 group-hover/avatar:opacity-100"
+              style={{
+                background: 'conic-gradient(from var(--angle), #00D4FF, #7B2FFF, #ff5a00, #00D4FF)',
+                animation: 'spin-border 3s linear infinite'
+              }}
+            />
+            <div className="w-20 h-20 bg-void border border-accent-blue/30 rounded-full flex items-center justify-center overflow-hidden relative z-10">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <User className="w-10 h-10 text-accent-blue" />
+              )}
+              {/* EDIT Overlay on hover */}
+              <div className="absolute inset-0 bg-void/80 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                <span className="font-space-mono text-[10px] text-accent-blue font-bold tracking-widest">EDIT</span>
+              </div>
+            </div>
           </div>
+
           <div>
-            <h1 className="font-orbitron text-3xl md:text-4xl font-bold uppercase tracking-widest text-white">
-              {profile?.display_name || profile?.username || 'Player_01'}
-            </h1>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="font-space-mono text-sm text-accent-blue tracking-widest uppercase">
+            <div className="flex items-center gap-3">
+              <h1 className="font-orbitron text-3xl md:text-4xl font-bold uppercase tracking-widest text-white">
+                {profile?.display_name || profile?.username || 'Player_01'}
+              </h1>
+              
+              {/* Custom Hexagonal Rank Badge */}
+              <div 
+                className={`w-8 h-9 flex items-center justify-center relative ${rankStyle.glow} select-none`}
+                data-tooltip={`${rank}-Class Rank Rating`}
+              >
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                  <polygon points="50,3 93,25 93,75 50,97 7,75 7,25" fill="#080D1A" stroke={rankStyle.fill} strokeWidth="6" />
+                </svg>
+                <span className="font-orbitron font-black text-sm z-10" style={{ color: rankStyle.fill }}>
+                  {rank}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 mt-1.5">
+              <span className="font-space-mono text-xs text-accent-blue tracking-widest uppercase font-bold">
                 {rank}-Class Hunter
               </span>
               <span className="text-white/20">•</span>
-              <span className="font-space-mono text-sm text-white/40">@{profile?.username || '—'}</span>
+              <span className="font-space-mono text-xs text-white/40">@{profile?.username || '—'}</span>
             </div>
             {profile?.bio && (
               <p className="font-archivo-narrow text-white/60 mt-2 text-sm max-w-sm">{profile.bio}</p>
@@ -120,36 +166,54 @@ export default function Profile() {
         
         <button 
           onClick={handleLogout}
-          className="btn-ghost flex items-center gap-2 px-4 py-2 text-sm text-[#ff5a00] hover:text-void hover:bg-[#ff5a00] border-[#ff5a00]"
+          className="btn-ghost flex items-center gap-2 px-4 py-2 text-sm text-[#ff5a00] hover:text-void hover:bg-[#ff5a00] border-[#ff5a00] active:scale-95 transition-transform"
         >
           <LogOut className="w-4 h-4" />
           Disconnect
         </button>
       </div>
 
-      {/* XP Progress Bar */}
-      <div className="glass-panel p-4 border border-white/10">
-        <div className="flex justify-between font-space-mono text-xs text-white/50 uppercase tracking-widest mb-2">
+      {/* XP Progress Bar with Shimmer Effect and Arrow marker */}
+      <div className="glass-panel p-5 border border-white/5 relative z-10 bg-void/50">
+        <div className="flex justify-between font-space-mono text-xs text-white/50 uppercase tracking-widest mb-3">
           <span>System XP — Level {profile?.current_level ?? 1}</span>
           <span>{profile?.current_xp ?? 0} / {(profile?.current_level ?? 1) * 100} XP</span>
         </div>
-        <div className="h-2 bg-white/10 w-full">
+        <div className="relative h-3.5 bg-white/5 rounded overflow-hidden flex items-center border border-white/10">
+          
+          {/* Shimmering fill bar */}
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${xpPercent}%` }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            className="h-full bg-accent-blue shadow-neon-blue"
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+            className="h-full bg-gradient-to-r from-accent-blue to-[#7B2FFF] relative shadow-neon-blue"
+            style={{
+              backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 2s infinite linear'
+            }}
           />
+
+          {/* Glowing cursor arrow marker at the end of the XP percentage */}
+          {xpPercent > 0 && (
+            <div 
+              className="absolute h-full flex items-center z-10 pointer-events-none transition-all duration-300"
+              style={{ left: `calc(${xpPercent}% - 5px)` }}
+            >
+              <span className="text-[10px] text-[#00D4FF] filter drop-shadow-[0_0_4px_#00D4FF] animate-pulse">▶</span>
+            </div>
+          )}
         </div>
-        <p className="font-space-mono text-xs text-white/30 mt-1">{xpPercent}% to next level</p>
+        <p className="font-space-mono text-[10px] text-white/30 mt-2">{xpPercent}% to next level</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
         
-        {/* Left Column */}
+        {/* Left Column: Status Window & Settings */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Status Window */}
-          <div className="glass-panel p-6 border-t-2 border-t-accent-blue">
+          
+          {/* Status Window with scan-in staggered mounts */}
+          <div className="glass-panel p-6 border-t-2 border-t-accent-blue bg-void/40 relative">
             <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
               <Shield className="w-5 h-5 text-accent-blue" />
               Status Window
@@ -158,37 +222,47 @@ export default function Profile() {
               {[
                 { label: 'LEVEL', value: profile?.current_level ?? '—' },
                 { label: 'RANK', value: `${rank}-Class` },
-                { label: 'AURA', value: `${profile?.aura_level ?? 100} / 100`, color: 'text-accent-purple' },
-                { label: 'STREAK', value: `${profile?.streak_days ?? 0} DAYS`, color: 'text-[#ff5a00]' },
+                { label: 'AURA', value: `${profile?.aura_level ?? 100} / 100`, color: 'text-accent-purple font-bold' },
+                { label: 'STREAK', value: `${profile?.streak_days ?? 0} DAYS`, color: 'text-[#ff5a00] font-bold' },
                 { label: 'SYSTEM ID', value: user?.id?.slice(0, 12) + '…' || '—', color: 'text-white/30' },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="flex justify-between border-b border-white/10 pb-2">
+              ].map(({ label, value, color }, idx) => (
+                <div 
+                  key={label} 
+                  className="flex justify-between border-b border-white/5 pb-2.5 animate-[scan-in_200ms_ease-in-out_once]"
+                  style={{ animationDelay: `${idx * 80}ms` }}
+                >
                   <span className="text-white/50">{label}</span>
-                  <span className={color ?? 'text-white'}>{String(value)}</span>
+                  <span className={color ?? 'text-white font-bold'}>{String(value)}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Settings */}
-          <div className="glass-panel p-6 border-t-2 border-t-white/10">
+          {/* Settings with Danger Zone shake hover effects */}
+          <div 
+            className={`glass-panel p-6 border-t-2 border-t-white/10 bg-void/40 transition-all duration-300 ${
+              isHoveredSettings ? 'animate-[shake_0.3s_ease-in-out]' : ''
+            }`}
+          >
             <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
               <Settings className="w-5 h-5 text-white/50" />
               Settings
             </h2>
             <div className="space-y-2">
-              <button onClick={() => navigate('/edit-profile')} className="w-full text-left font-space-mono text-xs uppercase tracking-widest text-white/50 hover:text-accent-blue py-2 border-b border-white/5 transition-colors">
+              <button onClick={() => navigate('/edit-profile')} className="w-full text-left font-space-mono text-xs uppercase tracking-widest text-white/50 hover:text-accent-blue py-2.5 border-b border-white/5 transition-colors">
                 Edit Profile
               </button>
               <button 
                 onClick={() => toast('Notification preferences are managed by your OS.', { icon: '🔔' })}
-                className="w-full text-left font-space-mono text-xs uppercase tracking-widest text-white/50 hover:text-accent-blue py-2 border-b border-white/5 transition-colors"
+                className="w-full text-left font-space-mono text-xs uppercase tracking-widest text-white/50 hover:text-accent-blue py-2.5 border-b border-white/5 transition-colors"
               >
                 Notification Preferences
               </button>
               <button 
                 onClick={() => setIsWipeConfirmOpen(true)}
-                className="w-full text-left font-space-mono text-xs uppercase tracking-widest text-[#ff5a00]/50 hover:text-[#ff5a00] py-2 transition-colors"
+                onMouseEnter={() => setIsHoveredSettings(true)}
+                onMouseLeave={() => setIsHoveredSettings(false)}
+                className="w-full text-left font-space-mono text-xs uppercase tracking-widest text-[#ff5a00] py-2.5 transition-colors animate-[danger-pulse_2s_infinite] border border-dashed rounded px-2.5 mt-3 text-center bg-[#ff5a00]/5 hover:bg-[#ff5a00]/10"
               >
                 Danger Zone (Reset Data)
               </button>
@@ -196,59 +270,105 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Right Column */}
+        {/* Right Column: Stats Rings and Achievements */}
         <div className="lg:col-span-2 space-y-8">
           
-          {/* Stats Rings */}
+          {/* Core Stats with Custom Tooltips */}
           {stats.length > 0 && (
-            <div className="glass-panel p-6">
+            <div className="glass-panel p-6 bg-void/40 relative">
               <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 border-l-4 border-accent-blue pl-3">
                 Core Stats
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {stats.map((stat) => (
-                  <StatRing
+                  <div 
                     key={stat.stat_name}
-                    statName={stat.stat_name.charAt(0).toUpperCase() + stat.stat_name.slice(1)}
-                    level={stat.level}
-                    xp={stat.xp % 100}
-                  />
+                    className="p-3 glass-panel border border-white/5 hover:border-accent-blue/30 transition-all rounded-lg cursor-help"
+                    data-tooltip={`Stat: ${stat.stat_name.toUpperCase()} | Level: ${stat.level} | XP to next: ${100 - (stat.xp % 100)}`}
+                  >
+                    <StatRing
+                      statName={stat.stat_name.charAt(0).toUpperCase() + stat.stat_name.slice(1)}
+                      level={stat.level}
+                      xp={stat.xp % 100}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Achievements */}
-          <div className="glass-panel p-6 border-t-2 border-t-[#FFD700]">
+          {/* Achievements displaying gold shimmers and rotation stamps */}
+          <div className="glass-panel p-6 border-t-2 border-t-[#FFD700] bg-void/40 relative">
             <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-[#FFD700]">
               <Trophy className="w-5 h-5" />
               Achievements
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.15
+                  }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
               {ACHIEVEMENTS.map((achieve) => {
                 const unlocked = isUnlocked(achieve.condition);
                 return (
-                  <div 
+                  <motion.div 
+                    variants={{
+                      hidden: { scale: 0.9, opacity: 0 },
+                      show: { scale: 1, opacity: 1 }
+                    }}
                     key={achieve.id} 
-                    className={`p-4 border transition-all duration-300 flex items-start gap-4 ${
+                    className={`relative p-4 border rounded overflow-hidden transition-all duration-300 flex items-start gap-4 ${
                       unlocked 
-                        ? 'bg-void border-[#FFD700]/30 hover:border-[#FFD700] shadow-[0_0_10px_rgba(255,215,0,0.1)]' 
-                        : 'bg-void/30 border-white/5 opacity-50 grayscale'
+                        ? 'bg-void border-[#FFD700]/30 hover:border-[#FFD700] shadow-[0_0_12px_rgba(255,215,0,0.15)]' 
+                        : 'bg-void/10 border-white/5 filter grayscale(100%) brightness-[30%]'
                     }`}
                   >
-                    <div className={`w-12 h-12 shrink-0 flex items-center justify-center text-2xl bg-black border ${unlocked ? 'border-[#FFD700]/50' : 'border-white/10'}`}>
+                    {/* Unlocked Gold shimmer border animation wrapper */}
+                    {unlocked && (
+                      <div className="absolute inset-0 border border-[#FFD700]/30 pointer-events-none rounded animate-pulse" />
+                    )}
+
+                    {/* Locked CLASSIFIED Stamp */}
+                    {!unlocked && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
+                        <span className="font-orbitron text-[#ff003c]/35 text-2xl font-black uppercase tracking-widest border-2 border-dashed border-[#ff003c]/35 px-2 py-0.5 rotate-[-15deg]">
+                          [CLASSIFIED]
+                        </span>
+                      </div>
+                    )}
+
+                    <div className={`w-12 h-12 shrink-0 flex items-center justify-center text-2xl bg-black border rounded relative z-10 ${unlocked ? 'border-[#FFD700]/50' : 'border-white/10'}`}>
                       {achieve.icon}
                     </div>
-                    <div>
-                      <h3 className={`font-orbitron font-bold tracking-widest uppercase text-sm ${unlocked ? 'text-[#FFD700]' : 'text-white/50'}`}>
-                        {achieve.title}
-                      </h3>
-                      <p className="font-space-mono text-xs text-white/60 mt-1">{achieve.description}</p>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`font-orbitron font-bold tracking-widest uppercase text-sm ${unlocked ? 'text-[#FFD700]' : 'text-white/40'}`}>
+                          {achieve.title}
+                        </h3>
+                        {unlocked && (
+                          <span className="font-space-mono text-[9px] text-[#FFD700] bg-[#FFD700]/10 border border-[#FFD700]/30 px-1.5 rounded">
+                            +{achieve.xp_reward} XP
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-space-mono text-xs text-white/50 mt-1">{achieve.description}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
+
             <button 
               onClick={handleTestAchievement}
               className="mt-6 w-full border border-dashed border-[#FFD700]/30 text-[#FFD700]/50 hover:text-[#FFD700] hover:border-[#FFD700] hover:bg-[#FFD700]/5 py-4 font-space-mono text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
@@ -269,7 +389,6 @@ export default function Profile() {
         cancelLabel="ABORT PROTOCOL"
         onConfirm={async () => {
           setIsWipeConfirmOpen(false);
-          // Instantly wipe all local storage keys starting with "monarch"
           Object.keys(localStorage).forEach(key => {
             if (key.toLowerCase().startsWith('monarch')) {
               localStorage.removeItem(key);
@@ -290,7 +409,6 @@ export default function Profile() {
 
           toast.loading('Initiating data purge across tables...', { id: 'purge-toast' });
 
-          // Execute each database operation independently to be completely fault-tolerant
           const results = await Promise.allSettled([
             supabase.from('activity_logs').delete().eq('user_id', targetId),
             supabase.from('task_completions').delete().eq('user_id', targetId),
@@ -314,7 +432,6 @@ export default function Profile() {
               'Database reset partially blocked by Supabase. Please ensure you have run the RLS Delete Policy migration in your Supabase SQL Editor.',
               { duration: 8000 }
             );
-            // Reload anyway to refresh UI state
             setTimeout(() => window.location.reload(), 3000);
           } else {
             toast.dismiss('purge-toast');

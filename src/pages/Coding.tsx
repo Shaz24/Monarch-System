@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, Code2, GitMerge, Plus } from 'lucide-react';
+import { Terminal, Code2, Plus, GitPullRequest, GitBranch } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
 import toast from 'react-hot-toast';
@@ -17,6 +17,61 @@ export default function Coding() {
   const [type, setType] = useState('Feature Development');
   const [duration, setDuration] = useState('60');
   const [project, setProject] = useState('Monarch System');
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+
+  // Active Session Timer Clock
+  const [secondsElapsed, setSecondsElapsed] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecondsElapsed(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTimer = (totalSeconds: number) => {
+    const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const secs = String(totalSeconds % 60).padStart(2, '0');
+    return `${hrs}:${mins}:${secs}`;
+  };
+
+  // Generate dynamic fake commit preview hash when fields change
+  const commitHashPreview = useMemo(() => {
+    // Generate a beautiful deterministic or random-like commit preview based on fields
+    const seed = `${type}-${duration}-${project}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hex = Math.abs(hash).toString(16).slice(0, 6).toUpperCase();
+    return hex.padEnd(6, 'F');
+  }, [type, duration, project]);
+
+  // Sum lines of code simulated
+  const totalLinesCount = useMemo(() => {
+    return logs.reduce((sum, log) => sum + (log.duration_minutes * 15), 0);
+  }, [logs]);
+
+  // Count up lines of code simulated
+  const [displayedLines, setDisplayedLines] = useState(0);
+  useEffect(() => {
+    if (totalLinesCount === 0) return;
+    let start = 0;
+    const end = totalLinesCount;
+    const durationMs = 1000;
+    const stepTime = Math.max(Math.floor(durationMs / 50), 10);
+    const timer = setInterval(() => {
+      start += Math.ceil(end / 40);
+      if (start >= end) {
+        setDisplayedLines(end);
+        clearInterval(timer);
+      } else {
+        setDisplayedLines(start);
+      }
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [totalLinesCount]);
 
   // Helper to get real stats
   const getStat = (name: string) => {
@@ -50,79 +105,162 @@ export default function Coding() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8"
+      initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 bg-void border border-accent-blue flex items-center justify-center shadow-neon-blue">
-          <Terminal className="w-8 h-8 text-accent-blue" />
+      {/* Scrollable low-opacity code matrix background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0 opacity-[4%]">
+        <pre className="font-mono text-[9px] text-[#00D4FF] leading-tight w-full h-full select-none overflow-hidden py-10">
+          {`// INTEL CORE DIGITAL TRANSFORMATION PROTOCOL
+function initializeMonarchSystem() {
+  const user = authenticateSession();
+  const aura = calculateActiveAura();
+  console.log("SYSTEM BOOTING... [OK]");
+  
+  while (true) {
+    commitChanges();
+    synthesizeXp();
+    if (user.levelUp) {
+      triggerAudioSystem();
+      dispatchLevelOverlay();
+    }
+  }
+}
+
+// INTRUSION DETECTED OR SECURE BRIDGE ESTABLISHED
+class SecurityGateway extends SystemDaemon {
+  async filterPacket(pkt: SystemPacket) {
+    if (pkt.source === "void") return PacketAction.DROP;
+    return PacketAction.MERGE;
+  }
+}
+
+// RECURSIVE REFACTORING ROUTINE
+const calculateStatVelocity = (logs: ActivityLog[]) => {
+  return logs.filter(l => l.stat === 'INT').map(l => l.xp);
+};`}
+        </pre>
+      </div>
+
+      {/* Header ZONE with Clock */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6 relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-void border border-accent-blue flex items-center justify-center shadow-neon-blue">
+            <Terminal className="w-8 h-8 text-accent-blue animate-pulse" />
+          </div>
+          <div>
+            <h1 className="font-orbitron text-4xl font-bold uppercase tracking-widest text-white">
+              Software <span className="text-accent-blue">Engineering</span>
+            </h1>
+            <p className="font-space-mono text-sm text-white/50 tracking-widest uppercase mt-1">
+              Build systems. Automate reality.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-orbitron text-4xl font-bold uppercase tracking-widest text-white">
-            Software <span className="text-accent-blue">Engineering</span>
-          </h1>
-          <p className="font-space-mono text-sm text-white/50 tracking-widest uppercase mt-1">
-            Build systems. Automate reality.
-          </p>
+
+        {/* Live Session Clock */}
+        <div className="glass-panel px-4 py-2 border border-accent-blue/30 flex flex-col items-end md:items-end justify-center self-start md:self-auto bg-void/50">
+          <span className="font-space-mono text-[9px] text-accent-blue/70 uppercase tracking-widest font-bold">
+            ACTIVE SESSION
+          </span>
+          <span className="font-space-mono text-lg font-bold text-white tracking-widest mt-0.5">
+            {formatTimer(secondsElapsed)}
+          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 relative z-10">
         
         {/* Left Column: Logging Form */}
         <div className="xl:col-span-1 space-y-8">
-          <div className="glass-panel p-6 border-t-2 border-t-accent-blue">
-            <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-accent-blue" />
+          <div className="glass-panel p-6 border-t-2 border-t-accent-blue relative bg-void/40">
+            <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-accent-blue">
+              <Plus className="w-5 h-5" />
               Commit Code
             </h2>
             
             <form onSubmit={handleLogCode} className="space-y-6">
+              
+              {/* Session Type with >_ prefix */}
               <div>
-                <label className="block font-space-mono text-xs text-white/70 tracking-widest uppercase mb-2">
+                <label className="block font-space-mono text-xs text-white/50 tracking-widest uppercase mb-2">
                   Session Type
                 </label>
-                <select 
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full bg-void border border-white/20 p-3 text-white font-archivo-narrow focus:border-accent-blue focus:outline-none transition-colors"
-                >
-                  <option>Feature Development</option>
-                  <option>Bug Fixing</option>
-                  <option>Refactoring</option>
-                  <option>Algorithms</option>
-                  <option>UI/UX Implementation</option>
-                </select>
+                <div className="flex items-center bg-void/60 border border-white/10 focus-within:border-accent-blue/60 transition-colors rounded p-1">
+                  <span className="font-space-mono text-accent-blue/50 text-sm px-2 select-none">&gt;_</span>
+                  <select 
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="flex-1 bg-transparent border-0 border-none text-white font-archivo-narrow text-sm focus:ring-0 focus:outline-none py-2 px-1 w-full"
+                    style={{ background: 'transparent' }}
+                  >
+                    <option className="bg-[#0a0a0f] text-white" value="Feature Development">Feature Development</option>
+                    <option className="bg-[#0a0a0f] text-white" value="Bug Fixing">Bug Fixing</option>
+                    <option className="bg-[#0a0a0f] text-white" value="Refactoring">Refactoring</option>
+                    <option className="bg-[#0a0a0f] text-white" value="Algorithms">Algorithms</option>
+                    <option className="bg-[#0a0a0f] text-white" value="UI/UX Implementation">UI/UX Implementation</option>
+                  </select>
+                </div>
               </div>
 
+              {/* Project Name with Blinking Cursor on Focus */}
               <div>
-                <label className="block font-space-mono text-xs text-white/70 tracking-widest uppercase mb-2">
+                <label className="block font-space-mono text-xs text-white/50 tracking-widest uppercase mb-2">
                   Project Name
                 </label>
-                <input 
-                  type="text" 
-                  value={project}
-                  onChange={(e) => setProject(e.target.value)}
-                  placeholder="e.g. Core API"
-                  className="w-full bg-void border border-white/20 p-3 text-white font-archivo-narrow focus:border-accent-blue focus:outline-none transition-colors"
-                />
+                <div className="flex items-center bg-void/60 border border-white/10 focus-within:border-accent-blue/60 transition-colors rounded p-1 relative">
+                  <span className="font-space-mono text-accent-blue/50 text-sm px-2 select-none">&gt;_</span>
+                  <input 
+                    type="text" 
+                    value={project}
+                    onChange={(e) => setProject(e.target.value)}
+                    onFocus={() => setFocusedInput('project')}
+                    onBlur={() => setFocusedInput(null)}
+                    placeholder="e.g. Core API"
+                    className="flex-1 bg-transparent border-0 border-none text-white font-archivo-narrow text-sm focus:ring-0 focus:outline-none py-2 px-1 w-full"
+                  />
+                  {focusedInput === 'project' && (
+                    <span className="absolute right-3 font-space-mono text-accent-blue text-sm animate-pulse">▋</span>
+                  )}
+                </div>
               </div>
 
+              {/* Duration with >_ prefix */}
               <div>
-                <label className="block font-space-mono text-xs text-white/70 tracking-widest uppercase mb-2">
+                <label className="block font-space-mono text-xs text-white/50 tracking-widest uppercase mb-2">
                   Duration (Minutes)
                 </label>
-                <input 
-                  type="number" 
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  className="w-full bg-void border border-white/20 p-3 text-white font-archivo-narrow focus:border-accent-blue focus:outline-none transition-colors"
-                />
+                <div className="flex items-center bg-void/60 border border-white/10 focus-within:border-accent-blue/60 transition-colors rounded p-1">
+                  <span className="font-space-mono text-accent-blue/50 text-sm px-2 select-none">&gt;_</span>
+                  <input 
+                    type="number" 
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    className="flex-1 bg-transparent border-0 border-none text-white font-archivo-narrow text-sm focus:ring-0 focus:outline-none py-2 px-1 w-full"
+                  />
+                </div>
               </div>
 
-              <button type="submit" className="w-full btn-primary py-4 flex items-center justify-center gap-2 mt-4">
+              {/* Live Commit Hash Preview & Live Payload XP */}
+              <div className="border border-accent-blue/20 bg-accent-blue/5 p-3.5 rounded space-y-1.5 font-space-mono text-xs">
+                <div className="flex items-center justify-between text-white/40">
+                  <span>COMMIT PREVIEW:</span>
+                  <span className="text-accent-blue tracking-widest font-bold font-space-mono">
+                    FEAT-{commitHashPreview}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-white/40">
+                  <span>PAYLOAD SIZE:</span>
+                  <span className="text-white font-bold">
+                    +{Math.round((parseInt(duration) || 0) * 2.5)} XP
+                  </span>
+                </div>
+              </div>
+
+              <button type="submit" className="w-full btn-primary py-4 flex items-center justify-center gap-2 mt-4 active:scale-95 transition-transform duration-100 scanline-btn-effect">
                 <Code2 className="w-5 h-5" />
                 EXECUTE COMMIT
               </button>
@@ -133,18 +271,42 @@ export default function Coding() {
         {/* Right Column: Stats and History */}
         <div className="xl:col-span-2 space-y-8">
           
-          {/* Related Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatRing statName="Intelligence" level={intelligenceStat.level} xp={intelligenceStat.xp % 100} />
-            <StatRing statName="Creativity" level={creativityStat.level} xp={creativityStat.xp % 100} />
+          {/* Top segment: Stat Rings and Total Lines Forged counter card */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Stat rings */}
+            <div className="glass-panel p-4 flex flex-col items-center justify-center bg-void/50 border border-white/5 md:col-span-1">
+              <StatRing statName="Intelligence" level={intelligenceStat.level} xp={intelligenceStat.xp % 100} />
+            </div>
+            
+            <div className="glass-panel p-4 flex flex-col items-center justify-center bg-void/50 border border-white/5 md:col-span-1">
+              <StatRing statName="Creativity" level={creativityStat.level} xp={creativityStat.xp % 100} />
+            </div>
+
+            {/* Total Lines Forged count-up card */}
+            <div className="glass-panel p-5 flex flex-col justify-center bg-void/50 border border-accent-blue/30 md:col-span-1 relative overflow-hidden group">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-accent-blue to-transparent" />
+              <span className="font-space-mono text-[9px] text-white/40 uppercase tracking-widest">
+                LINES OF CODE SIMULATED
+              </span>
+              <span className="font-orbitron text-5xl font-black text-accent-blue tracking-tight mt-2 drop-shadow-[0_0_10px_rgba(0,212,255,0.4)]">
+                {displayedLines.toLocaleString()}
+              </span>
+            </div>
+
           </div>
 
-          {/* Log History */}
-          <div className="glass-panel p-6">
-            <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 border-l-4 border-accent-blue pl-3 flex items-center gap-2">
-              <GitMerge className="w-5 h-5 text-accent-blue" />
-              Repository History
-            </h2>
+          {/* Repository History */}
+          <div className="glass-panel p-6 border border-white/5 relative bg-void/30">
+            
+            {/* Ruled separator header */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-px bg-accent-blue" />
+              <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest text-white">
+                Repository History
+              </h2>
+              <div className="flex-1 h-px bg-white/5" />
+            </div>
             
             {logs.length === 0 ? (
               <EmptyState
@@ -153,33 +315,74 @@ export default function Coding() {
                 description="Your engineering history is clear. Commit your first lines of code to log physical progress in intelligence and creativity."
               />
             ) : (
-              <div className="space-y-3">
-                <AnimatePresence>
-                  {logs.map((log) => (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      key={log.id}
-                      className="p-4 bg-void/50 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-accent-blue/10 flex items-center justify-center">
-                          <Code2 className="w-5 h-5 text-accent-blue" />
+              <div className="relative pl-6">
+                
+                {/* Git Graph vertical branch line */}
+                <div className="absolute left-2.5 top-2.5 bottom-2 w-px bg-accent-blue/20" />
+
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {logs.map((log, index) => {
+                      const isFeature = log.activity_type.toLowerCase().includes('feature') || log.activity_type.toLowerCase().includes('algorithm');
+                      const shortHash = log.id.slice(0, 6).toUpperCase();
+                      
+                      return (
+                        <div key={log.id} className="relative flex items-start gap-4">
+                          
+                          {/* Circle git node node (filled for feature/refactor, hollow for bugfix) */}
+                          <div className={`absolute -left-[20px] top-2 w-2.5 h-2.5 rounded-full border border-accent-blue transition-colors flex items-center justify-center ${
+                            isFeature ? 'bg-accent-blue shadow-[0_0_8px_rgba(0,212,255,0.7)]' : 'bg-void'
+                          }`} />
+
+                          <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="flex-1 p-4 bg-void/50 border border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-l-4 hover:border-l-accent-blue transition-all duration-200"
+                          >
+                            <div className="flex items-start md:items-center gap-3">
+                              <div className="w-9 h-9 bg-accent-blue/10 flex items-center justify-center rounded">
+                                {isFeature ? <GitBranch className="w-4 h-4 text-accent-blue" /> : <GitPullRequest className="w-4 h-4 text-accent-blue/70" />}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-space-mono text-xs text-accent-blue/50 tracking-wider font-bold">
+                                    [{shortHash}]
+                                  </span>
+                                  <h3 className="font-archivo-narrow text-base text-white">
+                                    {log.metadata?.project || 'Monarch Core'}
+                                  </h3>
+                                  <span className="bg-accent-blue/10 border border-accent-blue/30 px-2 py-0.5 text-[9px] font-space-mono text-accent-blue/80 rounded-full">
+                                    {log.activity_type}
+                                  </span>
+                                  {isFeature && (
+                                    <span className="bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[9px] font-space-mono text-emerald-400 font-bold rounded">
+                                      MERGE
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="font-space-mono text-[10px] text-white/30 mt-0.5">
+                                  {new Date(log.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-4 items-center w-full md:w-auto justify-between md:justify-end">
+                              <span className="font-space-mono text-xs text-white/50 uppercase tracking-widest">
+                                {log.duration_minutes} MIN
+                              </span>
+                              <span className="font-space-mono text-xs font-bold text-accent-blue bg-accent-blue/10 px-2.5 py-1">
+                                +{log.xp_earned} XP
+                              </span>
+                            </div>
+                          </motion.div>
+
                         </div>
-                        <div>
-                          <h3 className="font-archivo-narrow text-lg text-white">{log.metadata?.project || 'Unknown Project'}</h3>
-                          <p className="font-space-mono text-xs text-white/50">{new Date(log.created_at).toLocaleDateString()} • {log.activity_type}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4 items-center w-full md:w-auto justify-between md:justify-end">
-                        <span className="font-space-mono text-sm text-white/70">{log.duration_minutes} MIN</span>
-                        <span className="font-space-mono text-sm font-bold text-accent-blue bg-accent-blue/10 px-3 py-1">
-                          +{log.xp_earned} XP
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+
               </div>
             )}
           </div>
