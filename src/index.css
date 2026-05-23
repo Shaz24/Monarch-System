@@ -45,7 +45,7 @@
   
   --color-monarch: #6D28D9;
   --color-monarch-glow: #8B5CF6;
-  --color-monarch-dim: #DDD6FE;
+  --color-monarch-dim: #A78BFA; /* Darkened for scrollbar/contrast legibility */
   
   --color-gold: #D97706;
   --color-gold-glow: #FEF3C7;
@@ -303,18 +303,23 @@ textarea::placeholder {
 
 /* Light mode dynamic token overrides for generic Tailwind layouts */
 
-/* Remove/hide all floating ambient purple background orbs to keep the Celestial Light Mode pure slate-white */
+/* Soften and keep the ambient top glow in light mode instead of hiding it */
 .light-mode body::before {
-  display: none !important;
+  background: radial-gradient(ellipse at top, rgba(124, 58, 237, 0.06) 0%, rgba(6, 182, 212, 0.02) 50%, transparent 80%) !important;
+  opacity: 0.85;
+  display: block !important;
 }
 
+/* Maintain soft background blobs for gradient depth in light mode instead of hiding them */
 .light-mode [class*="blur-[80px]"],
 .light-mode [class*="blur-[100px]"],
 .light-mode [class*="blur-[120px]"],
 .light-mode [class*="rounded-full"][class*="blur-"],
 .light-mode [class*="rounded-full"][class*="bg-accent-"],
 .light-mode [class*="rounded-full"][class*="bg-monarch/"] {
-  display: none !important;
+  display: block !important;
+  opacity: 0.06 !important;
+  mix-blend-mode: multiply;
 }
 
 /* 1. Global Typography Contrast Maps */
@@ -359,6 +364,92 @@ textarea::placeholder {
 .light-mode [class*="text-[#A78BFA]"],
 .light-mode [class*="text-[#a78bfa]"] {
   color: var(--color-monarch) !important;
+}
+
+/* Standardize neon colors to high-contrast variables */
+.light-mode .text-cyan-400,
+.light-mode [class*="text-cyan-400"] {
+  color: var(--color-cyan) !important;
+}
+.light-mode .text-red-400,
+.light-mode [class*="text-red-400"] {
+  color: var(--color-danger) !important;
+}
+.light-mode .text-emerald-400,
+.light-mode [class*="text-emerald-400"],
+.light-mode .text-green-400,
+.light-mode [class*="text-green-400"] {
+  color: var(--color-success) !important;
+}
+.light-mode .text-purple-400,
+.light-mode [class*="text-purple-400"],
+.light-mode .text-violet-400,
+.light-mode [class*="text-violet-400"] {
+  color: var(--color-monarch) !important;
+}
+.light-mode .text-amber-400,
+.light-mode [class*="text-amber-400"],
+.light-mode .text-yellow-400,
+.light-mode [class*="text-yellow-400"] {
+  color: var(--color-gold) !important;
+}
+
+/* Prevent nested elements inside primary buttons, badges, and dark themes from losing contrast */
+.light-mode .dark-theme,
+.light-mode .dark-theme *,
+.light-mode .btn-primary *,
+.light-mode .btn-monarch *,
+.light-mode [class*="bg-monarch"] *,
+.light-mode [class*="bg-accent-purple"] *,
+.light-mode [class*="bg-accent-blue"] *,
+.light-mode [class*="bg-danger"] *,
+.light-mode [class*="bg-success"] *,
+.light-mode [class*="bg-red-"] *,
+.light-mode [class*="bg-emerald-"] *,
+.light-mode [class*="bg-cyan-600"] *,
+.light-mode [class*="bg-cyan-700"] *,
+.light-mode .text-white-keep,
+.light-mode .text-white-keep * {
+  color: inherit !important;
+}
+
+/* Keep text colors consistent inside dark theme subtrees in light-mode */
+.light-mode .dark-theme [class*="text-white"],
+.light-mode .btn-primary [class*="text-white"],
+.light-mode .btn-monarch [class*="text-white"],
+.light-mode [class*="bg-monarch"] [class*="text-white"],
+.light-mode [class*="bg-accent-purple"] [class*="text-white"],
+.light-mode [class*="bg-accent-blue"] [class*="text-white"] {
+  color: #ffffff !important;
+}
+.light-mode .dark-theme [class*="text-white/90"],
+.light-mode .btn-primary [class*="text-white/90"] {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+.light-mode .dark-theme [class*="text-white/80"],
+.light-mode .btn-primary [class*="text-white/80"] {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+.light-mode .dark-theme [class*="text-white/70"],
+.light-mode .btn-primary [class*="text-white/70"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.light-mode .dark-theme [class*="text-white/60"],
+.light-mode .btn-primary [class*="text-white/60"] {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.light-mode .dark-theme [class*="text-white/50"],
+.light-mode .btn-primary [class*="text-white/50"] {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.light-mode .dark-theme [class*="text-slate-200"] {
+  color: #e2e8f0 !important;
+}
+.light-mode .dark-theme [class*="text-slate-300"] {
+  color: #cbd5e1 !important;
+}
+.light-mode .dark-theme [class*="text-slate-400"] {
+  color: #94a3b8 !important;
 }
 
 /* Hover/Group-Hover State Overrides: Elevate text opacity and color to full crispness when hovered! */
@@ -414,6 +505,20 @@ textarea::placeholder {
   border-color: var(--color-border-bright) !important;
 }
 
+.light-mode [class*="border-cyan-500/"] {
+  border-color: rgba(8, 145, 178, 0.2) !important;
+}
+.light-mode [class*="border-red-500/"] {
+  border-color: rgba(220, 38, 30, 0.2) !important;
+}
+.light-mode [class*="border-emerald-500/"],
+.light-mode [class*="border-green-500/"] {
+  border-color: rgba(5, 150, 105, 0.2) !important;
+}
+.light-mode [class*="border-monarch/"] {
+  border-color: rgba(109, 40, 217, 0.2) !important;
+}
+
 /* 4. Background glass / dark panel inversion */
 .light-mode [class*="bg-black/"],
 .light-mode [class*="bg-white/0.0"],
@@ -428,6 +533,44 @@ textarea::placeholder {
 .light-mode [class*="bg-void/90"],
 .light-mode [class*="bg-abyss/85"] {
   background-color: var(--color-abyss) !important;
+}
+
+/* Custom styled badge background tints in light mode */
+.light-mode [class*="bg-cyan-950/"] {
+  background-color: rgba(8, 145, 178, 0.08) !important;
+}
+.light-mode [class*="bg-red-950/"] {
+  background-color: rgba(220, 38, 30, 0.08) !important;
+}
+.light-mode [class*="bg-emerald-950/"],
+.light-mode [class*="bg-green-950/"] {
+  background-color: rgba(5, 150, 105, 0.08) !important;
+}
+.light-mode [class*="bg-purple-950/"],
+.light-mode [class*="bg-violet-950/"] {
+  background-color: rgba(109, 40, 217, 0.08) !important;
+}
+
+/* Ensure progress tracks, gauges and dividers are visible in light mode instead of blending in */
+.light-mode [class*="h-1.5"][class*="bg-"],
+.light-mode [class*="h-2.5"][class*="bg-"],
+.light-mode [class*="h-3"][class*="bg-"],
+.light-mode [class*="h-4"][class*="bg-"],
+.light-mode [class*="rounded-full"][class*="bg-white/5"],
+.light-mode [class*="rounded-full"][class*="bg-black/60"] {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Circular gauges background stroke visibility in light mode */
+.light-mode circle[stroke*="rgba(255, 255, 255, 0.03)"],
+.light-mode circle[style*="opacity: 0.2"] {
+  stroke: rgba(15, 23, 42, 0.08) !important;
+  opacity: 1 !important;
+}
+
+/* Softer glows for svg shapes in light mode */
+.light-mode svg circle[style*="drop-shadow"] {
+  filter: drop-shadow(0 2px 4px rgba(6, 182, 212, 0.15)) !important;
 }
 
 /* 5. Custom Button Styling: Maintain crisp white text ONLY on primary actions.
@@ -552,6 +695,14 @@ textarea::placeholder {
 .light-mode .glass-card:hover {
   border-color: var(--color-monarch-glow) !important;
   box-shadow: 0 12px 30px rgba(124, 58, 237, 0.12) !important;
+}
+
+/* Light mode custom scrollbar scrollable indicators styling */
+.light-mode .custom-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(109, 40, 217, 0.25) !important;
+}
+.light-mode .custom-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(109, 40, 217, 0.45) !important;
 }
 
 /* Custom Visual Overhaul Keyframes & Styles */

@@ -297,7 +297,7 @@ export default function Analytics() {
                 <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
                 <Radar name="Attribute Value" dataKey="A" stroke="#7C3AED" fill="#7C3AED" fillOpacity={0.35} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 0, fontFamily: 'Space Mono', color: 'rgb(var(--color-white))' }} 
+                  contentStyle={{ backgroundColor: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 0, fontFamily: 'Space Mono', color: 'var(--color-text-primary)' }} 
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -401,7 +401,7 @@ export default function Analytics() {
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="Actual" fill="#06B6D4" radius={[2, 2, 0, 0]} />
-                <Bar dataKey="Target" fill="rgba(255, 255, 255, 0.05)" radius={[2, 2, 0, 0]} stroke={gridColor} />
+                <Bar dataKey="Target" fill={isLight ? "rgba(15, 23, 42, 0.06)" : "rgba(255, 255, 255, 0.05)"} radius={[2, 2, 0, 0]} stroke={gridColor} />
               </BarChart>
             </ResponsiveContainer>
           </div>

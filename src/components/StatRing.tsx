@@ -26,8 +26,8 @@ export const StatRing = ({ statName, level, xp }: StatRingProps) => {
             stroke="currentColor"
             strokeWidth="6"
             fill="transparent"
-            className="text-void border-white/5"
-            style={{ opacity: 0.2 }}
+            className="text-border border-white/5"
+            style={{ opacity: 0.8 }}
           />
           <motion.circle
             initial={{ strokeDashoffset: circumference }}
