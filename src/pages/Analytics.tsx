@@ -211,12 +211,67 @@ export default function Analytics() {
     window.print();
   };
 
+  // ── YEAR HEATMAP ───────────────────────────────────────────────────────────
+  const heatmapData = useMemo(() => {
+    const map: Record<string, number> = {};
+    allLogs.forEach(log => {
+      const date = new Date(log.created_at).toISOString().split('T')[0];
+      map[date] = (map[date] || 0) + (log.xp_earned || 0);
+    });
+    // Build last 365 days
+    const days = [];
+    for (let i = 364; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      days.push({ date: dateStr, xp: map[dateStr] || 0, month: d.getMonth(), day: d.getDay() });
+    }
+    return days;
+  }, [allLogs]);
+
+  const heatmapMax = useMemo(() => Math.max(1, ...heatmapData.map(d => d.xp)), [heatmapData]);
+
+  const getHeatColor = (xp: number) => {
+    if (xp === 0) return 'rgba(255,255,255,0.04)';
+    const intensity = xp / heatmapMax;
+    if (intensity < 0.25) return 'rgba(124,58,237,0.25)';
+    if (intensity < 0.5)  return 'rgba(124,58,237,0.5)';
+    if (intensity < 0.75) return 'rgba(124,58,237,0.75)';
+    return '#A78BFA';
+  };
+
+  // ── ACHIEVEMENTS SHOWCASE ─────────────────────────────────────────────────────
+  const achievements = useMemo(() => {
+    const list = [];
+    const totalXpA = records.totalXp;
+    const streak = profile?.streak_days || 0;
+    const level = profile?.current_level || 1;
+    const focusHrs = records.focusHours;
+
+    if (totalXpA >= 100)   list.push({ emoji: '⚡', title: 'Awakened', desc: '100+ XP earned', unlocked: true });
+    if (totalXpA >= 1000)  list.push({ emoji: '🔥', title: 'Ascending', desc: '1,000+ XP earned', unlocked: true });
+    if (totalXpA >= 5000)  list.push({ emoji: '👑', title: 'Monarch', desc: '5,000+ XP earned', unlocked: true });
+    if (streak >= 7)       list.push({ emoji: '🗡️', title: 'Iron Will', desc: '7-day streak achieved', unlocked: true });
+    if (streak >= 30)      list.push({ emoji: '🌑', title: 'Shadow Walker', desc: '30-day streak maintained', unlocked: true });
+    if (level >= 5)        list.push({ emoji: '🏆', title: 'Elite Hunter', desc: 'Reached Level 5', unlocked: true });
+    if (level >= 10)       list.push({ emoji: '💎', title: 'Diamond Tier', desc: 'Reached Level 10', unlocked: true });
+    if (focusHrs >= 10)    list.push({ emoji: '🧠', title: 'Deep Thinker', desc: '10+ hours of focus logged', unlocked: true });
+    if (records.totalLogs >= 50) list.push({ emoji: '📊', title: 'Data Driven', desc: '50+ activities logged', unlocked: true });
+
+    // Locked achievements
+    if (totalXpA < 1000)  list.push({ emoji: '🔥', title: 'Ascending', desc: '1,000+ XP needed', unlocked: false });
+    if (streak < 7)       list.push({ emoji: '🗡️', title: 'Iron Will', desc: '7-day streak needed', unlocked: false });
+    if (level < 5)        list.push({ emoji: '🏆', title: 'Elite Hunter', desc: 'Level 5 needed', unlocked: false });
+
+    return { unlocked: list.filter(a => a.unlocked), locked: list.filter(a => !a.unlocked) };
+  }, [records, profile]);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      className="p-6 md:p-12 max-w-[1400px] mx-auto w-full space-y-8 print:p-0 print:bg-white print:text-black"
+      className="p-4 md:p-12 max-w-[1400px] mx-auto w-full space-y-8 print:p-0 print:bg-white print:text-black"
     >
       {/* HEADER HUD */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6 print:border-black print:pb-2">
@@ -278,6 +333,80 @@ export default function Analytics() {
           </div>
         </div>
 
+      </div>
+
+      {/* ── YEAR ACTIVITY HEATMAP ── */}
+      <div className="glass-card p-5 print:hidden">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Activity className="w-4 h-4 text-purple-400" /> Activity Heatmap — Last 365 Days
+          </h2>
+          <div className="flex items-center gap-3 text-[9px] font-mono text-white/30 uppercase">
+            <span className="flex items-center gap-1">Less <span className="flex gap-0.5">{[0.04, 0.25, 0.5, 0.75, 1].map((o, i) => <span key={i} className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: `rgba(124,58,237,${o})` }} />)}</span> More</span>
+          </div>
+        </div>
+        <div className="overflow-x-auto pb-2">
+          <div className="flex gap-[3px] min-w-[700px]">
+            {/* Group by week */}
+            {Array.from({ length: 53 }, (_, weekIdx) => {
+              const weekDays = heatmapData.slice(weekIdx * 7, weekIdx * 7 + 7);
+              return (
+                <div key={weekIdx} className="flex flex-col gap-[3px]">
+                  {weekDays.map((day, dayIdx) => (
+                    <div
+                      key={dayIdx}
+                      title={`${day.date}: ${day.xp} XP`}
+                      className="w-3 h-3 rounded-sm transition-transform hover:scale-150 cursor-default"
+                      style={{ background: getHeatColor(day.xp) }}
+                    />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-[3px] mt-1.5 min-w-[700px] font-mono text-[8px] text-white/20">
+            {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => (
+              <span key={m} className="w-[~30px] flex-1">{m}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── ACHIEVEMENTS SHOWCASE ── */}
+      <div className="glass-card p-5 print:hidden">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-400" /> Achievements
+          </h2>
+          <span className="font-mono text-[9px] text-white/30">{achievements.unlocked.length} unlocked / {achievements.unlocked.length + achievements.locked.length} total</span>
+        </div>
+        
+        {achievements.unlocked.length > 0 && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-9 gap-3 mb-4">
+            {achievements.unlocked.map((a, i) => (
+              <div
+                key={i}
+                title={a.desc}
+                className="flex flex-col items-center gap-1.5 p-3 bg-amber-950/10 border border-amber-500/25 rounded-xl hover:border-amber-500/50 transition-all relative overflow-hidden group"
+              >
+                <div className="achievement-shine absolute inset-0 rounded-xl" />
+                <span className="text-2xl">{a.emoji}</span>
+                <span className="font-mono text-[8px] text-amber-300 font-bold text-center leading-tight uppercase tracking-wider">{a.title}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {achievements.locked.length > 0 && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-9 gap-3">
+            {achievements.locked.map((a, i) => (
+              <div key={i} title={`Locked: ${a.desc}`} className="flex flex-col items-center gap-1.5 p-3 bg-white/[0.02] border border-white/5 rounded-xl opacity-40 grayscale">
+                <span className="text-2xl">{a.emoji}</span>
+                <span className="font-mono text-[8px] text-white/40 font-bold text-center leading-tight uppercase tracking-wider">{a.title}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* CORE Progression Charts GRID */}

@@ -103,13 +103,76 @@ export default function Coding() {
     toast.success('Code merged. Intelligence augmented.', { icon: '💻' });
   };
 
+  // ── TECH STACK ───────────────────────────────────────────────────────────
+  const DEFAULT_STACK = ['TypeScript', 'React', 'Tailwind', 'Supabase', 'Vite', 'Python'];
+  const stackKey = `monarch_tech_stack_${logs[0]?.user_id || 'local'}`;
+  const [techStack, setTechStack] = useState<string[]>(() => {
+    const saved = localStorage.getItem(stackKey);
+    return saved ? JSON.parse(saved) : DEFAULT_STACK;
+  });
+  const [newTech, setNewTech] = useState('');
+  const addTech = () => {
+    if (!newTech.trim()) return;
+    const updated = [...techStack, newTech.trim()];
+    setTechStack(updated);
+    localStorage.setItem(stackKey, JSON.stringify(updated));
+    setNewTech('');
+  };
+  const removeTech = (tech: string) => {
+    const updated = techStack.filter(t => t !== tech);
+    setTechStack(updated);
+    localStorage.setItem(stackKey, JSON.stringify(updated));
+  };
+
+  // ── KANBAN BOARD ──────────────────────────────────────────────────────────
+  const kanbanKey = `monarch_kanban_${logs[0]?.user_id || 'local'}`;
+  const [kanbanCards, setKanbanCards] = useState<Array<{id:string;title:string;col:'todo'|'doing'|'done'}>>(() => {
+    const saved = localStorage.getItem(kanbanKey);
+    return saved ? JSON.parse(saved) : [
+      { id: '1', title: 'Setup auth system', col: 'done' },
+      { id: '2', title: 'Build activity logging', col: 'doing' },
+      { id: '3', title: 'Analytics dashboard', col: 'todo' },
+    ];
+  });
+  const [newCardTitle, setNewCardTitle] = useState('');
+  const addKanbanCard = () => {
+    if (!newCardTitle.trim()) return;
+    const updated = [...kanbanCards, { id: Date.now().toString(), title: newCardTitle.trim(), col: 'todo' as const }];
+    setKanbanCards(updated);
+    localStorage.setItem(kanbanKey, JSON.stringify(updated));
+    setNewCardTitle('');
+  };
+  const moveCard = (id: string, col: 'todo'|'doing'|'done') => {
+    const updated = kanbanCards.map(c => c.id === id ? { ...c, col } : c);
+    setKanbanCards(updated);
+    localStorage.setItem(kanbanKey, JSON.stringify(updated));
+  };
+  const deleteCard = (id: string) => {
+    const updated = kanbanCards.filter(c => c.id !== id);
+    setKanbanCards(updated);
+    localStorage.setItem(kanbanKey, JSON.stringify(updated));
+  };
+
+  // ── LEETCODE TRACKER ────────────────────────────────────────────────────────
+  const lcKey = `monarch_lc_${logs[0]?.user_id || 'local'}`;
+  const [lcStats, setLcStats] = useState<{easy:number;medium:number;hard:number}>(() => {
+    const saved = localStorage.getItem(lcKey);
+    return saved ? JSON.parse(saved) : { easy: 0, medium: 0, hard: 0 };
+  });
+  const updateLc = (diff: 'easy'|'medium'|'hard', delta: number) => {
+    const updated = { ...lcStats, [diff]: Math.max(0, lcStats[diff] + delta) };
+    setLcStats(updated);
+    localStorage.setItem(lcKey, JSON.stringify(updated));
+  };
+  const lcTotal = lcStats.easy + lcStats.medium + lcStats.hard;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
+      className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
       {/* Scrollable low-opacity code matrix background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0 opacity-[4%]">
@@ -169,6 +232,123 @@ const calculateStatVelocity = (logs: ActivityLog[]) => {
           <span className="font-space-mono text-lg font-bold text-white tracking-widest mt-0.5">
             {formatTimer(secondsElapsed)}
           </span>
+        </div>
+      </div>
+
+      {/* ── TECH STACK TAGS ── */}
+      <div className="glass-card p-5 relative z-10">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Code2 className="w-3.5 h-3.5 text-cyan-400" /> Active Tech Stack
+          </h3>
+          <span className="font-mono text-[9px] text-white/30">{techStack.length} technologies</span>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {techStack.map(tech => (
+            <motion.span
+              key={tech}
+              whileHover={{ scale: 1.05 }}
+              className="group relative inline-flex items-center gap-1.5 px-3 py-1.5 bg-cyan-950/20 border border-cyan-500/25 text-cyan-300 font-mono text-[10px] font-bold rounded cursor-pointer hover:border-cyan-500/60 transition-all"
+            >
+              {tech}
+              <button onClick={() => removeTech(tech)} className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-red-400 transition-opacity ml-1 text-xs font-bold">×</button>
+            </motion.span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={newTech}
+            onChange={e => setNewTech(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTech())}
+            placeholder="Add technology..."
+            className="flex-1 bg-black/30 border border-white/10 text-white font-mono text-xs px-3 py-2 rounded focus:border-cyan-500/50 focus:outline-none"
+          />
+          <button onClick={addTech} className="px-3 py-2 bg-cyan-950/30 border border-cyan-500/30 text-cyan-400 font-mono text-xs rounded hover:bg-cyan-950/50 transition-all">
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── KANBAN BOARD ── */}
+      <div className="glass-card p-5 relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <GitPullRequest className="w-3.5 h-3.5 text-purple-400" /> Project Kanban
+          </h3>
+          <div className="flex gap-2">
+            <input
+              value={newCardTitle}
+              onChange={e => setNewCardTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addKanbanCard())}
+              placeholder="New task..."
+              className="bg-black/30 border border-white/10 text-white font-mono text-xs px-3 py-1.5 rounded focus:border-purple-500/50 focus:outline-none"
+            />
+            <button onClick={addKanbanCard} className="px-2 py-1.5 bg-purple-950/30 border border-purple-500/30 text-purple-400 font-mono text-xs rounded hover:bg-purple-950/50 transition-all">
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {(['todo', 'doing', 'done'] as const).map(col => {
+            const colors = col === 'todo' ? 'border-white/10 text-white/40' : col === 'doing' ? 'border-amber-500/30 text-amber-400' : 'border-green-500/30 text-green-400';
+            const colCards = kanbanCards.filter(c => c.col === col);
+            return (
+              <div key={col} className={`p-3 rounded-lg bg-black/30 border ${colors}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-[9px] font-bold uppercase tracking-widest">{col === 'todo' ? 'To Do' : col === 'doing' ? 'In Progress' : 'Done'}</span>
+                  <span className="font-mono text-[8px] opacity-60">{colCards.length}</span>
+                </div>
+                <div className="space-y-1.5 min-h-[60px]">
+                  <AnimatePresence>
+                    {colCards.map(card => (
+                      <motion.div
+                        key={card.id}
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="group p-2 bg-black/40 border border-white/5 rounded text-[9px] font-mono text-white/70 flex items-center justify-between gap-1 hover:border-white/20 transition-all cursor-pointer"
+                      >
+                        <span>{card.title}</span>
+                        <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 flex gap-1 transition-opacity">
+                          {col !== 'todo' && <button onClick={() => moveCard(card.id, col === 'doing' ? 'todo' : 'doing')} className="text-white/30 hover:text-white/70">←</button>}
+                          {col !== 'done' && <button onClick={() => moveCard(card.id, col === 'todo' ? 'doing' : 'done')} className="text-white/30 hover:text-white/70">→</button>}
+                          <button onClick={() => deleteCard(card.id)} className="text-red-400/50 hover:text-red-400">×</button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── LEETCODE TRACKER ── */}
+      <div className="glass-card p-5 relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <GitBranch className="w-3.5 h-3.5 text-amber-400" /> LeetCode Progress
+          </h3>
+          <div className="font-mono text-sm font-bold text-white">
+            {lcTotal} <span className="text-white/30 text-[10px]">problems solved</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {([
+            { key: 'easy', label: 'Easy', color: '#10B981', text: 'text-emerald-400' },
+            { key: 'medium', label: 'Medium', color: '#F59E0B', text: 'text-amber-400' },
+            { key: 'hard', label: 'Hard', color: '#EF4444', text: 'text-red-400' },
+          ] as const).map(d => (
+            <div key={d.key} className="flex flex-col items-center gap-2 p-4 bg-black/30 border border-white/5 rounded-lg">
+              <span className={`font-mono text-3xl font-black ${d.text}`}>{lcStats[d.key]}</span>
+              <span className="font-mono text-[9px] text-white/40 uppercase">{d.label}</span>
+              <div className="flex gap-1">
+                <button onClick={() => updateLc(d.key, -1)} className={`w-7 h-7 rounded border border-white/10 text-white/40 hover:text-white text-xs transition-all`}>−</button>
+                <button onClick={() => updateLc(d.key, 1)} className={`w-7 h-7 rounded font-bold text-xs transition-all`} style={{ background: `${d.color}22`, border: `1px solid ${d.color}44`, color: d.color }}>+</button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

@@ -98,13 +98,85 @@ export default function Creator() {
     toast.success('Content broadcast successful. Influence expanded.', { icon: '🎥' });
   };
 
+  // ── CONTENT CALENDAR ─────────────────────────────────────────────────────────
+  const calKey = `monarch_content_calendar`;
+  type ContentItem = { id: string; title: string; platform: string; scheduledDate: string; status: 'idea'|'scripted'|'recorded'|'published' };
+  const [contentItems, setContentItems] = useState<ContentItem[]>(() => {
+    const saved = localStorage.getItem(calKey);
+    return saved ? JSON.parse(saved) : [
+      { id: '1', title: 'My 30-day Discipline Challenge', platform: 'YouTube', scheduledDate: new Date().toISOString().split('T')[0], status: 'scripted' },
+      { id: '2', title: 'Shadow Monarch Morning Routine', platform: 'TikTok', scheduledDate: new Date().toISOString().split('T')[0], status: 'idea' },
+    ];
+  });
+  const [newContentTitle, setNewContentTitle] = useState('');
+  const [newContentPlatform, setNewContentPlatform] = useState('YouTube');
+  const addContentItem = () => {
+    if (!newContentTitle.trim()) return;
+    const item: ContentItem = { id: Date.now().toString(), title: newContentTitle.trim(), platform: newContentPlatform, scheduledDate: new Date().toISOString().split('T')[0], status: 'idea' };
+    const updated = [...contentItems, item];
+    setContentItems(updated);
+    localStorage.setItem(calKey, JSON.stringify(updated));
+    setNewContentTitle('');
+  };
+  const updateContentStatus = (id: string, status: ContentItem['status']) => {
+    const updated = contentItems.map(c => c.id === id ? { ...c, status } : c);
+    setContentItems(updated);
+    localStorage.setItem(calKey, JSON.stringify(updated));
+  };
+  const deleteContentItem = (id: string) => {
+    const updated = contentItems.filter(c => c.id !== id);
+    setContentItems(updated);
+    localStorage.setItem(calKey, JSON.stringify(updated));
+  };
+  const STATUS_COLORS: Record<string, string> = { idea: 'text-white/40 border-white/10', scripted: 'text-blue-400 border-blue-500/30', recorded: 'text-amber-400 border-amber-500/30', published: 'text-green-400 border-green-500/30' };
+
+  // ── IDEA BANK ──────────────────────────────────────────────────────────────
+  const ideaKey = `monarch_idea_bank`;
+  const [ideas, setIdeas] = useState<string[]>(() => {
+    const saved = localStorage.getItem(ideaKey);
+    return saved ? JSON.parse(saved) : ['24-hour challenge video', 'Coding sesh timelapse', 'Day in the life of a Shadow Monarch'];
+  });
+  const [newIdea, setNewIdea] = useState('');
+  const addIdea = () => {
+    if (!newIdea.trim()) return;
+    const updated = [...ideas, newIdea.trim()];
+    setIdeas(updated);
+    localStorage.setItem(ideaKey, JSON.stringify(updated));
+    setNewIdea('');
+  };
+  const removeIdea = (idx: number) => {
+    const updated = ideas.filter((_, i) => i !== idx);
+    setIdeas(updated);
+    localStorage.setItem(ideaKey, JSON.stringify(updated));
+  };
+  const promoteIdea = (idx: number) => {
+    const idea = ideas[idx];
+    addContentItem(); // placeholder
+    setNewContentTitle(idea);
+    removeIdea(idx);
+    toast('Idea promoted to calendar!', { icon: '📅' });
+  };
+
+  // ── REVENUE TRACKER ─────────────────────────────────────────────────────────
+  const revKey = `monarch_revenue`;
+  const [revenue, setRevenue] = useState<Record<string, number>>(() => {
+    const saved = localStorage.getItem(revKey);
+    return saved ? JSON.parse(saved) : { AdSense: 0, Sponsorships: 0, Merch: 0, Courses: 0 };
+  });
+  const updateRevenue = (source: string, amount: number) => {
+    const updated = { ...revenue, [source]: Math.max(0, (revenue[source] || 0) + amount) };
+    setRevenue(updated);
+    localStorage.setItem(revKey, JSON.stringify(updated));
+  };
+  const totalRevenue = Object.values(revenue).reduce((s, v) => s + v, 0);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
+      className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
       {/* Pulse REC Monitor on the far top-right */}
       <div className="absolute top-8 right-6 md:right-12 flex items-center gap-2 z-20 pointer-events-none select-none">
@@ -135,6 +207,112 @@ export default function Creator() {
           <div className="flex whitespace-nowrap animate-[marquee_25s_linear_infinite] select-none font-space-mono text-[9px] text-[#ff5a00]/50 tracking-widest uppercase">
             <span>[ BROADCAST LIVE ] — [ INFLUENCE EXPANDING ] — [ CONTENT DEPLOYED ] — [ AUDIENCE GROWING ] — [ BROADCAST LIVE ] — [ INFLUENCE EXPANDING ] — [ CONTENT DEPLOYED ] — [ AUDIENCE GROWING ] —&nbsp;</span>
             <span>[ BROADCAST LIVE ] — [ INFLUENCE EXPANDING ] — [ CONTENT DEPLOYED ] — [ AUDIENCE GROWING ] — [ BROADCAST LIVE ] — [ INFLUENCE EXPANDING ] — [ CONTENT DEPLOYED ] — [ AUDIENCE GROWING ] —&nbsp;</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── CONTENT CALENDAR ── */}
+      <div className="glass-card p-5 relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Camera className="w-3.5 h-3.5 text-orange-400" /> Content Pipeline
+          </h3>
+          <span className="font-mono text-[9px] text-white/30">{contentItems.length} items in queue</span>
+        </div>
+        <div className="flex gap-2 mb-4">
+          <input value={newContentTitle} onChange={e => setNewContentTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addContentItem())} placeholder="Content title..." className="flex-1 bg-black/30 border border-white/10 text-white font-mono text-xs px-3 py-2 rounded focus:border-orange-500/50 focus:outline-none" />
+          <select value={newContentPlatform} onChange={e => setNewContentPlatform(e.target.value)} className="bg-black/30 border border-white/10 text-white font-mono text-xs px-2 py-2 rounded">
+            {['YouTube','TikTok','Instagram','X','Podcast'].map(p => <option key={p}>{p}</option>)}
+          </select>
+          <button onClick={addContentItem} className="px-3 py-2 bg-orange-950/30 border border-orange-500/30 text-orange-400 rounded hover:bg-orange-950/50 transition-all">
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="space-y-2">
+          <AnimatePresence>
+            {contentItems.map(item => (
+              <motion.div key={item.id} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 20 }}
+                className="flex items-center gap-3 p-3 bg-black/30 border border-white/5 rounded-lg hover:border-white/10 transition-all group"
+              >
+                <span className="text-sm">{getPlatformEmoji(item.platform)}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono text-xs text-white truncate">{item.title}</p>
+                  <p className="font-mono text-[8px] text-white/30">{item.platform} · {item.scheduledDate}</p>
+                </div>
+                <select
+                  value={item.status}
+                  onChange={e => updateContentStatus(item.id, e.target.value as any)}
+                  className={`text-[9px] font-mono font-bold px-2 py-1 rounded border bg-transparent ${STATUS_COLORS[item.status]}`}
+                >
+                  {['idea','scripted','recorded','published'].map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button onClick={() => deleteContentItem(item.id)} className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-red-400/50 hover:text-red-400 transition-all">×</button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* ── IDEA BANK + REVENUE ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
+
+        {/* Idea Bank */}
+        <div className="glass-card p-5">
+          <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-3 mb-3">
+            <Award className="w-3.5 h-3.5 text-violet-400" /> Idea Bank
+          </h3>
+          <div className="flex gap-2 mb-3">
+            <input value={newIdea} onChange={e => setNewIdea(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addIdea())} placeholder="New content idea..." className="flex-1 bg-black/30 border border-white/10 text-white font-mono text-xs px-3 py-2 rounded focus:border-violet-500/50 focus:outline-none" />
+            <button onClick={addIdea} className="px-3 py-2 bg-violet-950/30 border border-violet-500/30 text-violet-400 rounded"><Plus className="w-3.5 h-3.5" /></button>
+          </div>
+          <div className="space-y-1.5">
+            <AnimatePresence>
+              {ideas.map((idea, i) => (
+                <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: 20 }}
+                  className="group flex items-center gap-2 p-2.5 bg-black/30 border border-white/5 rounded hover:border-violet-500/20 transition-all"
+                >
+                  <span className="text-[9px] text-white/30 font-mono w-4">{i+1}.</span>
+                  <p className="flex-1 font-mono text-[11px] text-white/70">{idea}</p>
+                  <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 flex gap-1 transition-opacity">
+                    <button onClick={() => promoteIdea(i)} className="text-[9px] px-1.5 py-0.5 bg-orange-950/30 border border-orange-500/30 text-orange-400 rounded">→Cal</button>
+                    <button onClick={() => removeIdea(i)} className="text-red-400/50 hover:text-red-400 text-xs">×</button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Revenue Tracker */}
+        <div className="glass-card p-5">
+          <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
+            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+              <Video className="w-3.5 h-3.5 text-green-400" /> Revenue Tracker
+            </h3>
+            <div className="text-right">
+              <p className="font-orbitron text-lg font-black text-green-400">${totalRevenue.toLocaleString()}</p>
+              <p className="font-mono text-[8px] text-white/30 uppercase">total earned</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {Object.entries(revenue).map(([source, amount]) => {
+              const pct = totalRevenue > 0 ? (amount / totalRevenue) * 100 : 0;
+              return (
+                <div key={source}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono text-[10px] text-white/60">{source}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-green-400">${amount.toLocaleString()}</span>
+                      <button onClick={() => updateRevenue(source, -10)} className="w-5 h-5 text-[9px] border border-white/10 text-white/30 hover:text-white rounded text-center">−</button>
+                      <button onClick={() => updateRevenue(source, 10)} className="w-5 h-5 text-[9px] border border-green-500/30 text-green-400 hover:bg-green-950/30 rounded text-center">+</button>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-600 to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

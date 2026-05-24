@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, BrainCircuit, Lock, ScrollText, Smartphone, UserMinus, Target } from 'lucide-react';
+import { Brain, BrainCircuit, Lock, ScrollText, Smartphone, UserMinus, Target, ChevronLeft, ChevronRight, Pencil, Save } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
 import { MonkModeOverlay } from '../components/MonkModeOverlay';
@@ -96,6 +96,109 @@ export default function Mind() {
     }, 600);
   };
 
+  // ── MOOD TRACKER ──────────────────────────────────────────────────────────
+  const MOODS = [
+    { emoji: '💀', label: 'Void', color: '#475569' },
+    { emoji: '😔', label: 'Low', color: '#EF4444' },
+    { emoji: '😐', label: 'Neutral', color: '#94A3B8' },
+    { emoji: '😊', label: 'Good', color: '#10B981' },
+    { emoji: '🔥', label: 'Locked In', color: '#F59E0B' },
+  ];
+  const todayMoodKey = `monarch_mood_${new Date().toISOString().split('T')[0]}`;
+  const [selectedMood, setSelectedMood] = useState<number | null>(() => {
+    const saved = localStorage.getItem(todayMoodKey);
+    return saved ? parseInt(saved) : null;
+  });
+  const [moodHistory] = useState<Array<{ day: string; mood: number }>>(() => {
+    const history = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const key = `monarch_mood_${d.toISOString().split('T')[0]}`;
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        history.push({ day: d.toLocaleDateString([], { weekday: 'short' }), mood: parseInt(saved) });
+      } else {
+        history.push({ day: d.toLocaleDateString([], { weekday: 'short' }), mood: -1 });
+      }
+    }
+    return history;
+  });
+
+  const setMood = (idx: number) => {
+    setSelectedMood(idx);
+    localStorage.setItem(todayMoodKey, idx.toString());
+    toast(MOODS[idx].label + ' — State logged.', { icon: MOODS[idx].emoji });
+  };
+
+  // ── BREATHING EXERCISE ─────────────────────────────────────────────────────
+  const BREATHE_PHASES = [
+    { label: 'INHALE', seconds: 4, color: '#06B6D4', scale: 1.4 },
+    { label: 'HOLD', seconds: 4, color: '#A78BFA', scale: 1.4 },
+    { label: 'EXHALE', seconds: 4, color: '#10B981', scale: 1.0 },
+    { label: 'HOLD', seconds: 4, color: '#F59E0B', scale: 1.0 },
+  ];
+  const [breathPhase, setBreathPhase] = useState(0);
+  const [breathRunning, setBreathRunning] = useState(false);
+  const [breathCount, setBreathCount] = useState(0);
+  const [breathTick, setBreathTick] = useState(0);
+  const breathIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startBreathing = () => {
+    setBreathRunning(true);
+    setBreathPhase(0);
+    setBreathTick(0);
+  };
+  const stopBreathing = () => {
+    setBreathRunning(false);
+    if (breathIntervalRef.current) clearInterval(breathIntervalRef.current);
+    setBreathTick(0);
+  };
+
+  useEffect(() => {
+    if (!breathRunning) return;
+    const tick = setInterval(() => {
+      setBreathTick(prev => {
+        const phase = BREATHE_PHASES[breathPhase];
+        if (prev >= phase.seconds - 1) {
+          const nextPhase = (breathPhase + 1) % BREATHE_PHASES.length;
+          setBreathPhase(nextPhase);
+          if (nextPhase === 0) setBreathCount(c => c + 1);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [breathRunning, breathPhase]);
+
+  const currentPhase = BREATHE_PHASES[breathPhase];
+
+  // ── JOURNAL ENTRY ───────────────────────────────────────────────────────────
+  const journalKey = `monarch_journal_${new Date().toISOString().split('T')[0]}`;
+  const [journalText, setJournalText] = useState(() => localStorage.getItem(journalKey) || '');
+  const [journalSaved, setJournalSaved] = useState(false);
+  const saveJournal = () => {
+    localStorage.setItem(journalKey, journalText);
+    setJournalSaved(true);
+    toast.success('Journal entry committed to the void.', { icon: '✍️' });
+    setTimeout(() => setJournalSaved(false), 2500);
+  };
+
+  // ── AFFIRMATIONS ────────────────────────────────────────────────────────────
+  const AFFIRMATIONS = [
+    'I am disciplined. I am consistent. I rise every single day.',
+    'My mind is a weapon. I sharpen it daily with knowledge and focus.',
+    'I do not negotiate with weakness. I eliminate it.',
+    'Every challenge is a level up in disguise.',
+    'I am the shadow monarch of my own destiny.',
+    'Pain is temporary. Level is permanent.',
+    'I choose discomfort now so I can choose comfort later.',
+    'My potential is limitless. My grind is infinite.',
+    'I am not built for average. I was made to rise.',
+    'Each rep, each session, each page — I am becoming.',
+  ];
+  const [affirmIdx, setAffirmIdx] = useState(0);
+
   return (
     <>
       <MonkModeOverlay 
@@ -109,7 +212,7 @@ export default function Mind() {
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
+        className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
       >
         {/* Floating background neural orbs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -121,8 +224,148 @@ export default function Mind() {
           <div className="absolute w-[15vw] h-[15vw] bg-[#00D4FF]/10 rounded-full blur-[80px] top-[80%] right-[5%] animate-float-6" />
         </div>
 
+        {/* ── MOOD TRACKER + BREATHING + AFFIRMATIONS ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 relative z-10">
+          
+          {/* Mood Tracker */}
+          <div className="glass-card p-5 flex flex-col gap-3">
+            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-2">
+              <Brain className="w-3.5 h-3.5 text-violet-400" /> Emotional State
+            </h3>
+            <div className="flex justify-between">
+              {MOODS.map((m, i) => (
+                <button
+                  key={m.label}
+                  onClick={() => setMood(i)}
+                  className={`mood-btn flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${selectedMood === i ? 'selected bg-white/10' : 'opacity-50 hover:opacity-80'}`}
+                >
+                  <span className="text-2xl">{m.emoji}</span>
+                  <span className="font-mono text-[8px] uppercase" style={{ color: m.color }}>{m.label}</span>
+                </button>
+              ))}
+            </div>
+            {/* 7-day mood history */}
+            <div className="flex gap-1.5 mt-1">
+              {moodHistory.map((h, i) => (
+                <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                  <div
+                    className="w-full h-6 rounded flex items-center justify-center font-mono text-sm"
+                    style={{
+                      background: h.mood >= 0 ? `${MOODS[h.mood]?.color}22` : 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${h.mood >= 0 ? MOODS[h.mood]?.color + '44' : 'rgba(255,255,255,0.05)'}`,
+                    }}
+                  >
+                    {h.mood >= 0 ? MOODS[h.mood]?.emoji : ''}
+                  </div>
+                  <span className="font-mono text-[7px] text-white/20">{h.day[0]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Box Breathing */}
+          <div className="glass-card p-5 flex flex-col items-center gap-3">
+            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-2 w-full">
+              <Target className="w-3.5 h-3.5 text-cyan-400" /> Box Breathing (4-4-4-4)
+            </h3>
+            {/* Animated circle */}
+            <div className="relative w-24 h-24 flex items-center justify-center my-1">
+              <div
+                className="w-20 h-20 rounded-full border-2 flex items-center justify-center transition-transform duration-1000"
+                style={{
+                  borderColor: currentPhase.color,
+                  transform: breathRunning ? `scale(${currentPhase.scale})` : 'scale(1)',
+                  boxShadow: breathRunning ? `0 0 20px ${currentPhase.color}44` : 'none',
+                }}
+              >
+                <div className="text-center">
+                  <span className="font-mono text-[10px] font-bold block" style={{ color: currentPhase.color }}>
+                    {breathRunning ? currentPhase.label : 'READY'}
+                  </span>
+                  {breathRunning && (
+                    <span className="font-mono text-xl font-black text-white">
+                      {currentPhase.seconds - breathTick}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[9px] font-mono text-white/30">
+              <span>Cycles: <span className="text-violet-400 font-bold">{breathCount}</span></span>
+            </div>
+            <button
+              onClick={breathRunning ? stopBreathing : startBreathing}
+              className={`w-full py-2 text-xs font-mono font-bold border rounded transition-all ${breathRunning ? 'bg-red-950/20 border-red-500/30 text-red-400' : 'bg-cyan-950/20 border-cyan-500/30 text-cyan-400'}`}
+            >
+              {breathRunning ? 'STOP' : 'BEGIN'}
+            </button>
+          </div>
+
+          {/* Affirmations */}
+          <div className="glass-card p-5 flex flex-col gap-3">
+            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-2">
+              <ScrollText className="w-3.5 h-3.5 text-amber-400" /> Daily Affirmation
+            </h3>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={affirmIdx}
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -15 }}
+                className="flex-1 flex items-center justify-center min-h-[80px]"
+              >
+                <p className="font-display text-sm font-medium text-[#F1F5F9] leading-relaxed text-center italic">
+                  "{AFFIRMATIONS[affirmIdx]}"
+                </p>
+              </motion.div>
+            </AnimatePresence>
+            <div className="flex items-center justify-between mt-auto">
+              <button
+                onClick={() => setAffirmIdx(i => (i - 1 + AFFIRMATIONS.length) % AFFIRMATIONS.length)}
+                className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="font-mono text-[9px] text-white/20">{affirmIdx + 1} / {AFFIRMATIONS.length}</span>
+              <button
+                onClick={() => setAffirmIdx(i => (i + 1) % AFFIRMATIONS.length)}
+                className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── JOURNAL QUICK ENTRY ── */}
+        <div className="glass-card p-5 mb-6 relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+              <Pencil className="w-3.5 h-3.5 text-purple-400" /> Daily Journal Entry
+            </h3>
+            <span className="font-mono text-[9px] text-white/30">{new Date().toLocaleDateString()}</span>
+          </div>
+          <textarea
+            value={journalText}
+            onChange={e => setJournalText(e.target.value)}
+            rows={4}
+            placeholder="Record your thoughts, reflections, and realizations for today..."
+            className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white/80 font-mono text-xs placeholder-white/20 focus:border-violet-500/50 focus:outline-none resize-none transition-colors"
+          />
+          <div className="flex justify-between items-center mt-2">
+            <span className="font-mono text-[9px] text-white/20">{journalText.length} characters</span>
+            <button
+              onClick={saveJournal}
+              disabled={!journalText.trim()}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-bold border rounded transition-all ${journalSaved ? 'bg-green-950/20 border-green-500/30 text-green-400' : 'bg-violet-950/20 border-violet-500/30 text-violet-400 hover:shadow-[0_0_10px_rgba(139,92,246,0.2)]'} disabled:opacity-30`}
+            >
+              <Save className="w-3 h-3" /> {journalSaved ? 'SAVED' : 'COMMIT'}
+            </button>
+          </div>
+        </div>
+
         {/* Header HUD */}
-        <div className="flex items-center gap-4 mb-8 relative z-10">
+        <div className="flex items-center gap-4 mb-6 relative z-10">
           <div className="w-16 h-16 bg-void border border-accent-purple/60 glow-brain-ring flex items-center justify-center">
             <Brain className="w-8 h-8 text-[#7B2FFF] animate-pulse" />
           </div>

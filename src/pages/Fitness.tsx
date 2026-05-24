@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity, Dumbbell, Timer, Flame, Plus, Scale,
-  Moon, Target, TrendingUp, ChevronDown, ChevronUp, Zap, AlertTriangle, Trophy, Search
+  Moon, Target, TrendingUp, ChevronDown, ChevronUp, Zap, AlertTriangle, Trophy, Search,
+  Calculator
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, YAxis } from 'recharts';
 import { useUIStore } from '../store/uiStore';
@@ -80,7 +81,326 @@ export default function Fitness() {
   const [sleepHrs, setSleepHrs] = useState('');
   const [savingMetrics, setSavingMetrics] = useState(false);
 
-  // Historical Weight Logs for trend chart
+  // ── WORKOUT TIMER ──────────────────────────────────────────────────────────
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerDuration, setTimerDuration] = useState(45 * 60); // 45min default
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const interval = setInterval(() => {
+      setTimerSeconds(prev => {
+        if (prev >= timerDuration) { setTimerRunning(false); sounds.playFanfare(); toast.success('Workout complete!', { icon: '🏋️' }); return prev; }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerRunning, timerDuration]);
+
+  const timerPercent = Math.min(100, (timerSeconds / timerDuration) * 100);
+  const timerDisplay = (() => {
+    const remaining = timerDuration - timerSeconds;
+    const m = Math.floor(remaining / 60); const s = remaining % 60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  })();
+
+  // ── REST TIMER ─────────────────────────────────────────────────────────────
+  const [restSeconds, setRestSeconds] = useState(0);
+  const [restRunning, setRestRunning] = useState(false);
+  const [restPreset, setRestPreset] = useState(60);
+  const REST_PRESETS = [60, 90, 120, 180];
+
+  useEffect(() => {
+    if (!restRunning) return;
+    const interval = setInterval(() => {
+      setRestSeconds(prev => {
+        if (prev <= 0) { setRestRunning(false); sounds.playChime(); toast('Rest complete! Start next set.', { icon: '⚡' }); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [restRunning]);
+
+  const startRest = (secs: number) => { setRestSeconds(secs); setRestRunning(true); };
+  const restDisplay = (() => { const m = Math.floor(restSeconds / 60); const s = restSeconds % 60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; })();
+
+  // ── MACRO INTAKE & GOALS ───────────────────────────────────────────────────
+  const [macroProtein, setMacroProtein] = useState(protein || '0');
+  const [macroCarbs, setMacroCarbs] = useState('0');
+  const [macroFat, setMacroFat] = useState('0');
+  
+  const [macroGoals, setMacroGoals] = useState(() => {
+    const userId = user?.id || 'guest';
+    const saved = localStorage.getItem(`monarch_macro_goals_${userId}`);
+    return saved ? JSON.parse(saved) : { protein: 180, carbs: 250, fat: 70 };
+  });
+
+  const [showMacroCalc, setShowMacroCalc] = useState(false);
+  const [calcWeight, setCalcWeight] = useState('80');
+  const [calcGoal, setCalcGoal] = useState('Maintain');
+  const [calcActivity, setCalcActivity] = useState('1.55');
+
+  // Update calculator weight input when primary weight metric updates
+  useEffect(() => {
+    if (weight) setCalcWeight(weight);
+  }, [weight]);
+
+  // Persist macro goals on change / user swap
+  useEffect(() => {
+    const userId = user?.id || 'guest';
+    const saved = localStorage.getItem(`monarch_macro_goals_${userId}`);
+    if (saved) {
+      try {
+        setMacroGoals(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, [user]);
+
+  // Load today's intake from localStorage
+  useEffect(() => {
+    const userId = user?.id || 'guest';
+    const saved = localStorage.getItem(`monarch_macro_intake_${userId}_${TODAY}`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setMacroProtein(parsed.protein || '0');
+        setMacroCarbs(parsed.carbs || '0');
+        setMacroFat(parsed.fat || '0');
+      } catch (e) {}
+    } else {
+      setMacroProtein('0');
+      setMacroCarbs('0');
+      setMacroFat('0');
+    }
+  }, [user]);
+
+  const saveMacroIntake = (p: string, c: string, f: string) => {
+    const userId = user?.id || 'guest';
+    localStorage.setItem(`monarch_macro_intake_${userId}_${TODAY}`, JSON.stringify({
+      protein: p,
+      carbs: c,
+      fat: f
+    }));
+  };
+
+  const handleCalculateMacros = (e: React.FormEvent) => {
+    e.preventDefault();
+    const w = parseFloat(calcWeight) || 75;
+    const activityMult = parseFloat(calcActivity);
+    const baseTdee = w * 22 * activityMult;
+    
+    let targetCalories = baseTdee;
+    if (calcGoal === 'Cut') targetCalories -= 500;
+    else if (calcGoal === 'Bulk') targetCalories += 400;
+    else if (calcGoal === 'Recomp') targetCalories -= 200;
+    
+    const proteinG = Math.round(w * 2.0);
+    const fatG = Math.round(w * 0.85);
+    const proteinKcal = proteinG * 4;
+    const fatKcal = fatG * 9;
+    const carbsKcal = Math.max(100, targetCalories - (proteinKcal + fatKcal));
+    const carbsG = Math.round(carbsKcal / 4);
+    
+    const newGoals = { protein: proteinG, carbs: carbsG, fat: fatG };
+    
+    setMacroGoals(newGoals);
+    const userId = user?.id || 'guest';
+    localStorage.setItem(`monarch_macro_goals_${userId}`, JSON.stringify(newGoals));
+    
+    // Auto-update weight metrics inputs
+    setProtein(proteinG.toString());
+    setCalories(Math.round(targetCalories).toString());
+    
+    sounds.playFanfare();
+    toast.success(`Targets generated: ${Math.round(targetCalories)} kcal!`, { icon: '🎯' });
+    setShowMacroCalc(false);
+  };
+
+  // ── BARBELL PLATE LOADER STATE ─────────────────────────────────────────────
+  const [targetPlateWeight, setTargetPlateWeight] = useState(60);
+  const [barWeight, setBarWeight] = useState(20);
+
+  const PLATES_POOL = [
+    { weight: 25, color: '#DC2626', label: '25', thickness: 16, height: 42, textColor: '#fff' }, // Red
+    { weight: 20, color: '#2563EB', label: '20', thickness: 14, height: 40, textColor: '#fff' }, // Blue
+    { weight: 15, color: '#D97706', label: '15', thickness: 12, height: 38, textColor: '#fff' }, // Yellow
+    { weight: 10, color: '#059669', label: '10', thickness: 10, height: 36, textColor: '#fff' }, // Green
+    { weight: 5, color: '#4B5563', label: '5', thickness: 8, height: 32, textColor: '#fff' },    // Grey/White
+    { weight: 2.5, color: '#1F2937', label: '2.5', thickness: 6, height: 26, textColor: '#fbbf24' }, // Black
+    { weight: 1.25, color: '#9CA3AF', label: '1.25', thickness: 5, height: 20, textColor: '#111' } // Silver
+  ];
+
+  const plateLoaderResult = useMemo(() => {
+    const sideWeight = Math.max(0, (targetPlateWeight - barWeight) / 2);
+    let remaining = sideWeight;
+    const plates: typeof PLATES_POOL = [];
+    
+    for (const plate of PLATES_POOL) {
+      const count = Math.floor(remaining / plate.weight);
+      for (let i = 0; i < count; i++) {
+        plates.push(plate);
+      }
+      remaining = Number((remaining % plate.weight).toFixed(2));
+    }
+    
+    return {
+      plates,
+      sideWeight,
+      remainder: remaining
+    };
+  }, [targetPlateWeight, barWeight]);
+
+  // ── PRESET QUEST ROUTINES STATE ────────────────────────────────────────────
+  interface QuestExercise {
+    name: string;
+    target: number;
+    current: number;
+    type: 'reps' | 'sets';
+    weight?: number;
+  }
+
+  interface WorkoutRoutine {
+    id: string;
+    name: string;
+    rank: 'C' | 'B' | 'A' | 'S';
+    description: string;
+    rewards: { xp: number; stat: string; statValue: number };
+    exercises: QuestExercise[];
+  }
+
+  const PRESET_ROUTINES: WorkoutRoutine[] = [
+    {
+      id: 'saitama',
+      name: 'Saitama Protocol',
+      rank: 'C',
+      description: '100 pushups, 100 squats, 100 sit-ups, and a 10km run.',
+      rewards: { xp: 250, stat: 'endurance', statValue: 3 },
+      exercises: [
+        { name: 'Push-up', target: 100, current: 0, type: 'reps' },
+        { name: 'Bodyweight Squat', target: 100, current: 0, type: 'reps' },
+        { name: 'Sit-up', target: 100, current: 0, type: 'reps' },
+        { name: 'Cardio Run', target: 10, current: 0, type: 'reps' }
+      ]
+    },
+    {
+      id: 'spartan',
+      name: 'Spartan Blueprint',
+      rank: 'B',
+      description: 'A heavy calisthenics endurance gauntlet.',
+      rewards: { xp: 400, stat: 'endurance', statValue: 5 },
+      exercises: [
+        { name: 'Burpee', target: 30, current: 0, type: 'reps' },
+        { name: 'Push-up', target: 50, current: 0, type: 'reps' },
+        { name: 'Bodyweight Squat', target: 50, current: 0, type: 'reps' },
+        { name: 'Plank Hold (min)', target: 3, current: 0, type: 'reps' }
+      ]
+    },
+    {
+      id: 'shadow_monarch',
+      name: 'Shadow Monarch Lift',
+      rank: 'S',
+      description: 'Heavy strength builder for the ruler of shadows.',
+      rewards: { xp: 600, stat: 'strength', statValue: 8 },
+      exercises: [
+        { name: 'Deadlift', target: 4, current: 0, type: 'sets', weight: 100 },
+        { name: 'Barbell Squat', target: 4, current: 0, type: 'sets', weight: 80 },
+        { name: 'Bench Press', target: 4, current: 0, type: 'sets', weight: 70 },
+        { name: 'Weighted Pull-up', target: 3, current: 0, type: 'sets', weight: 10 }
+      ]
+    }
+  ];
+
+  const [activeRoutine, setActiveRoutine] = useState<WorkoutRoutine | null>(null);
+
+  useEffect(() => {
+    const userId = user?.id || 'guest';
+    const saved = localStorage.getItem(`monarch_active_routine_${userId}`);
+    if (saved) {
+      try {
+        setActiveRoutine(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, [user]);
+
+  const updateActiveRoutine = (routine: WorkoutRoutine | null) => {
+    setActiveRoutine(routine);
+    const userId = user?.id || 'guest';
+    if (routine) {
+      localStorage.setItem(`monarch_active_routine_${userId}`, JSON.stringify(routine));
+    } else {
+      localStorage.removeItem(`monarch_active_routine_${userId}`);
+    }
+  };
+
+  const handleUpdateProgress = (exerciseIndex: number, newValue: number) => {
+    if (!activeRoutine) return;
+    
+    const updatedExercises = [...activeRoutine.exercises];
+    const prevVal = updatedExercises[exerciseIndex].current;
+    const target = updatedExercises[exerciseIndex].target;
+    
+    const clampedValue = Math.max(0, Math.min(target, newValue));
+    updatedExercises[exerciseIndex].current = clampedValue;
+    
+    const updatedRoutine = {
+      ...activeRoutine,
+      exercises: updatedExercises
+    };
+    
+    updateActiveRoutine(updatedRoutine);
+    
+    if (clampedValue > prevVal) {
+      sounds.playChime();
+      addXpParticle(window.innerWidth / 2, window.innerHeight / 2, 10);
+      
+      if (clampedValue === target && prevVal < target) {
+        toast.success(`Objective Complete: ${updatedExercises[exerciseIndex].name}!`, { icon: '🎯' });
+      }
+    }
+  };
+
+  const isRoutineComplete = useMemo(() => {
+    if (!activeRoutine) return false;
+    return activeRoutine.exercises.every(ex => ex.current >= ex.target);
+  }, [activeRoutine]);
+
+  const handleClaimRewards = async () => {
+    if (!activeRoutine || !isRoutineComplete) return;
+    
+    const rewardXp = activeRoutine.rewards.xp;
+    
+    await addLog(
+      'Quest Complete',
+      60,
+      rewardXp,
+      {
+        notes: `Completed Quest Routine: ${activeRoutine.name} (Rank ${activeRoutine.rank})`,
+        routineId: activeRoutine.id,
+      },
+      [activeRoutine.rewards.stat]
+    );
+    
+    sounds.playFanfare();
+    
+    for (let i = 0; i < 15; i++) {
+      setTimeout(() => {
+        addXpParticle(
+          window.innerWidth / 2 + (Math.random() - 0.5) * 200,
+          window.innerHeight / 2 + (Math.random() - 0.5) * 200,
+          Math.round(rewardXp / 15)
+        );
+      }, i * 100);
+    }
+    
+    toast.success(`QUEST COMPLETE: Earned +${rewardXp} XP and +${activeRoutine.rewards.statValue} ${activeRoutine.rewards.stat.toUpperCase()}!`, {
+      duration: 5000,
+      icon: '👑'
+    });
+    
+    updateActiveRoutine(null);
+  };
+
+
   const [weightHistory, setWeightHistory] = useState<any[]>([]);
 
   // PR highlight
@@ -315,12 +635,22 @@ export default function Fitness() {
     );
   }, [searchQuery]);
 
+  // ── PR BOARD: last PR for each exercise from localStorage ─────────────────
+  const prBoard = useMemo(() => {
+    if (!user) return [];
+    return EXERCISE_LIBRARY.map(ex => {
+      const prKey = `monarch_pr_${user.id}_${ex.name.toLowerCase()}`;
+      const pr = parseFloat(localStorage.getItem(prKey) || '0');
+      return { name: ex.name, category: ex.category, pr, difficulty: ex.baseDifficulty };
+    }).filter(e => e.pr > 0).sort((a, b) => a.name.localeCompare(b.name));
+  }, [user, recentPr]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      className="p-6 md:p-10 max-w-[1400px] mx-auto w-full space-y-8"
+      className="p-4 md:p-10 max-w-[1400px] mx-auto w-full space-y-8"
     >
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -398,6 +728,241 @@ export default function Fitness() {
         ))}
       </div>
 
+      {/* ── WORKOUT TIMER + REST TIMER + MACRO RING ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {/* Workout Countdown Timer */}
+        <div className="glass-panel p-5 border-t-2 border-t-red-500 flex flex-col items-center justify-between gap-4">
+          <div className="flex items-center justify-between w-full">
+            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+              <Timer className="w-4 h-4 text-red-500" /> Session Timer
+            </h3>
+            <select
+              value={timerDuration}
+              onChange={e => { setTimerDuration(parseInt(e.target.value)); setTimerSeconds(0); setTimerRunning(false); }}
+              className="text-[9px] font-mono bg-black/40 border border-white/10 text-white/70 px-2 py-1 rounded"
+            >
+              {[15,30,45,60,90].map(m => <option key={m} value={m*60}>{m} MIN</option>)}
+            </select>
+          </div>
+
+          {/* Circular timer */}
+          <div className="relative w-28 h-28">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
+              <circle
+                cx="50" cy="50" r="44" fill="none"
+                stroke={timerPercent >= 100 ? '#22c55e' : '#EF4444'}
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray={276.46}
+                strokeDashoffset={276.46 * (1 - timerPercent / 100)}
+                style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="font-mono text-xl font-bold text-white">{timerDisplay}</span>
+              <span className="font-mono text-[8px] text-white/30 uppercase">{timerRunning ? 'Running' : 'Paused'}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2 w-full">
+            <button
+              onClick={() => setTimerRunning(r => !r)}
+              className={`flex-1 py-2 text-xs font-mono font-bold border rounded transition-all ${timerRunning ? 'bg-amber-950/20 border-amber-500/30 text-amber-400' : 'bg-red-950/20 border-red-500/30 text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]'}`}
+            >
+              {timerRunning ? 'PAUSE' : 'START'}
+            </button>
+            <button onClick={() => { setTimerSeconds(0); setTimerRunning(false); }} className="px-3 py-2 text-xs font-mono border border-white/10 text-white/40 rounded hover:text-white/70 transition-all">RESET</button>
+          </div>
+        </div>
+
+        {/* Rest Timer */}
+        <div className="glass-panel p-5 border-t-2 border-t-cyan-500 flex flex-col gap-4">
+          <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Timer className="w-4 h-4 text-cyan-400" /> Rest Timer
+          </h3>
+          
+          {/* Rest Presets */}
+          <div className="grid grid-cols-4 gap-1.5">
+            {REST_PRESETS.map(s => (
+              <button
+                key={s}
+                onClick={() => setRestPreset(s)}
+                className={`py-1.5 text-[10px] font-mono font-bold rounded border transition-all ${restPreset === s ? 'bg-cyan-950/30 border-cyan-400/50 text-cyan-400' : 'border-white/10 text-white/30 hover:text-white/60'}`}
+              >
+                {s}s
+              </button>
+            ))}
+          </div>
+
+          {/* Countdown display */}
+          <div className="flex-1 flex flex-col items-center justify-center my-2">
+            <div className={`text-5xl font-mono font-bold transition-colors ${restRunning ? (restSeconds <= 10 ? 'text-red-400 animate-pulse' : 'text-cyan-400') : 'text-white/30'}`}>
+              {restDisplay}
+            </div>
+            <div className="w-full h-2 bg-black/60 border border-white/5 rounded-full overflow-hidden mt-3">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300 transition-all duration-1000"
+                style={{ width: `${restRunning ? (restSeconds / restPreset) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => restRunning ? setRestRunning(false) : startRest(restPreset)}
+              className={`flex-1 py-2.5 text-xs font-mono font-bold border rounded transition-all ${restRunning ? 'bg-amber-950/20 border-amber-500/30 text-amber-400' : 'bg-cyan-950/20 border-cyan-500/30 text-cyan-400'}`}
+            >
+              {restRunning ? 'STOP' : 'START REST'}
+            </button>
+          </div>
+        </div>
+
+        {/* Macro Ring Chart */}
+        <div className="glass-panel p-5 border-t-2 border-t-emerald-500 flex flex-col gap-4">
+          <div className="flex items-center justify-between w-full">
+            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+              <Target className="w-4 h-4 text-emerald-400" /> Daily Macros
+            </h3>
+            <button
+              onClick={() => setShowMacroCalc(p => !p)}
+              className="text-[9px] font-mono bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded hover:bg-emerald-950/60 transition-all flex items-center gap-1"
+            >
+              <Calculator className="w-3 h-3" /> CALCULATE
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showMacroCalc && (
+              <motion.form
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handleCalculateMacros}
+                className="bg-black/40 border border-white/5 p-3 space-y-3 overflow-hidden text-left"
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-space-mono text-[8px] text-white/40 uppercase tracking-widest mb-1">Weight (kg)</label>
+                    <input
+                      type="number"
+                      value={calcWeight}
+                      onChange={e => setCalcWeight(e.target.value)}
+                      className="w-full bg-black/60 border border-white/10 p-1.5 text-white font-space-mono text-xs focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space-mono text-[8px] text-white/40 uppercase tracking-widest mb-1">Goal</label>
+                    <select
+                      value={calcGoal}
+                      onChange={e => setCalcGoal(e.target.value)}
+                      className="w-full bg-black/60 border border-white/10 p-1.5 text-white font-space-mono text-xs focus:border-emerald-500 focus:outline-none"
+                    >
+                      <option value="Cut">Cut (-500 kcal)</option>
+                      <option value="Maintain">Maintain</option>
+                      <option value="Bulk">Bulk (+400 kcal)</option>
+                      <option value="Recomp">Recomp (-200 kcal)</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-space-mono text-[8px] text-white/40 uppercase tracking-widest mb-1">Activity Level</label>
+                  <select
+                    value={calcActivity}
+                    onChange={e => setCalcActivity(e.target.value)}
+                    className="w-full bg-black/60 border border-white/10 p-1.5 text-white font-space-mono text-xs focus:border-emerald-500 focus:outline-none"
+                  >
+                    <option value="1.2">Sedentary (desk job)</option>
+                    <option value="1.375">Lightly Active (1-3 days/wk)</option>
+                    <option value="1.55">Moderately Active (3-5 days/wk)</option>
+                    <option value="1.725">Very Active (6-7 days/wk)</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-1.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-orbitron text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500/30 transition-all"
+                >
+                  Generate split
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+          
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { key: 'protein', label: 'Protein', val: macroProtein, setVal: (val: string) => { setMacroProtein(val); saveMacroIntake(val, macroCarbs, macroFat); }, goal: macroGoals.protein, color: '#EF4444', unit: 'g' },
+              { key: 'carbs',   label: 'Carbs',   val: macroCarbs,   setVal: (val: string) => { setMacroCarbs(val); saveMacroIntake(macroProtein, val, macroFat); }, goal: macroGoals.carbs,   color: '#F59E0B', unit: 'g' },
+              { key: 'fat',     label: 'Fat',     val: macroFat,     setVal: (val: string) => { setMacroFat(val); saveMacroIntake(macroProtein, macroCarbs, val); }, goal: macroGoals.fat,     color: '#06B6D4', unit: 'g' },
+            ].map(m => {
+              const pct = Math.min(100, (parseInt(m.val) / m.goal) * 100);
+              const r = 18; const circ = 2 * Math.PI * r;
+              return (
+                <div key={m.key} className="flex flex-col items-center gap-2">
+                  <div className="relative w-16 h-16">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 44 44">
+                      <circle cx="22" cy="22" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
+                      <circle cx="22" cy="22" r={r} fill="none" stroke={m.color} strokeWidth="4" strokeLinecap="round"
+                        strokeDasharray={circ} strokeDashoffset={circ * (1 - pct / 100)}
+                        style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="font-mono text-[9px] font-bold" style={{ color: m.color }}>{Math.round(pct)}%</span>
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    value={m.val}
+                    onChange={e => m.setVal(e.target.value)}
+                    className="w-full text-center bg-black/40 border border-white/10 text-white font-mono text-xs py-1 rounded"
+                    placeholder="0"
+                  />
+                  <span className="font-mono text-[8px] text-white/40 uppercase">{m.label} /{m.goal}{m.unit}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="text-[9px] font-mono text-white/30 text-center border-t border-white/5 pt-2 uppercase tracking-wider">
+            Total: {parseInt(macroProtein||'0')*4 + parseInt(macroCarbs||'0')*4 + parseInt(macroFat||'0')*9} kcal estimated
+          </div>
+        </div>
+      </div>
+
+      {/* ── PR BOARD ── */}
+      {prBoard.length > 0 && (
+        <div className="glass-panel p-6 border-t-2 border-t-amber-500">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-orbitron text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-400" /> Personal Records Board
+            </h3>
+            <span className="font-mono text-[9px] text-white/30 uppercase">{prBoard.length} PRs established</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
+            {prBoard.map(pr => (
+              <motion.div
+                key={pr.name}
+                whileHover={{ scale: 1.03, y: -2 }}
+                className="p-3 bg-amber-950/10 border border-amber-500/20 rounded-lg flex flex-col gap-1.5 relative overflow-hidden hover:border-amber-500/50 transition-all"
+              >
+                <div className="achievement-shine absolute inset-0 rounded-lg" />
+                <div className="flex justify-between items-start">
+                  <span className="font-mono text-[8px] text-white/30 uppercase">{pr.category}</span>
+                  <span className={`text-[8px] font-bold px-1 rounded font-mono grade-${pr.difficulty}`}>{pr.difficulty}</span>
+                </div>
+                <p className="font-display text-xs font-bold text-white leading-tight">{pr.name}</p>
+                <div className="flex items-end gap-1">
+                  <span className="font-mono text-xl font-black text-amber-400">{pr.pr}</span>
+                  <span className="font-mono text-[9px] text-amber-400/60 mb-0.5">kg</span>
+                </div>
+                <Trophy className="w-3 h-3 text-amber-400/30 absolute bottom-2 right-2" />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
       {/* CORE BODY WORKOUT BUILDER & GRIDS */}
       <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-8 items-start">
         
@@ -469,6 +1034,172 @@ export default function Fitness() {
                 Log Completed Set
               </button>
             </form>
+          </div>
+
+          {/* Barbell Plate Loader Visualizer */}
+          <div className="glass-panel p-6 border-t-2 border-t-blue-500 bg-void/50">
+            <h2 className="font-orbitron text-base font-bold uppercase tracking-widest flex items-center gap-2 text-white mb-3">
+              <Dumbbell className="w-4 h-4 text-blue-400" /> Plate Loader
+            </h2>
+            <p className="font-space-mono text-[10px] text-white/40 uppercase tracking-wider mb-4">
+              Calculate the plate stack needed on each side of the barbell.
+            </p>
+            
+            <div className="space-y-4 text-left">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-space-mono text-[9px] text-white/40 uppercase tracking-widest mb-1.5">Target Weight (kg)</label>
+                  <input
+                    type="number"
+                    value={targetPlateWeight}
+                    onChange={e => setTargetPlateWeight(Math.max(0, parseFloat(e.target.value) || 0))}
+                    className="w-full bg-black/40 border border-white/10 p-2 text-white font-space-mono text-xs focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-space-mono text-[9px] text-white/40 uppercase tracking-widest mb-1.5">Bar Weight (kg)</label>
+                  <select
+                    value={barWeight}
+                    onChange={e => setBarWeight(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-black/40 border border-white/10 p-2 text-white font-space-mono text-xs focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value={20}>20 kg (Standard Olympic)</option>
+                    <option value={15}>15 kg (Women's Olympic)</option>
+                    <option value={10}>10 kg (EZ-Bar / Light)</option>
+                    <option value={0}>0 kg (No Bar)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Quick weight selectors */}
+              <div className="flex flex-wrap gap-1">
+                {[40, 60, 80, 100, 120, 140, 180].map(w => (
+                  <button
+                    key={w}
+                    type="button"
+                    onClick={() => setTargetPlateWeight(w)}
+                    className={`px-2 py-1 text-[9px] font-mono border rounded transition-all ${
+                      targetPlateWeight === w ? 'bg-blue-950/40 border-blue-500/50 text-blue-400' : 'border-white/5 text-white/40 hover:text-white/70'
+                    }`}
+                  >
+                    {w}kg
+                  </button>
+                ))}
+              </div>
+
+              {/* Plate Loading Visualizer SVG */}
+              <div className="relative bg-black/60 border border-white/5 p-3 rounded flex flex-col items-center justify-center overflow-hidden">
+                {/* Barbell rendering */}
+                <div className="w-full max-w-[280px] h-[70px] relative flex items-center justify-center">
+                  <svg className="w-full h-full" viewBox="0 0 300 60">
+                    <defs>
+                      <linearGradient id="barbellSleeveGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#e5e7eb" />
+                        <stop offset="50%" stopColor="#9ca3af" />
+                        <stop offset="100%" stopColor="#374151" />
+                      </linearGradient>
+                      <linearGradient id="shaftGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#4b5563" />
+                        <stop offset="50%" stopColor="#1f2937" />
+                        <stop offset="100%" stopColor="#111827" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Shaft left */}
+                    <rect x="0" y="27" width="70" height="6" fill="url(#shaftGrad)" />
+                    {/* Sleeve Collar stopper */}
+                    <rect x="70" y="12" width="10" height="36" fill="#6b7280" rx="1" stroke="#374151" />
+                    {/* Sleeve bar */}
+                    <rect x="80" y="22" width="200" height="16" fill="url(#barbellSleeveGrad)" stroke="#4b5563" strokeWidth="0.5" />
+                    {/* Shaft right cap */}
+                    <rect x="277" y="22" width="3" height="16" fill="#374151" />
+
+                    {/* Plates rendered stack */}
+                    {(() => {
+                      let currentX = 81;
+                      return plateLoaderResult.plates.map((plate, idx) => {
+                        const x = currentX;
+                        currentX += plate.thickness + 2.5; // add plate thickness + spacing
+                        return (
+                          <g key={idx}>
+                            <rect
+                              x={x}
+                              y={30 - plate.height / 2}
+                              width={plate.thickness}
+                              height={plate.height}
+                              fill={plate.color}
+                              rx={1.5}
+                              stroke="#000"
+                              strokeWidth={1}
+                            />
+                            {plate.thickness >= 7 && (
+                              <text
+                                x={x + plate.thickness / 2}
+                                y={32.5}
+                                fill={plate.textColor}
+                                fontSize={7}
+                                fontWeight="black"
+                                fontFamily="monospace"
+                                textAnchor="middle"
+                              >
+                                {plate.label}
+                              </text>
+                            )}
+                          </g>
+                        );
+                      });
+                    })()}
+                  </svg>
+                </div>
+
+                {/* Plates textual list */}
+                <div className="w-full mt-2 border-t border-white/5 pt-2 flex flex-col items-center gap-1">
+                  {plateLoaderResult.plates.length > 0 ? (
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {Object.entries(
+                        plateLoaderResult.plates.reduce((acc, p) => {
+                          acc[p.weight] = (acc[p.weight] || 0) + 1;
+                          return acc;
+                        }, {} as Record<number, number>)
+                      ).map(([wStr, count]) => {
+                        const weightVal = parseFloat(wStr);
+                        const match = PLATES_POOL.find(p => p.weight === weightVal);
+                        return (
+                          <span
+                            key={wStr}
+                            className="font-space-mono text-[9px] px-1.5 py-0.5 rounded border flex items-center gap-1.5"
+                            style={{
+                              backgroundColor: `${match?.color}15`,
+                              borderColor: `${match?.color}40`,
+                              color: match?.color,
+                            }}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: match?.color }} />
+                            {count} x {wStr}kg
+                          </span>
+                        );
+                      })}
+                      <span className="font-space-mono text-[9px] text-white/40 ml-1.5 mt-0.5">
+                        (on each side)
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-space-mono text-[9px] text-white/30">
+                      {targetPlateWeight <= barWeight ? 'No plates needed. Just lift the bar!' : 'Enter weight to calculate plate stack.'}
+                    </span>
+                  )}
+
+                  {plateLoaderResult.remainder > 0 && (
+                    <div className="flex items-center gap-1 mt-1 text-amber-500 animate-pulse">
+                      <AlertTriangle className="w-3 h-3" />
+                      <span className="font-space-mono text-[8px] uppercase">
+                        Remainder of {plateLoaderResult.remainder}kg cannot be loaded exactly.
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Quick Regimen Logger */}
@@ -607,6 +1338,202 @@ export default function Fitness() {
 
         {/* Right Column: Heatmap, Weight Trend, Training Logs */}
         <div className="space-y-6">
+
+          {/* Preset Quest Routines */}
+          <div className="glass-panel p-6 border-t-2 border-t-purple-500 bg-void/50">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-orbitron text-base font-bold uppercase tracking-widest flex items-center gap-2 text-white">
+                <Trophy className="w-4 h-4 text-purple-400" /> Preset Quest Routines
+              </h2>
+              {activeRoutine && (
+                <button
+                  onClick={() => {
+                    sounds.playChime();
+                    updateActiveRoutine(null);
+                  }}
+                  className="font-space-mono text-[8px] border border-red-500/20 text-red-400 bg-red-950/10 px-2 py-0.5 rounded hover:bg-red-950/30"
+                >
+                  ABANDON QUEST
+                </button>
+              )}
+            </div>
+            
+            {!activeRoutine ? (
+              <div className="space-y-4">
+                <p className="font-space-mono text-[10px] text-white/40 uppercase tracking-widest">
+                  Select a training quest to begin tracking your workout reps/sets and claim massive RPG rewards.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {PRESET_ROUTINES.map(routine => (
+                    <div
+                      key={routine.id}
+                      className="p-4 bg-black/40 border border-white/5 hover:border-purple-500/40 rounded flex flex-col justify-between gap-3 transition-all group"
+                    >
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center justify-between text-left">
+                          <span className="font-space-mono text-[9px] text-purple-400 uppercase tracking-wider font-bold">
+                            Rank {routine.rank} Quest
+                          </span>
+                          <span className="font-orbitron text-[9px] px-1.5 py-0.25 bg-purple-950/40 border border-purple-500/30 text-purple-300">
+                            +{routine.rewards.xp} XP
+                          </span>
+                        </div>
+                        <h4 className="font-orbitron text-sm font-bold text-white group-hover:text-purple-400 transition-colors">
+                          {routine.name}
+                        </h4>
+                        <p className="font-space-mono text-[9px] text-white/50 leading-relaxed">
+                          {routine.description}
+                        </p>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          sounds.playFanfare();
+                          updateActiveRoutine(JSON.parse(JSON.stringify(routine)));
+                          toast.success(`QUEST ACTIVE: Conquer the ${routine.name}!`);
+                        }}
+                        className="w-full py-1.5 bg-purple-950/30 border border-purple-500/40 text-purple-400 hover:bg-purple-900/40 text-[10px] font-orbitron font-bold uppercase tracking-wider transition-all"
+                      >
+                        Accept Quest
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-3 bg-purple-950/10 border border-purple-500/20 rounded flex items-center justify-between gap-4 text-left">
+                  <div>
+                    <h3 className="font-orbitron text-sm font-black text-purple-400 uppercase tracking-wider">
+                      ACTIVE: {activeRoutine.name} (Rank {activeRoutine.rank})
+                    </h3>
+                    <p className="font-space-mono text-[9px] text-white/60 mt-0.5">
+                      Rewards: <span className="text-purple-300 font-bold">+{activeRoutine.rewards.xp} XP</span> and <span className="text-purple-300 font-bold">+{activeRoutine.rewards.statValue} {activeRoutine.rewards.stat.toUpperCase()}</span>
+                    </p>
+                  </div>
+                  
+                  {isRoutineComplete ? (
+                    <button
+                      onClick={handleClaimRewards}
+                      className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-orbitron text-[11px] font-black uppercase tracking-widest rounded shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-bounce hover:scale-105 transition-all shrink-0"
+                    >
+                      🏆 CLAIM REWARDS
+                    </button>
+                  ) : (
+                    <div className="text-right shrink-0">
+                      <span className="font-space-mono text-[8px] text-white/30 uppercase block">Quest Progress</span>
+                      <span className="font-orbitron text-xs text-purple-400 font-bold">
+                        {activeRoutine.exercises.filter(ex => ex.current >= ex.target).length} / {activeRoutine.exercises.length} Complete
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-full h-2 bg-black/60 border border-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-500 to-purple-300 transition-all duration-500"
+                    style={{
+                      width: `${
+                        (activeRoutine.exercises.reduce((sum, ex) => sum + (ex.current / ex.target), 0) /
+                          activeRoutine.exercises.length) *
+                        100
+                      }%`,
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  {activeRoutine.exercises.map((ex, idx) => {
+                    const isDone = ex.current >= ex.target;
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 bg-black/30 border rounded flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all text-left ${
+                          isDone ? 'border-green-500/20 bg-green-950/5' : 'border-white/5'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            {isDone ? (
+                              <span className="w-3.5 h-3.5 rounded-full bg-green-500/20 border border-green-500 text-green-400 flex items-center justify-center font-bold text-[9px]">✓</span>
+                            ) : (
+                              <span className="w-3.5 h-3.5 rounded-full border border-purple-500/40 text-purple-400 flex items-center justify-center font-bold text-[9px]">•</span>
+                            )}
+                            <span className={`font-orbitron text-xs font-bold ${isDone ? 'text-green-400 line-through' : 'text-white'}`}>
+                              {ex.name}
+                            </span>
+                            {ex.weight && (
+                              <span className="font-space-mono text-[9px] text-white/40 uppercase">
+                                @ {ex.weight}kg
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-space-mono text-[9px] text-white/30 uppercase">
+                            Objective: {ex.type === 'sets' ? `${ex.target} sets` : `${ex.target} reps`}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {ex.type === 'sets' ? (
+                            <div className="flex items-center gap-1.5">
+                              {Array.from({ length: ex.target }).map((_, setIdx) => {
+                                const isChecked = ex.current > setIdx;
+                                return (
+                                  <button
+                                    key={setIdx}
+                                    type="button"
+                                    onClick={() => handleUpdateProgress(idx, isChecked ? setIdx : setIdx + 1)}
+                                    className={`w-6 h-6 font-mono text-[9px] font-bold rounded flex items-center justify-center border transition-all ${
+                                      isChecked
+                                        ? 'bg-green-950/20 border-green-500/60 text-green-400'
+                                        : 'bg-black/40 border-white/10 text-white/40 hover:text-white/60'
+                                    }`}
+                                  >
+                                    S{setIdx + 1}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateProgress(idx, ex.current - 10)}
+                                className="px-1.5 py-0.5 bg-black/40 border border-white/10 text-[9px] font-mono text-white/50 hover:text-white"
+                              >
+                                -10
+                              </button>
+                              <input
+                                type="number"
+                                value={ex.current}
+                                onChange={e => handleUpdateProgress(idx, parseInt(e.target.value) || 0)}
+                                className="w-12 text-center bg-black/40 border border-white/10 text-white font-mono text-xs py-0.5 rounded focus:outline-none"
+                              />
+                              <span className="font-mono text-xs text-white/40">/ {ex.target}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateProgress(idx, ex.current + 10)}
+                                className="px-1.5 py-0.5 bg-purple-950/20 border border-purple-500/20 text-[9px] font-mono text-purple-400 hover:bg-purple-950/40"
+                              >
+                                +10
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateProgress(idx, ex.target)}
+                                className="px-1.5 py-0.5 bg-green-950/20 border border-green-500/20 text-[9px] font-mono text-green-400 hover:bg-green-950/40"
+                              >
+                                MAX
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Muscle group SVG Silhouette Heatmap */}
           <div className="glass-panel p-5 bg-void/50 border border-white/5 flex flex-col md:flex-row items-center gap-6">

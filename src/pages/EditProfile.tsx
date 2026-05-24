@@ -116,7 +116,7 @@ export default function EditProfile() {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-void p-6 md:p-10 max-w-2xl mx-auto w-full"
+      className="min-h-screen bg-void p-4 md:p-10 max-w-2xl mx-auto w-full"
     >
       {/* Header */}
       <div className="flex items-center gap-4 mb-10">
@@ -158,7 +158,7 @@ export default function EditProfile() {
                     <User className="w-10 h-10 text-white/30" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-void/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 bg-void/70 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <Camera className="w-7 h-7 text-accent-blue" />
                 </div>
               </div>

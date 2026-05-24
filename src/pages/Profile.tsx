@@ -103,7 +103,7 @@ export default function Profile() {
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="p-6 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
+      className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
       {/* Header zone with rotating avatar border */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
