@@ -47,6 +47,13 @@ let cachedProfile: UserProfile | null = null;
 let cachedStats: StatEntry[] = [];
 let isOptimisticUpdatePending = false;
 
+/** Call on sign-out to prevent stale cache leaking to the next user session */
+export function clearProfileCache() {
+  cachedProfile = null;
+  cachedStats = [];
+  isOptimisticUpdatePending = false;
+}
+
 // Global observer pattern to prevent duplicate event listener updates
 const listeners = new Set<(profile: UserProfile, stats: StatEntry[]) => void>();
 

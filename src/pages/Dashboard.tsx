@@ -139,11 +139,17 @@ export default function Dashboard() {
     return sum + (r?.xp ?? 0);
   }, 0);
 
-  // Time & Clock
+  // Time & Clock — pauses when tab is hidden to save CPU
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const start = () => { timer = setInterval(() => setCurrentTime(new Date()), 1000); };
+    const stop  = () => { if (timer) { clearInterval(timer); timer = null; } };
+    const onVisibility = () => document.hidden ? stop() : start();
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { stop(); document.removeEventListener('visibilitychange', onVisibility); };
   }, []);
+
 
   // Quotes cycling
   useEffect(() => {
@@ -231,65 +237,79 @@ export default function Dashboard() {
     return Math.round((streakVal * 0.3) + (statVal * 0.4) + (tasksVal * 0.3));
   }, [profile, stats, tasks, completedTaskIds]);
 
+  // ── Single O(n) pass over recentLogs → shared date+category index ──────────
+  const logsIndex = useMemo(() => {
+    const byDate: Record<string, number> = {};       // dateStr -> total xp
+    const byCatDate: Record<string, Record<string, number>> = {}; // cat -> dateStr -> xp
+    const activeDates = new Set<string>();
+
+    for (const log of recentLogs) {
+      const dateStr = log.created_at?.split('T')[0];
+      if (!dateStr) continue;
+      byDate[dateStr] = (byDate[dateStr] ?? 0) + (log.xp_earned || 0);
+      activeDates.add(dateStr);
+      const cat = log.category?.toLowerCase() ?? 'misc';
+      if (!byCatDate[cat]) byCatDate[cat] = {};
+      byCatDate[cat][dateStr] = (byCatDate[cat][dateStr] ?? 0) + (log.xp_earned || 0);
+    }
+    return { byDate, byCatDate, activeDates };
+  }, [recentLogs]);
+
   const contributionGrid = useMemo(() => {
     const grid = [];
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - 83 - today.getDay());
     for (let i = 0; i < 84; i++) {
-      const currentDate = new Date(startDate); currentDate.setDate(startDate.getDate() + i);
-      const dateStr = currentDate.toISOString().split('T')[0];
-      const nextDay = new Date(currentDate); nextDay.setDate(currentDate.getDate() + 1);
-      const dayLogs = recentLogs.filter(log => { const d = new Date(log.created_at); return d >= currentDate && d < nextDay; });
-      grid.push({ date: dateStr, xp: dayLogs.reduce((sum, log) => sum + (log.xp_earned || 0), 0) });
+      const d = new Date(startDate); d.setDate(startDate.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      grid.push({ date: dateStr, xp: logsIndex.byDate[dateStr] ?? 0 });
     }
     return grid;
-  }, [recentLogs]);
+  }, [logsIndex]);
 
   const statVelocities = useMemo(() => {
     const velocities: Record<string, { thisWeek: number; sparkline: any[] }> = {};
-    const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const oneWeekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+    const mappedCats: Record<string, string[]> = {
+      strength: ['fitness'], endurance: ['fitness'], discipline: ['mind'], focus: ['mind'],
+      stoicism: ['mind'], intelligence: ['coding'], consistency: ['mind'], wealth: ['creator'],
+      charisma: ['creator'], creativity: ['creator']
+    };
     stats.forEach(s => {
       const key = s.stat_name.toLowerCase();
-      const mappedCats: Record<string, string[]> = {
-        strength: ['fitness'], endurance: ['fitness'], discipline: ['mind'], focus: ['mind'],
-        stoicism: ['mind'], intelligence: ['coding'], consistency: ['mind'], wealth: ['creator'],
-        charisma: ['creator'], creativity: ['creator']
-      };
       const cats = mappedCats[key] || ['mind'];
-      const currentCatLogs = recentLogs.filter(log => cats.includes(log.category?.toLowerCase()));
-      const weeklyLogs = currentCatLogs.filter(log => new Date(log.created_at) >= oneWeekAgo);
-      const sparklineData = Array.from({ length: 7 }).map((_, idx) => {
-        const d = new Date(); d.setDate(d.getDate() - (6 - idx)); d.setHours(0,0,0,0);
-        const nextD = new Date(d); nextD.setDate(d.getDate() + 1);
-        return { val: currentCatLogs.filter(log => { const c = new Date(log.created_at); return c >= d && c < nextD; }).reduce((sum, l) => sum + (l.xp_earned || 0), 0) };
+      let thisWeek = 0;
+      const sparkline: { val: number }[] = Array.from({ length: 7 }, (_, idx) => {
+        const d = new Date(); d.setDate(d.getDate() - (6 - idx)); d.setHours(0, 0, 0, 0);
+        const dateStr = d.toISOString().split('T')[0];
+        const val = cats.reduce((sum, cat) => sum + (logsIndex.byCatDate[cat]?.[dateStr] ?? 0), 0);
+        if (dateStr >= oneWeekAgoStr) thisWeek += val;
+        return { val };
       });
-      velocities[key] = { thisWeek: weeklyLogs.reduce((sum, log) => sum + (log.xp_earned || 0), 0), sparkline: sparklineData };
+      velocities[key] = { thisWeek, sparkline };
     });
     return velocities;
-  }, [stats, recentLogs]);
-
-  // Power Forecast
-  const powerForecast = useMemo(() => {
-    const avgDailyXp = recentLogs.length > 0
-      ? recentLogs.reduce((s, l) => s + (l.xp_earned || 0), 0) / Math.max(1, [...new Set(recentLogs.map(l => l.created_at?.split('T')[0]))].length)
-      : 0;
-    const projectedWeek = Math.round(avgDailyXp * 7);
-    const projectedLevel = currentLevel + Math.floor((currentXp + projectedWeek) / xpNeeded);
-    return { avgDailyXp: Math.round(avgDailyXp), projectedWeek, projectedLevel };
-  }, [recentLogs, currentLevel, currentXp, xpNeeded]);
+  }, [stats, logsIndex]);
 
   // Streak mini calendar (last 30 days)
   const streakCalendar = useMemo(() => {
-    const days = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
-      const nextD = new Date(d); nextD.setDate(d.getDate() + 1);
-      const hasActivity = recentLogs.some(l => { const c = new Date(l.created_at); return c >= d && c < nextD; });
-      days.push({ date: d, hasActivity, isToday: i === 0 });
-    }
-    return days;
-  }, [recentLogs]);
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(); d.setDate(d.getDate() - (29 - i)); d.setHours(0, 0, 0, 0);
+      const dateStr = d.toISOString().split('T')[0];
+      return { date: d, hasActivity: logsIndex.activeDates.has(dateStr), isToday: i === 29 };
+    });
+  }, [logsIndex]);
+
+  // Power Forecast
+  const powerForecast = useMemo(() => {
+    const totalXp = recentLogs.reduce((s, l) => s + (l.xp_earned || 0), 0);
+    const uniqueDays = Object.keys(logsIndex.byDate).length;
+    const avgDailyXp = uniqueDays > 0 ? totalXp / uniqueDays : 0;
+    const projectedWeek = Math.round(avgDailyXp * 7);
+    const projectedLevel = currentLevel + Math.floor((currentXp + projectedWeek) / xpNeeded);
+    return { avgDailyXp: Math.round(avgDailyXp), projectedWeek, projectedLevel };
+  }, [recentLogs, logsIndex, currentLevel, currentXp, xpNeeded]);
 
   // Typewriter for quote
   const currentQuote = MOTIVATIONAL_QUOTES[quoteIndex];

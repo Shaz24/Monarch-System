@@ -5,7 +5,7 @@ import { User, LogOut, Shield, Trophy, Settings, Star, Loader2, AlertCircle } fr
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
-import { useProfile } from '../hooks/useProfile';
+import { useProfile, clearProfileCache } from '../hooks/useProfile';
 import { showAchievementToast } from '../components/AchievementToast';
 import { StatRing } from '../components/StatRing';
 import { getRankFromLevel } from '../lib/rpg';
@@ -29,6 +29,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
+      clearProfileCache();
       await supabase.auth.signOut();
       toast.success('Connection terminated.');
     } catch {

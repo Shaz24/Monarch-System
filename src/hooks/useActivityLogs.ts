@@ -126,8 +126,12 @@ export function useActivityLogs(category: ActivityLog['category']) {
     const currentKey = `${category}_${user.id}`;
 
     if (!isSupabaseConfigured) {
-      // Run self-healing migration once on fetch to fix legacy local storage logs
-      healLocalStorageLogs(user.id);
+      // Run self-healing migration at most once per session (sessionStorage guard)
+      const healedKey = `monarch_healed_${user.id}`;
+      if (!sessionStorage.getItem(healedKey)) {
+        healLocalStorageLogs(user.id);
+        sessionStorage.setItem(healedKey, '1');
+      }
 
       // Offline/Local Storage Fallback
       const localKey = `monarch_logs_${category}_${user.id}`;
@@ -214,11 +218,13 @@ export function useActivityLogs(category: ActivityLog['category']) {
       created_at: new Date().toISOString()
     };
 
-    // Optimistically update memory cache and state
+    // Optimistically update memory cache and state (functional update avoids stale closure)
     if (activeCategory === category) {
-      const updatedList = [newLog, ...logs];
-      cachedActivityLogs[currentKey] = updatedList;
-      setLogs(updatedList);
+      setLogs(prev => {
+        const updatedList = [newLog, ...prev];
+        cachedActivityLogs[currentKey] = updatedList;
+        return updatedList;
+      });
     }
 
     // Optimistically dispatch global XP / level update event immediately

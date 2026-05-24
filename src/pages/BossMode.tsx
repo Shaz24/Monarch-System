@@ -311,8 +311,14 @@ export default function BossMode() {
   const logTerminalRef = useRef<HTMLDivElement>(null);
   const processingQuestsRef = useRef<Set<string>>(new Set());
 
+  // Debounced localStorage save — 500ms after last state change to avoid thrashing on rapid clicks
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   useEffect(() => {
-    localStorage.setItem('monarchBossMode', JSON.stringify(state));
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      localStorage.setItem('monarchBossMode', JSON.stringify(state));
+    }, 500);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [state]);
 
   const { 
@@ -352,13 +358,15 @@ export default function BossMode() {
   useEffect(() => {
     const interval = setInterval(() => {
       setState(s => {
+        const dps = (s.shadowArmy.infantry || 0) * 5 + (s.shadowArmy.knight || 0) * 20 + (s.shadowArmy.general || 0) * 100;
+        const hps = (s.shadowArmy.healer || 0) * 2;
+
+        // Early return — nothing to do when army is idle and boss is already defeated
+        if (dps === 0 && hps === 0 && s.worldBossDefeated) return s;
         if (s.worldBossDefeated && s.playerHp >= 100) return s;
 
         const now = Date.now();
         const seconds = Math.max(1, Math.floor((now - s.lastDpsTick) / 1000));
-        
-        const dps = (s.shadowArmy.infantry || 0) * 5 + (s.shadowArmy.knight || 0) * 20 + (s.shadowArmy.general || 0) * 100;
-        const hps = (s.shadowArmy.healer || 0) * 2;
 
         const totalDmg = dps * seconds;
         const totalHeal = hps * seconds;
@@ -372,15 +380,24 @@ export default function BossMode() {
         if (isDefeatedNow) {
           finalGold += 5000;
           sounds.playFanfare();
-          setCombatLogs(prev => [...prev, `[SYSTEM]: WORLD BOSS ${currentActiveBoss.name.toUpperCase()} DEFEATED! Gained +5,000 Gold!`]);
+          setCombatLogs(prev => {
+            const next = [...prev, `[SYSTEM]: WORLD BOSS ${currentActiveBoss.name.toUpperCase()} DEFEATED! Gained +5,000 Gold!`];
+            return next.length > 100 ? next.slice(-100) : next;
+          });
           toast.success(`World Boss ${currentActiveBoss.name} Defeated! +5,000 Gold!`, { duration: 5000 });
         }
 
         if (dps > 0 && Math.random() < 0.1) {
-          setCombatLogs(prev => [...prev, `[ARMY]: Shadow soldiers deal ${totalDmg.toLocaleString()} DMG to Weekly Boss ${currentActiveBoss.name}.`]);
+          setCombatLogs(prev => {
+            const next = [...prev, `[ARMY]: Shadow soldiers deal ${totalDmg.toLocaleString()} DMG to Weekly Boss ${currentActiveBoss.name}.`];
+            return next.length > 100 ? next.slice(-100) : next;
+          });
         }
         if (hps > 0 && s.playerHp < 100 && Math.random() < 0.1) {
-          setCombatLogs(prev => [...prev, `[ARMY]: Healers restore +${totalHeal} HP to player.`]);
+          setCombatLogs(prev => {
+            const next = [...prev, `[ARMY]: Healers restore +${totalHeal} HP to player.`];
+            return next.length > 100 ? next.slice(-100) : next;
+          });
         }
 
         return {
