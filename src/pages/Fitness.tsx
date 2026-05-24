@@ -162,7 +162,7 @@ const EXERCISE_LIBRARY: Exercise[] = [
   { name: 'Thoracic Rotation',      category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Thoracic Spine'],                     secondaryMuscles: ['Lats'],                             equipment: 'None', type: 'duration' },
   { name: 'Pigeon Pose',            category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Glutes', 'Hip Rotators'],             secondaryMuscles: [],                                   equipment: 'None', type: 'duration' },
   { name: 'Cossack Squat',          category: 'Mobility', baseDifficulty: 'C', primaryMuscles: ['Adductors', 'Hips'],                  secondaryMuscles: ['Quads', 'Ankles'],                  equipment: 'Bodyweight', type: 'bodyweight' },
-  { name: 'World's Greatest Stretch', category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Full Body Mobility'],               secondaryMuscles: [],                                   equipment: 'None', type: 'duration' },
+  { name: "World's Greatest Stretch", category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Full Body Mobility'],               secondaryMuscles: [],                                   equipment: 'None', type: 'duration' },
 ];
 
 const EXERCISE_CATEGORIES = ['All', 'Compound', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Calisthenics', 'Cardio', 'Martial Arts', 'Mobility'];
@@ -229,7 +229,6 @@ export default function Fitness() {
 
   // Auto-fill weight when exercise changes
   useEffect(() => {
-    const userId = user?.id || 'guest';
     const key = selectedEx.name.toLowerCase();
     const saved = lastUsedWeights[key];
     if (saved) setWeightInput(saved);
