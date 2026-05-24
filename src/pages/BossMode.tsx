@@ -513,9 +513,15 @@ export default function BossMode() {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     addXpParticle(rect.left + rect.width / 2, rect.top, Math.round(quest.xp * diffSettings.xpMult));
 
-    // Calculate mouse click offset local to the parent card
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+    // Calculate mouse click offset local to the parent quest list wrapper
+    const listEl = document.getElementById('boss-quest-list');
+    let clickX = e.clientX - rect.left;
+    let clickY = e.clientY - rect.top;
+    if (listEl) {
+      const listRect = listEl.getBoundingClientRect();
+      clickX = e.clientX - listRect.left;
+      clickY = e.clientY - listRect.top;
+    }
 
     // Visual critical roll
     const isCrit = Math.random() > 0.65;
@@ -810,11 +816,11 @@ export default function BossMode() {
         {/* Fog drift orbs */}
         <div 
           className="absolute w-[800px] h-[800px] rounded-full filter blur-[150px] opacity-[8%] -top-40 -left-40 animate-[fog-drift_25s_infinite_alternate]"
-          style={{ background: 'radial-gradient(circle, #ff003c 0%, transparent 80%)' }}
+          style={{ background: 'radial-gradient(circle, #ff003c 0%, transparent 80%)', willChange: 'transform', transform: 'translateZ(0)' }}
         />
         <div 
           className="absolute w-[600px] h-[600px] rounded-full filter blur-[120px] opacity-[6%] bottom-10 right-10 animate-[fog-drift_20s_infinite_alternate_reverse]"
-          style={{ background: 'radial-gradient(circle, #7B2FFF 0%, transparent 80%)' }}
+          style={{ background: 'radial-gradient(circle, #7B2FFF 0%, transparent 80%)', willChange: 'transform', transform: 'translateZ(0)' }}
         />
       </div>
 
@@ -1139,7 +1145,24 @@ export default function BossMode() {
             </div>
 
             {/* Quests list with popups */}
-            <div className="space-y-3 relative">
+            <div className="space-y-3 relative" id="boss-quest-list">
+              <AnimatePresence>
+                {floats.map(f => (
+                  <motion.span
+                    key={f.id}
+                    initial={{ opacity: 1, y: f.y, x: f.x, scale: f.isCrit ? 1.5 : 1 }}
+                    animate={{ opacity: 0, y: f.y - 80, scale: f.isCrit ? 1.8 : 1.1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className={`absolute z-[100] font-orbitron font-black pointer-events-none select-none tracking-wider ${
+                      f.isCrit ? 'text-[#ff003c] text-lg font-black drop-shadow-[0_0_10px_#ff003c]' : 'text-[#ff5a00] text-sm'
+                    }`}
+                  >
+                    {f.isCrit ? 'CRITICAL HIT! ' : ''}-{f.dmg.toLocaleString()} DMG
+                  </motion.span>
+                ))}
+              </AnimatePresence>
+
               <AnimatePresence mode="popLayout">
                 {quests.map((quest, idx) => {
                   const color = CATEGORY_COLOR[quest.category] ?? '#ffffff';
@@ -1165,22 +1188,6 @@ export default function BossMode() {
                       }}
                       onClick={e => handleStrike(e, quest.id)}
                     >
-                      <AnimatePresence>
-                        {floats.map(f => (
-                          <motion.span
-                            key={f.id}
-                            initial={{ opacity: 1, y: f.y, x: f.x, scale: f.isCrit ? 1.5 : 1 }}
-                            animate={{ opacity: 0, y: f.y - 80, scale: f.isCrit ? 1.8 : 1.1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className={`absolute z-[100] font-orbitron font-black pointer-events-none select-none tracking-wider ${
-                              f.isCrit ? 'text-[#ff003c] text-lg font-black drop-shadow-[0_0_10px_#ff003c]' : 'text-[#ff5a00] text-sm'
-                            }`}
-                          >
-                            {f.isCrit ? 'CRITICAL HIT! ' : ''}-{f.dmg.toLocaleString()} DMG
-                          </motion.span>
-                        ))}
-                      </AnimatePresence>
 
                       {!quest.completed && (
                         <div
@@ -1628,29 +1635,31 @@ export default function BossMode() {
 
             {/* Rising particle stars */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {[...Array(24)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ 
-                    x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000), 
-                    y: (typeof window !== 'undefined' ? window.innerHeight : 800) + 100,
-                    scale: Math.random() * 0.6 + 0.4,
-                    opacity: 0
-                  }}
-                  animate={{ 
-                    y: -100, 
-                    opacity: [0, 1, 1, 0],
-                    x: `calc(10px + ${Math.sin(i) * 50}px)`
-                  }}
-                  transition={{ 
-                    duration: Math.random() * 3 + 2, 
-                    repeat: Infinity,
-                    delay: Math.random() * 2 
-                  }}
-                  className="absolute w-2 h-2 rounded-full"
-                  style={{ backgroundColor: defeatedBossColor }}
-                />
-              ))}
+              {[...Array(24)].map((_, i) => {
+                const startX = Math.random() * 100;
+                const endX = startX + (Math.sin(i) * 12);
+                const scaleStart = Math.random() * 0.4 + 0.3;
+                const scaleEnd = scaleStart * 1.6;
+                const duration = Math.random() * 3 + 2.5;
+                const delay = Math.random() * 2.5;
+                return (
+                  <div
+                    key={i}
+                    className="victory-particle"
+                    style={{
+                      backgroundColor: defeatedBossColor,
+                      boxShadow: `0 0 8px ${defeatedBossColor}, 0 0 16px ${defeatedBossColor}`,
+                      // @ts-ignore
+                      '--x-start': `${startX}vw`,
+                      '--x-end': `${endX}vw`,
+                      '--scale-start': scaleStart,
+                      '--scale-end': scaleEnd,
+                      '--duration': `${duration}s`,
+                      '--delay': `${delay}s`
+                    }}
+                  />
+                );
+              })}
             </div>
 
             <motion.div
