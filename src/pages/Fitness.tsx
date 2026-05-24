@@ -1743,7 +1743,7 @@ export default function Fitness() {
       </div>
 
       {/* Second Body Protocol */}
-      <div>
+      <div className="lazy-section">
         <div className="flex items-center gap-3 mb-4">
           <div className="h-px flex-1" style={{ background: 'linear-gradient(to right, rgba(255,90,0,0.4), transparent)' }} />
           <span className="font-space-mono text-xs text-red-500/60 uppercase tracking-[0.4em]">Second Body Protocol</span>

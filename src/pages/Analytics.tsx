@@ -336,7 +336,7 @@ export default function Analytics() {
       </div>
 
       {/* ── YEAR ACTIVITY HEATMAP ── */}
-      <div className="glass-card p-5 print:hidden">
+      <div className="glass-card p-5 print:hidden lazy-section">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Activity className="w-4 h-4 text-purple-400" /> Activity Heatmap — Last 365 Days
@@ -373,7 +373,7 @@ export default function Analytics() {
       </div>
 
       {/* ── ACHIEVEMENTS SHOWCASE ── */}
-      <div className="glass-card p-5 print:hidden">
+      <div className="glass-card p-5 print:hidden lazy-section">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-400" /> Achievements

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckSquare, Square, ChevronDown, Clock, Play, Pause, RotateCcw, PenTool } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
@@ -14,7 +14,7 @@ interface Task {
   stat_category: string;
 }
 
-export const TaskRow = ({ 
+export const TaskRow = memo(({ 
   task, 
   isCompleted = false,
   onComplete,
@@ -258,4 +258,6 @@ export const TaskRow = ({
       />
     </motion.div>
   );
-};
+});
+
+TaskRow.displayName = 'TaskRow';

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 
 interface StatRingProps {
@@ -6,7 +7,7 @@ interface StatRingProps {
   xp: number; // For now assuming progress out of 100
 }
 
-export const StatRing = ({ statName, level, xp }: StatRingProps) => {
+export const StatRing = memo(({ statName, level, xp }: StatRingProps) => {
   const radius = 30;
   const circumference = 2 * Math.PI * radius;
   // xp percent calculation: let's assume flat 100 for visual sake, or level * 100.
@@ -54,4 +55,6 @@ export const StatRing = ({ statName, level, xp }: StatRingProps) => {
       </p>
     </div>
   );
-};
+});
+
+StatRing.displayName = 'StatRing';

@@ -1194,3 +1194,9 @@ textarea::placeholder {
   50% { opacity: 0.6; transform: scale(0.8); }
 }
 
+/* ─── PERFORMANCE CONTAINMENT UTILITIES ─── */
+.lazy-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
