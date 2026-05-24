@@ -29,17 +29,143 @@ const WORKOUT_TYPES = [
   { label: 'HIIT',          icon: '⚡', stats: ['strength', 'endurance'], baseXpRate: 2.8 },
 ];
 
-const EXERCISE_LIBRARY = [
-  { name: 'Deadlift', category: 'Back/Legs', baseDifficulty: 'S' },
-  { name: 'Barbell Squat', category: 'Legs', baseDifficulty: 'S' },
-  { name: 'Bench Press', category: 'Chest', baseDifficulty: 'A' },
-  { name: 'Overhead Press', category: 'Shoulders', baseDifficulty: 'A' },
-  { name: 'Weighted Pull-up', category: 'Back', baseDifficulty: 'A' },
-  { name: 'Bicep Curl', category: 'Arms', baseDifficulty: 'C' },
-  { name: 'Dips', category: 'Arms/Chest', baseDifficulty: 'B' },
-  { name: 'Push-up', category: 'Chest', baseDifficulty: 'D' },
-  { name: 'Plank', category: 'Core', baseDifficulty: 'D' }
+export interface Exercise {
+  name: string;
+  category: string;
+  baseDifficulty: 'S' | 'A' | 'B' | 'C' | 'D';
+  primaryMuscles: string[];
+  secondaryMuscles: string[];
+  equipment: string;
+  type: 'weighted' | 'bodyweight' | 'cardio' | 'duration';
+}
+
+const EXERCISE_LIBRARY: Exercise[] = [
+  // ── COMPOUND / POWER ─────────────────────────────────────────────────────
+  { name: 'Deadlift',               category: 'Compound', baseDifficulty: 'S', primaryMuscles: ['Hamstrings', 'Glutes', 'Lower Back'], secondaryMuscles: ['Traps', 'Forearms', 'Core'],        equipment: 'Barbell', type: 'weighted' },
+  { name: 'Barbell Squat',          category: 'Compound', baseDifficulty: 'S', primaryMuscles: ['Quads', 'Glutes'],                    secondaryMuscles: ['Hamstrings', 'Core', 'Adductors'],  equipment: 'Barbell', type: 'weighted' },
+  { name: 'Bench Press',            category: 'Compound', baseDifficulty: 'A', primaryMuscles: ['Chest'],                              secondaryMuscles: ['Front Delts', 'Triceps'],           equipment: 'Barbell', type: 'weighted' },
+  { name: 'Overhead Press',         category: 'Compound', baseDifficulty: 'A', primaryMuscles: ['Front Delts', 'Shoulders'],           secondaryMuscles: ['Triceps', 'Upper Traps', 'Core'],   equipment: 'Barbell', type: 'weighted' },
+  { name: 'Power Clean',            category: 'Compound', baseDifficulty: 'S', primaryMuscles: ['Full Body'],                          secondaryMuscles: ['Hamstrings', 'Glutes', 'Traps'],    equipment: 'Barbell', type: 'weighted' },
+  { name: 'Snatch',                 category: 'Compound', baseDifficulty: 'S', primaryMuscles: ['Full Body'],                          secondaryMuscles: ['Shoulders', 'Core', 'Glutes'],      equipment: 'Barbell', type: 'weighted' },
+  { name: 'Front Squat',            category: 'Compound', baseDifficulty: 'A', primaryMuscles: ['Quads', 'Core'],                      secondaryMuscles: ['Glutes', 'Upper Back'],              equipment: 'Barbell', type: 'weighted' },
+  { name: 'Sumo Deadlift',          category: 'Compound', baseDifficulty: 'S', primaryMuscles: ['Glutes', 'Inner Thighs'],             secondaryMuscles: ['Hamstrings', 'Lower Back'],         equipment: 'Barbell', type: 'weighted' },
+  { name: 'Rack Pull',              category: 'Compound', baseDifficulty: 'A', primaryMuscles: ['Traps', 'Lower Back'],                secondaryMuscles: ['Glutes', 'Hamstrings'],              equipment: 'Barbell', type: 'weighted' },
+  { name: 'Barbell Row',            category: 'Compound', baseDifficulty: 'A', primaryMuscles: ['Lats', 'Mid Back'],                  secondaryMuscles: ['Biceps', 'Rear Delts'],              equipment: 'Barbell', type: 'weighted' },
+
+  // ── CHEST ─────────────────────────────────────────────────────────────────
+  { name: 'Incline Bench Press',    category: 'Chest',    baseDifficulty: 'A', primaryMuscles: ['Upper Chest'],                        secondaryMuscles: ['Front Delts', 'Triceps'],           equipment: 'Barbell', type: 'weighted' },
+  { name: 'Decline Bench Press',    category: 'Chest',    baseDifficulty: 'B', primaryMuscles: ['Lower Chest'],                        secondaryMuscles: ['Triceps'],                          equipment: 'Barbell', type: 'weighted' },
+  { name: 'Dumbbell Bench Press',   category: 'Chest',    baseDifficulty: 'B', primaryMuscles: ['Chest'],                              secondaryMuscles: ['Front Delts', 'Triceps'],           equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Incline DB Press',       category: 'Chest',    baseDifficulty: 'B', primaryMuscles: ['Upper Chest'],                        secondaryMuscles: ['Front Delts'],                      equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Dumbbell Fly',           category: 'Chest',    baseDifficulty: 'C', primaryMuscles: ['Chest'],                              secondaryMuscles: ['Front Delts'],                      equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Cable Fly',              category: 'Chest',    baseDifficulty: 'C', primaryMuscles: ['Chest'],                              secondaryMuscles: ['Front Delts'],                      equipment: 'Cable', type: 'weighted' },
+  { name: 'Pec Deck',               category: 'Chest',    baseDifficulty: 'D', primaryMuscles: ['Chest'],                              secondaryMuscles: [],                                   equipment: 'Machine', type: 'weighted' },
+  { name: 'Push-up',                category: 'Chest',    baseDifficulty: 'D', primaryMuscles: ['Chest'],                              secondaryMuscles: ['Triceps', 'Front Delts'],           equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Archer Push-up',         category: 'Chest',    baseDifficulty: 'B', primaryMuscles: ['Chest', 'Triceps'],                  secondaryMuscles: ['Core'],                             equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Chest Press Machine',    category: 'Chest',    baseDifficulty: 'D', primaryMuscles: ['Chest'],                              secondaryMuscles: ['Triceps'],                          equipment: 'Machine', type: 'weighted' },
+
+  // ── BACK ──────────────────────────────────────────────────────────────────
+  { name: 'Lat Pulldown',           category: 'Back',     baseDifficulty: 'C', primaryMuscles: ['Lats'],                               secondaryMuscles: ['Biceps', 'Rear Delts'],             equipment: 'Cable', type: 'weighted' },
+  { name: 'Seated Cable Row',       category: 'Back',     baseDifficulty: 'C', primaryMuscles: ['Mid Back', 'Lats'],                  secondaryMuscles: ['Biceps'],                           equipment: 'Cable', type: 'weighted' },
+  { name: 'Weighted Pull-up',       category: 'Back',     baseDifficulty: 'A', primaryMuscles: ['Lats'],                               secondaryMuscles: ['Biceps', 'Core'],                   equipment: 'Bodyweight', type: 'weighted' },
+  { name: 'T-Bar Row',              category: 'Back',     baseDifficulty: 'B', primaryMuscles: ['Mid Back', 'Lats'],                  secondaryMuscles: ['Rear Delts', 'Biceps'],             equipment: 'Barbell', type: 'weighted' },
+  { name: 'Dumbbell Row',           category: 'Back',     baseDifficulty: 'C', primaryMuscles: ['Lats', 'Mid Back'],                  secondaryMuscles: ['Biceps'],                           equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Face Pull',              category: 'Back',     baseDifficulty: 'C', primaryMuscles: ['Rear Delts', 'Traps'],               secondaryMuscles: ['External Rotators'],                equipment: 'Cable', type: 'weighted' },
+  { name: 'Straight-Arm Pulldown',  category: 'Back',     baseDifficulty: 'C', primaryMuscles: ['Lats'],                               secondaryMuscles: ['Triceps'],                          equipment: 'Cable', type: 'weighted' },
+  { name: 'Meadows Row',            category: 'Back',     baseDifficulty: 'B', primaryMuscles: ['Lats', 'Mid Back'],                  secondaryMuscles: ['Rear Delts'],                       equipment: 'Barbell', type: 'weighted' },
+  { name: 'Chest-Supported Row',    category: 'Back',     baseDifficulty: 'C', primaryMuscles: ['Mid Back'],                           secondaryMuscles: ['Rear Delts', 'Biceps'],             equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Inverted Row',           category: 'Back',     baseDifficulty: 'C', primaryMuscles: ['Mid Back', 'Lats'],                  secondaryMuscles: ['Biceps', 'Core'],                   equipment: 'Bodyweight', type: 'bodyweight' },
+
+  // ── LEGS ──────────────────────────────────────────────────────────────────
+  { name: 'Leg Press',              category: 'Legs',     baseDifficulty: 'C', primaryMuscles: ['Quads', 'Glutes'],                    secondaryMuscles: ['Hamstrings'],                       equipment: 'Machine', type: 'weighted' },
+  { name: 'Romanian Deadlift',      category: 'Legs',     baseDifficulty: 'A', primaryMuscles: ['Hamstrings', 'Glutes'],               secondaryMuscles: ['Lower Back', 'Calves'],             equipment: 'Barbell', type: 'weighted' },
+  { name: 'Hack Squat',             category: 'Legs',     baseDifficulty: 'B', primaryMuscles: ['Quads'],                              secondaryMuscles: ['Glutes', 'Hamstrings'],             equipment: 'Machine', type: 'weighted' },
+  { name: 'Bulgarian Split Squat',  category: 'Legs',     baseDifficulty: 'A', primaryMuscles: ['Quads', 'Glutes'],                    secondaryMuscles: ['Hamstrings', 'Core'],               equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Leg Curl',               category: 'Legs',     baseDifficulty: 'D', primaryMuscles: ['Hamstrings'],                         secondaryMuscles: ['Calves'],                           equipment: 'Machine', type: 'weighted' },
+  { name: 'Leg Extension',          category: 'Legs',     baseDifficulty: 'D', primaryMuscles: ['Quads'],                              secondaryMuscles: [],                                   equipment: 'Machine', type: 'weighted' },
+  { name: 'Walking Lunge',          category: 'Legs',     baseDifficulty: 'C', primaryMuscles: ['Quads', 'Glutes'],                    secondaryMuscles: ['Hamstrings', 'Calves'],             equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Goblet Squat',           category: 'Legs',     baseDifficulty: 'C', primaryMuscles: ['Quads', 'Glutes'],                    secondaryMuscles: ['Core'],                             equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Calf Raise',             category: 'Legs',     baseDifficulty: 'D', primaryMuscles: ['Calves'],                             secondaryMuscles: [],                                   equipment: 'Machine', type: 'weighted' },
+  { name: 'Hip Thrust',             category: 'Legs',     baseDifficulty: 'B', primaryMuscles: ['Glutes'],                             secondaryMuscles: ['Hamstrings', 'Core'],               equipment: 'Barbell', type: 'weighted' },
+  { name: 'Box Squat',              category: 'Legs',     baseDifficulty: 'A', primaryMuscles: ['Glutes', 'Quads'],                    secondaryMuscles: ['Hamstrings'],                       equipment: 'Barbell', type: 'weighted' },
+  { name: 'Sissy Squat',            category: 'Legs',     baseDifficulty: 'B', primaryMuscles: ['Quads'],                              secondaryMuscles: ['Core'],                             equipment: 'Bodyweight', type: 'bodyweight' },
+
+  // ── SHOULDERS ─────────────────────────────────────────────────────────────
+  { name: 'Lateral Raise',          category: 'Shoulders', baseDifficulty: 'C', primaryMuscles: ['Side Delts'],                        secondaryMuscles: ['Traps'],                            equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Front Raise',            category: 'Shoulders', baseDifficulty: 'C', primaryMuscles: ['Front Delts'],                       secondaryMuscles: ['Upper Chest'],                      equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Rear Delt Fly',          category: 'Shoulders', baseDifficulty: 'C', primaryMuscles: ['Rear Delts'],                        secondaryMuscles: ['Traps', 'Rhomboids'],               equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Arnold Press',           category: 'Shoulders', baseDifficulty: 'B', primaryMuscles: ['All Three Delts'],                   secondaryMuscles: ['Triceps'],                          equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Dumbbell Shoulder Press',category: 'Shoulders', baseDifficulty: 'B', primaryMuscles: ['Front Delts', 'Side Delts'],         secondaryMuscles: ['Triceps'],                          equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Barbell Shrug',          category: 'Shoulders', baseDifficulty: 'C', primaryMuscles: ['Traps'],                             secondaryMuscles: ['Forearms'],                         equipment: 'Barbell', type: 'weighted' },
+  { name: 'Cable Lateral Raise',    category: 'Shoulders', baseDifficulty: 'C', primaryMuscles: ['Side Delts'],                        secondaryMuscles: [],                                   equipment: 'Cable', type: 'weighted' },
+  { name: 'Upright Row',            category: 'Shoulders', baseDifficulty: 'C', primaryMuscles: ['Side Delts', 'Traps'],               secondaryMuscles: ['Biceps'],                           equipment: 'Barbell', type: 'weighted' },
+
+  // ── ARMS ──────────────────────────────────────────────────────────────────
+  { name: 'Bicep Curl',             category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Biceps'],                             secondaryMuscles: ['Forearms'],                         equipment: 'Barbell', type: 'weighted' },
+  { name: 'Hammer Curl',            category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Brachialis', 'Biceps'],               secondaryMuscles: ['Forearms'],                         equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Incline Dumbbell Curl',  category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Long Head Biceps'],                   secondaryMuscles: [],                                   equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Concentration Curl',     category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Biceps Peak'],                        secondaryMuscles: [],                                   equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Preacher Curl',          category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Biceps'],                             secondaryMuscles: ['Forearms'],                         equipment: 'Barbell', type: 'weighted' },
+  { name: 'Cable Curl',             category: 'Arms',     baseDifficulty: 'D', primaryMuscles: ['Biceps'],                             secondaryMuscles: [],                                   equipment: 'Cable', type: 'weighted' },
+  { name: 'Tricep Pushdown',        category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Triceps'],                            secondaryMuscles: [],                                   equipment: 'Cable', type: 'weighted' },
+  { name: 'Skull Crusher',          category: 'Arms',     baseDifficulty: 'B', primaryMuscles: ['Triceps'],                            secondaryMuscles: [],                                   equipment: 'Barbell', type: 'weighted' },
+  { name: 'Dips',                   category: 'Arms',     baseDifficulty: 'B', primaryMuscles: ['Triceps', 'Lower Chest'],             secondaryMuscles: ['Front Delts'],                      equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Overhead Tricep Ext.',   category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Long Head Triceps'],                  secondaryMuscles: [],                                   equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'Close-Grip Bench',       category: 'Arms',     baseDifficulty: 'B', primaryMuscles: ['Triceps'],                            secondaryMuscles: ['Chest'],                            equipment: 'Barbell', type: 'weighted' },
+  { name: 'Diamond Push-up',        category: 'Arms',     baseDifficulty: 'C', primaryMuscles: ['Triceps'],                            secondaryMuscles: ['Chest'],                            equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Wrist Curl',             category: 'Arms',     baseDifficulty: 'D', primaryMuscles: ['Forearms'],                           secondaryMuscles: [],                                   equipment: 'Dumbbell', type: 'weighted' },
+
+  // ── CORE ──────────────────────────────────────────────────────────────────
+  { name: 'Plank',                  category: 'Core',     baseDifficulty: 'D', primaryMuscles: ['Core', 'Transverse Abdominis'],       secondaryMuscles: ['Shoulders', 'Glutes'],              equipment: 'Bodyweight', type: 'duration' },
+  { name: 'Ab Wheel Rollout',       category: 'Core',     baseDifficulty: 'A', primaryMuscles: ['Core', 'Lats'],                       secondaryMuscles: ['Shoulders', 'Hip Flexors'],         equipment: 'Ab Wheel', type: 'bodyweight' },
+  { name: 'Cable Crunch',           category: 'Core',     baseDifficulty: 'C', primaryMuscles: ['Abs'],                                secondaryMuscles: [],                                   equipment: 'Cable', type: 'weighted' },
+  { name: 'Hanging Leg Raise',      category: 'Core',     baseDifficulty: 'B', primaryMuscles: ['Lower Abs', 'Hip Flexors'],           secondaryMuscles: ['Core'],                             equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Decline Sit-up',         category: 'Core',     baseDifficulty: 'C', primaryMuscles: ['Abs'],                                secondaryMuscles: ['Hip Flexors'],                      equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Russian Twist',          category: 'Core',     baseDifficulty: 'C', primaryMuscles: ['Obliques'],                           secondaryMuscles: ['Abs'],                              equipment: 'Dumbbell', type: 'weighted' },
+  { name: 'L-Sit',                  category: 'Core',     baseDifficulty: 'A', primaryMuscles: ['Hip Flexors', 'Core'],                secondaryMuscles: ['Triceps', 'Lats'],                  equipment: 'Bodyweight', type: 'duration' },
+  { name: 'Dragon Flag',            category: 'Core',     baseDifficulty: 'S', primaryMuscles: ['Full Core'],                          secondaryMuscles: ['Lats', 'Glutes'],                   equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Pallof Press',           category: 'Core',     baseDifficulty: 'C', primaryMuscles: ['Core', 'Obliques'],                   secondaryMuscles: ['Shoulders'],                        equipment: 'Cable', type: 'weighted' },
+  { name: 'Hollow Body Hold',       category: 'Core',     baseDifficulty: 'B', primaryMuscles: ['Core', 'Hip Flexors'],                secondaryMuscles: [],                                   equipment: 'Bodyweight', type: 'duration' },
+
+  // ── CALISTHENICS ──────────────────────────────────────────────────────────
+  { name: 'Pull-up',                category: 'Calisthenics', baseDifficulty: 'B', primaryMuscles: ['Lats'],                           secondaryMuscles: ['Biceps', 'Core'],                   equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Chin-up',                category: 'Calisthenics', baseDifficulty: 'B', primaryMuscles: ['Lats', 'Biceps'],                secondaryMuscles: ['Core'],                             equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Muscle-Up',              category: 'Calisthenics', baseDifficulty: 'S', primaryMuscles: ['Lats', 'Chest', 'Triceps'],      secondaryMuscles: ['Core', 'Shoulders'],                equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Pistol Squat',           category: 'Calisthenics', baseDifficulty: 'A', primaryMuscles: ['Quads', 'Glutes'],               secondaryMuscles: ['Core', 'Hamstrings'],               equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Handstand Push-up',      category: 'Calisthenics', baseDifficulty: 'S', primaryMuscles: ['Shoulders', 'Triceps'],          secondaryMuscles: ['Core'],                             equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Front Lever',            category: 'Calisthenics', baseDifficulty: 'S', primaryMuscles: ['Lats', 'Core'],                  secondaryMuscles: ['Biceps', 'Chest'],                  equipment: 'Bodyweight', type: 'duration' },
+  { name: 'Back Lever',             category: 'Calisthenics', baseDifficulty: 'S', primaryMuscles: ['Shoulders', 'Back'],             secondaryMuscles: ['Core', 'Biceps'],                   equipment: 'Bodyweight', type: 'duration' },
+  { name: 'Burpee',                 category: 'Calisthenics', baseDifficulty: 'C', primaryMuscles: ['Full Body'],                     secondaryMuscles: [],                                   equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Jump Squat',             category: 'Calisthenics', baseDifficulty: 'C', primaryMuscles: ['Quads', 'Glutes'],               secondaryMuscles: ['Calves', 'Core'],                   equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Pike Push-up',           category: 'Calisthenics', baseDifficulty: 'C', primaryMuscles: ['Shoulders'],                     secondaryMuscles: ['Triceps', 'Core'],                  equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'Skin the Cat',           category: 'Calisthenics', baseDifficulty: 'A', primaryMuscles: ['Shoulders', 'Back'],             secondaryMuscles: ['Core'],                             equipment: 'Bodyweight', type: 'bodyweight' },
+
+  // ── CARDIO ────────────────────────────────────────────────────────────────
+  { name: 'Treadmill Run',          category: 'Cardio',   baseDifficulty: 'D', primaryMuscles: ['Cardiovascular'],                     secondaryMuscles: ['Legs'],                             equipment: 'Machine', type: 'cardio' },
+  { name: 'Rowing Machine',         category: 'Cardio',   baseDifficulty: 'C', primaryMuscles: ['Full Body'],                          secondaryMuscles: ['Back', 'Legs'],                     equipment: 'Machine', type: 'cardio' },
+  { name: 'Jump Rope',              category: 'Cardio',   baseDifficulty: 'C', primaryMuscles: ['Cardiovascular'],                     secondaryMuscles: ['Calves', 'Shoulders'],              equipment: 'Jump Rope', type: 'cardio' },
+  { name: 'Stationary Bike',        category: 'Cardio',   baseDifficulty: 'D', primaryMuscles: ['Cardiovascular', 'Quads'],            secondaryMuscles: ['Glutes', 'Hamstrings'],             equipment: 'Machine', type: 'cardio' },
+  { name: 'Stairmaster',            category: 'Cardio',   baseDifficulty: 'C', primaryMuscles: ['Cardiovascular', 'Glutes'],           secondaryMuscles: ['Quads', 'Calves'],                  equipment: 'Machine', type: 'cardio' },
+  { name: 'Battle Ropes',           category: 'Cardio',   baseDifficulty: 'B', primaryMuscles: ['Cardiovascular', 'Shoulders'],        secondaryMuscles: ['Core', 'Arms'],                     equipment: 'Battle Ropes', type: 'cardio' },
+  { name: 'Swimming',               category: 'Cardio',   baseDifficulty: 'B', primaryMuscles: ['Full Body'],                          secondaryMuscles: ['Core', 'Shoulders'],                equipment: 'None', type: 'cardio' },
+  { name: 'Sprint Intervals',       category: 'Cardio',   baseDifficulty: 'A', primaryMuscles: ['Cardiovascular', 'Legs'],             secondaryMuscles: ['Core'],                             equipment: 'None', type: 'cardio' },
+
+  // ── MARTIAL ARTS ──────────────────────────────────────────────────────────
+  { name: 'Shadow Boxing',          category: 'Martial Arts', baseDifficulty: 'C', primaryMuscles: ['Shoulders', 'Core'],             secondaryMuscles: ['Legs', 'Cardiovascular'],           equipment: 'None', type: 'cardio' },
+  { name: 'Heavy Bag Work',         category: 'Martial Arts', baseDifficulty: 'B', primaryMuscles: ['Shoulders', 'Core'],             secondaryMuscles: ['Legs', 'Arms'],                     equipment: 'Heavy Bag', type: 'cardio' },
+  { name: 'Pad Work',               category: 'Martial Arts', baseDifficulty: 'B', primaryMuscles: ['Shoulders', 'Core'],             secondaryMuscles: ['Legs', 'Cardiovascular'],           equipment: 'Pads', type: 'cardio' },
+  { name: 'Sparring',               category: 'Martial Arts', baseDifficulty: 'A', primaryMuscles: ['Full Body'],                     secondaryMuscles: [],                                   equipment: 'Gloves', type: 'cardio' },
+  { name: 'Kata Drills',            category: 'Martial Arts', baseDifficulty: 'C', primaryMuscles: ['Core', 'Legs'],                  secondaryMuscles: ['Shoulders'],                        equipment: 'None', type: 'bodyweight' },
+
+  // ── MOBILITY / STRETCHING ─────────────────────────────────────────────────
+  { name: 'Hip Flexor Stretch',     category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Hip Flexors'],                        secondaryMuscles: ['Quads'],                            equipment: 'None', type: 'duration' },
+  { name: 'Thoracic Rotation',      category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Thoracic Spine'],                     secondaryMuscles: ['Lats'],                             equipment: 'None', type: 'duration' },
+  { name: 'Pigeon Pose',            category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Glutes', 'Hip Rotators'],             secondaryMuscles: [],                                   equipment: 'None', type: 'duration' },
+  { name: 'Cossack Squat',          category: 'Mobility', baseDifficulty: 'C', primaryMuscles: ['Adductors', 'Hips'],                  secondaryMuscles: ['Quads', 'Ankles'],                  equipment: 'Bodyweight', type: 'bodyweight' },
+  { name: 'World's Greatest Stretch', category: 'Mobility', baseDifficulty: 'D', primaryMuscles: ['Full Body Mobility'],               secondaryMuscles: [],                                   equipment: 'None', type: 'duration' },
 ];
+
+const EXERCISE_CATEGORIES = ['All', 'Compound', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Calisthenics', 'Cardio', 'Martial Arts', 'Mobility'];
 
 const INTENSITY_MULTI: Record<string, number> = { Low: 0.7, Medium: 1.0, High: 1.5 };
 const INTENSITY_COLOR: Record<string, string> = {
@@ -71,6 +197,43 @@ export default function Fitness() {
   const [selectedEx, setSelectedEx] = useState(EXERCISE_LIBRARY[0]);
   const [weightInput, setWeightInput] = useState('60');
   const [repsInput, setRepsInput] = useState('10');
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  // Session sets log (for this browser session)
+  interface SessionSet {
+    id: string;
+    exerciseName: string;
+    weight: number;
+    reps: number;
+    xp: number;
+  }
+  const [sessionSets, setSessionSets] = useState<SessionSet[]>([]);
+
+  // Last used weight per exercise (persisted to localStorage)
+  const [lastUsedWeights, setLastUsedWeights] = useState<Record<string, string>>(() => {
+    const userId = 'guest'; // will be overwritten in useEffect
+    try {
+      const saved = localStorage.getItem(`monarch_last_weights_${userId}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  // Load last used weights for the logged-in user
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const saved = localStorage.getItem(`monarch_last_weights_${user.id}`);
+      if (saved) setLastUsedWeights(JSON.parse(saved));
+    } catch { /* noop */ }
+  }, [user]);
+
+  // Auto-fill weight when exercise changes
+  useEffect(() => {
+    const userId = user?.id || 'guest';
+    const key = selectedEx.name.toLowerCase();
+    const saved = lastUsedWeights[key];
+    if (saved) setWeightInput(saved);
+  }, [selectedEx]);
 
   // Body metrics form
   const [showMetrics, setShowMetrics] = useState(false);
@@ -557,11 +720,27 @@ export default function Fitness() {
     const weightVal = parseFloat(weightInput) || 0;
     const xpEarned = Math.round(5 + (weightVal * 0.1) + reps); // dynamic XP formula
 
+    // Persist last-used weight for this exercise
+    const userId = user?.id || 'guest';
+    const exKey = selectedEx.name.toLowerCase();
+    const updatedWeights = { ...lastUsedWeights, [exKey]: weightInput };
+    setLastUsedWeights(updatedWeights);
+    localStorage.setItem(`monarch_last_weights_${userId}`, JSON.stringify(updatedWeights));
+
+    // Add to in-session log
+    setSessionSets(prev => [...prev, {
+      id: `${Date.now()}-${Math.random()}`,
+      exerciseName: selectedEx.name,
+      weight: weightVal,
+      reps,
+      xp: xpEarned,
+    }]);
+
     // Check if new PR
-    const prKey = `monarch_pr_${user?.id}_${selectedEx.name.toLowerCase()}`;
+    const prKey = `monarch_pr_${userId}_${exKey}`;
     const previousMax = parseFloat(localStorage.getItem(prKey) || '0');
 
-    if (weightVal > previousMax) {
+    if (weightVal > previousMax && selectedEx.type === 'weighted') {
       localStorage.setItem(prKey, weightVal.toString());
       setRecentPr({ exercise: selectedEx.name, weight: weightVal });
       sounds.playFanfare();
@@ -571,17 +750,17 @@ export default function Fitness() {
     }
 
     await addLog(
-      'Weightlifting', 
-      10, 
-      xpEarned, 
-      { 
-        intensity: 'High', 
+      selectedEx.category === 'Cardio' || selectedEx.category === 'Martial Arts' ? 'Cardio' : 'Weightlifting',
+      10,
+      xpEarned,
+      {
+        intensity: 'High',
         exerciseName: selectedEx.name,
-        weight: weightVal, 
+        weight: weightVal,
         reps,
         notes: `Trained ${selectedEx.name} @ ${weightVal}kg x ${reps} reps`
-      }, 
-      ['strength']
+      },
+      selectedEx.category === 'Cardio' || selectedEx.category === 'Martial Arts' ? ['endurance'] : ['strength']
     );
 
     const rect = (e.target as HTMLFormElement).getBoundingClientRect();
@@ -630,10 +809,13 @@ export default function Fitness() {
   };
 
   const filteredExercises = useMemo(() => {
-    return EXERCISE_LIBRARY.filter(ex =>
-      ex.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+    return EXERCISE_LIBRARY.filter(ex => {
+      const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ex.primaryMuscles.some(m => m.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesCategory = activeCategory === 'All' || ex.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, activeCategory]);
 
   // ── PR BOARD: last PR for each exercise from localStorage ─────────────────
   const prBoard = useMemo(() => {
@@ -969,72 +1151,305 @@ export default function Fitness() {
         {/* Left Column: Logs, Builder, Metrics */}
         <div className="space-y-6">
 
-          {/* Exercise Sets Builder */}
-          <div className="glass-panel p-6 border-t-2 border-t-red-500 bg-void/50">
-            <h2 className="font-orbitron text-base font-bold uppercase tracking-widest flex items-center gap-2 text-white mb-4">
-              <Dumbbell className="w-4 h-4 text-red-500" /> Set Builder
-            </h2>
+          {/* Exercise Sets Builder — REDESIGNED */}
+          <div className="glass-panel border-t-2 border-t-red-500 bg-void/50 overflow-hidden">
+            {/* Header */}
+            <div className="p-5 pb-0 flex items-center justify-between">
+              <h2 className="font-orbitron text-base font-bold uppercase tracking-widest flex items-center gap-2 text-white">
+                <Dumbbell className="w-4 h-4 text-red-500" /> Set Builder
+              </h2>
+              <div className="flex items-center gap-2">
+                <span className="font-space-mono text-[9px] text-white/30 uppercase tracking-widest">
+                  {EXERCISE_LIBRARY.length} exercises
+                </span>
+              </div>
+            </div>
 
-            <form onSubmit={handleLogSet} className="space-y-4">
+            {/* Category Filter Tabs */}
+            <div className="flex gap-1.5 px-5 pt-4 pb-2 overflow-x-auto hide-scrollbar">
+              {EXERCISE_CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => { setActiveCategory(cat); setSearchQuery(''); }}
+                  className={`shrink-0 px-2.5 py-1 text-[9px] font-space-mono font-bold uppercase tracking-wider rounded-full border transition-all ${
+                    activeCategory === cat
+                      ? 'bg-red-500/20 border-red-500/60 text-red-400'
+                      : 'border-white/10 text-white/30 hover:text-white/60 hover:border-white/20'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleLogSet} className="p-5 pt-2 space-y-4">
+              {/* Search */}
               <div>
-                <label className="block font-space-mono text-[9px] text-white/40 uppercase tracking-widest mb-1.5">Search Exercise</label>
-                <div className="relative mb-2">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" />
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search library..."
-                    className="w-full bg-black/40 border border-white/10 p-2.5 pl-9 text-white font-space-mono text-xs focus:border-red-500 focus:outline-none"
+                    onChange={e => { setSearchQuery(e.target.value); if (e.target.value) setActiveCategory('All'); }}
+                    placeholder={`Search ${activeCategory === 'All' ? 'all exercises' : activeCategory}...`}
+                    className="w-full bg-black/40 border border-white/10 p-2 pl-8 text-white font-space-mono text-xs focus:border-red-500 focus:outline-none placeholder:text-white/20 transition-all"
                   />
+                  {searchQuery && (
+                    <button type="button" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 text-xs">✕</button>
+                  )}
                 </div>
-                <div className="max-h-[120px] overflow-y-auto border border-white/5 bg-black/20 p-1 flex flex-col gap-1 hide-scrollbar">
-                  {filteredExercises.map(ex => (
+              </div>
+
+              {/* Exercise List */}
+              <div className="max-h-[160px] overflow-y-auto border border-white/5 bg-black/30 flex flex-col hide-scrollbar">
+                {filteredExercises.length === 0 ? (
+                  <div className="p-4 text-center font-space-mono text-[10px] text-white/30 uppercase tracking-wider">
+                    No exercises found
+                  </div>
+                ) : filteredExercises.map(ex => {
+                  const isSelected = selectedEx.name === ex.name;
+                  const hasPr = user && parseFloat(localStorage.getItem(`monarch_pr_${user.id}_${ex.name.toLowerCase()}`) || '0') > 0;
+                  const diffColors: Record<string, string> = { S: '#ff003c', A: '#ff5a00', B: '#F59E0B', C: '#00D4FF', D: '#6b7280' };
+                  return (
                     <button
                       key={ex.name}
                       type="button"
                       onClick={() => setSelectedEx(ex)}
-                      className={`w-full text-left px-2 py-1.5 text-xs font-space-mono transition-all flex justify-between ${
-                        selectedEx.name === ex.name ? 'bg-red-500/20 text-red-400 font-bold border border-red-500/20' : 'text-white/60 hover:text-white'
+                      className={`w-full text-left px-3 py-2 text-xs font-space-mono transition-all flex items-center justify-between gap-2 border-b border-white/[0.03] last:border-b-0 ${
+                        isSelected
+                          ? 'bg-red-500/15 text-red-300 border-l-2 border-l-red-500'
+                          : 'text-white/60 hover:bg-white/[0.03] hover:text-white'
                       }`}
                     >
-                      <span>{ex.name}</span>
-                      <span className="text-white/20 text-[9px]">{ex.category}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="shrink-0 text-[8px] font-black font-mono w-4 h-4 flex items-center justify-center rounded-sm"
+                          style={{ color: diffColors[ex.baseDifficulty] ?? '#6b7280', background: `${diffColors[ex.baseDifficulty]}18` }}
+                        >
+                          {ex.baseDifficulty}
+                        </span>
+                        <span className={`truncate font-semibold ${isSelected ? 'text-red-300' : ''}`}>{ex.name}</span>
+                        {hasPr && <span className="shrink-0 text-[8px] text-amber-400 font-bold">★ PR</span>}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[9px] text-white/20">{ex.equipment}</span>
+                        <span className="text-[9px] text-white/20">{ex.category}</span>
+                      </div>
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
 
+              {/* Selected Exercise Info Banner */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedEx.name}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="p-3 bg-red-950/20 border border-red-500/20 rounded"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-orbitron text-sm font-bold text-red-400">{selectedEx.name}</p>
+                      <p className="font-space-mono text-[9px] text-white/40 mt-0.5 uppercase">
+                        {selectedEx.primaryMuscles.join(' · ')}
+                        {selectedEx.secondaryMuscles.length > 0 && (
+                          <span className="text-white/20"> / {selectedEx.secondaryMuscles.slice(0,2).join(', ')}</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className="font-mono text-[8px] px-1.5 py-0.5 rounded" style={{
+                        color: ({ S: '#ff003c', A: '#ff5a00', B: '#F59E0B', C: '#00D4FF', D: '#6b7280' } as Record<string,string>)[selectedEx.baseDifficulty],
+                        background: `${({ S: '#ff003c', A: '#ff5a00', B: '#F59E0B', C: '#00D4FF', D: '#6b7280' } as Record<string,string>)[selectedEx.baseDifficulty]}15`,
+                        border: `1px solid ${({ S: '#ff003c', A: '#ff5a00', B: '#F59E0B', C: '#00D4FF', D: '#6b7280' } as Record<string,string>)[selectedEx.baseDifficulty]}40`,
+                      }}>
+                        Rank {selectedEx.baseDifficulty}
+                      </span>
+                      <span className="font-space-mono text-[8px] text-white/30 capitalize">{selectedEx.type}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Weight + Reps Steppers */}
               <div className="grid grid-cols-2 gap-4">
+                {/* Weight */}
                 <div>
-                  <label className="block font-space-mono text-[9px] text-white/40 uppercase tracking-widest mb-1.5">Weight (kg)</label>
-                  <input
-                    type="number"
-                    value={weightInput}
-                    onChange={e => setWeightInput(e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 p-2.5 text-white font-space-mono focus:border-red-500 focus:outline-none"
-                  />
+                  <label className="block font-space-mono text-[9px] text-white/40 uppercase tracking-widest mb-1.5">
+                    {selectedEx.type === 'cardio' || selectedEx.type === 'duration' ? 'Duration (min)' : 'Weight (kg)'}
+                  </label>
+                  <div className="flex items-center border border-white/10 bg-black/40 overflow-hidden focus-within:border-red-500 transition-all">
+                    <button
+                      type="button"
+                      onClick={() => setWeightInput(v => Math.max(0, (parseFloat(v)||0) - 2.5).toString())}
+                      className="px-2.5 py-2.5 text-white/40 hover:text-white hover:bg-white/5 transition-all font-mono text-sm font-bold shrink-0"
+                    >−</button>
+                    <input
+                      type="number"
+                      value={weightInput}
+                      onChange={e => setWeightInput(e.target.value)}
+                      className="flex-1 bg-transparent text-center text-white font-orbitron text-sm font-bold focus:outline-none min-w-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setWeightInput(v => ((parseFloat(v)||0) + 2.5).toString())}
+                      className="px-2.5 py-2.5 text-white/40 hover:text-white hover:bg-white/5 transition-all font-mono text-sm font-bold shrink-0"
+                    >+</button>
+                  </div>
+                  {/* Quick weight presets */}
+                  <div className="flex gap-1 mt-1.5">
+                    {['+2.5', '+5', '+10'].map(delta => (
+                      <button
+                        key={delta}
+                        type="button"
+                        onClick={() => setWeightInput(v => ((parseFloat(v)||0) + parseFloat(delta)).toString())}
+                        className="flex-1 py-0.5 text-[8px] font-mono border border-white/5 text-white/30 hover:text-red-400 hover:border-red-500/30 transition-all rounded"
+                      >
+                        {delta}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Reps */}
                 <div>
-                  <label className="block font-space-mono text-[9px] text-white/40 uppercase tracking-widest mb-1.5">Reps</label>
-                  <input
-                    type="number"
-                    value={repsInput}
-                    onChange={e => setRepsInput(e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 p-2.5 text-white font-space-mono focus:border-red-500 focus:outline-none"
-                  />
+                  <label className="block font-space-mono text-[9px] text-white/40 uppercase tracking-widest mb-1.5">
+                    {selectedEx.type === 'duration' ? 'Sets' : 'Reps'}
+                  </label>
+                  <div className="flex items-center border border-white/10 bg-black/40 overflow-hidden focus-within:border-red-500 transition-all">
+                    <button
+                      type="button"
+                      onClick={() => setRepsInput(v => Math.max(1, (parseInt(v)||1) - 1).toString())}
+                      className="px-2.5 py-2.5 text-white/40 hover:text-white hover:bg-white/5 transition-all font-mono text-sm font-bold shrink-0"
+                    >−</button>
+                    <input
+                      type="number"
+                      value={repsInput}
+                      onChange={e => setRepsInput(e.target.value)}
+                      className="flex-1 bg-transparent text-center text-white font-orbitron text-sm font-bold focus:outline-none min-w-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRepsInput(v => ((parseInt(v)||0) + 1).toString())}
+                      className="px-2.5 py-2.5 text-white/40 hover:text-white hover:bg-white/5 transition-all font-mono text-sm font-bold shrink-0"
+                    >+</button>
+                  </div>
+                  {/* Quick rep presets */}
+                  <div className="flex gap-1 mt-1.5">
+                    {[5, 8, 10, 12].map(r => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRepsInput(r.toString())}
+                        className={`flex-1 py-0.5 text-[8px] font-mono border transition-all rounded ${
+                          repsInput === r.toString()
+                            ? 'border-red-500/40 text-red-400 bg-red-500/10'
+                            : 'border-white/5 text-white/30 hover:text-red-400 hover:border-red-500/30'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <button
+              {/* XP Preview */}
+              <div className="flex items-center justify-between px-3 py-2 bg-black/30 border border-white/5 rounded">
+                <span className="font-space-mono text-[9px] text-white/30 uppercase tracking-wider">Est. XP Reward</span>
+                <span className="font-orbitron text-sm font-bold text-red-400">
+                  +{Math.round(5 + ((parseFloat(weightInput)||0) * 0.1) + (parseInt(repsInput)||0))} XP
+                </span>
+              </div>
+
+              {/* Log Button */}
+              <motion.button
                 type="submit"
                 disabled={logging}
-                className="w-full py-3 bg-red-950/20 hover:bg-red-950/40 border border-red-500/30 text-red-500 font-orbitron text-xs font-bold uppercase tracking-widest transition-all"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-3.5 bg-red-950/20 hover:bg-red-500/20 border border-red-500/40 hover:border-red-500/70 text-red-500 font-orbitron text-xs font-bold uppercase tracking-widest transition-all shadow-[0_0_0_rgba(239,68,68,0)] hover:shadow-[0_0_20px_rgba(239,68,68,0.15)] disabled:opacity-50"
               >
-                Log Completed Set
-              </button>
+                {logging ? 'LOGGING...' : '⚡ LOG COMPLETED SET'}
+              </motion.button>
             </form>
+
+            {/* Session Sets Log */}
+            <AnimatePresence>
+              {sessionSets.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="border-t border-white/5 overflow-hidden"
+                >
+                  <div className="p-5 pt-3 space-y-2">
+                    {/* Session stats */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-orbitron text-[10px] font-bold uppercase tracking-widest text-white/60 flex items-center gap-2">
+                        <Zap className="w-3 h-3 text-red-500" /> Session Log
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <span className="font-space-mono text-[9px] text-white/30">
+                          Vol: <span className="text-white/60 font-bold">
+                            {sessionSets.reduce((s, set) => s + set.weight * set.reps, 0).toLocaleString()}kg
+                          </span>
+                        </span>
+                        <span className="font-space-mono text-[9px] text-red-400 font-bold">
+                          +{sessionSets.reduce((s, set) => s + set.xp, 0)} XP
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSessionSets([])}
+                          className="text-[9px] font-mono text-white/20 hover:text-red-400 transition-all"
+                        >
+                          CLEAR
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Set rows */}
+                    <div className="space-y-1 max-h-[180px] overflow-y-auto hide-scrollbar">
+                      <AnimatePresence>
+                        {sessionSets.map((set, idx) => (
+                          <motion.div
+                            key={set.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 10 }}
+                            className="flex items-center justify-between gap-2 px-3 py-1.5 bg-black/30 border border-white/[0.04] rounded"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-mono text-[9px] text-white/20 shrink-0">#{idx + 1}</span>
+                              <span className="font-space-mono text-[10px] text-white/70 truncate">{set.exerciseName}</span>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className="font-mono text-[10px] text-white/50">
+                                {set.weight > 0 ? `${set.weight}kg` : '—'} × {set.reps}
+                              </span>
+                              <span className="font-orbitron text-[9px] text-red-400 font-bold">+{set.xp}</span>
+                              <button
+                                type="button"
+                                onClick={() => setSessionSets(prev => prev.filter(s => s.id !== set.id))}
+                                className="text-white/10 hover:text-red-400 transition-all text-xs"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
 
           {/* Barbell Plate Loader Visualizer */}
           <div className="glass-panel p-6 border-t-2 border-t-blue-500 bg-void/50">
