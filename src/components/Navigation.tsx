@@ -239,7 +239,7 @@ export const Navigation = () => {
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed top-0 left-0 bottom-0 w-64 border-r border-white/5 p-5 z-50 flex flex-col justify-between md:hidden cursor-grab active:cursor-grabbing"
-              style={{ background: 'var(--color-abyss)' }}
+              style={{ background: 'var(--color-abyss)', willChange: 'transform' }}
             >
               <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-10 rounded-full bg-white/10" />
 
