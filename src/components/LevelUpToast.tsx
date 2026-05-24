@@ -11,13 +11,17 @@ export const showLevelUpToast = (level: number) => {
     (t: Toast) => (
       <motion.div
         initial={{ opacity: 0, y: -50, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className={`${
-          t.visible ? 'animate-enter' : 'animate-leave'
-        } max-w-md w-full bg-void/95 border-2 border-[#00D4FF] shadow-[0_0_25px_rgba(0,212,255,0.45)] pointer-events-auto flex items-center p-5 gap-4 relative overflow-hidden backdrop-blur-md`}
+        animate={{
+          opacity: t.visible ? 1 : 0,
+          y: t.visible ? 0 : -30,
+          scale: t.visible ? 1 : 0.9
+        }}
+        transition={{ type: 'spring', stiffness: 350, damping: 26 }}
+        onClick={() => toast.dismiss(t.id)}
+        className="max-w-md w-full bg-void/95 border-2 border-[#00D4FF] shadow-[0_0_25px_rgba(0,212,255,0.45)] pointer-events-auto flex items-center p-5 gap-4 relative overflow-hidden backdrop-blur-md cursor-pointer select-none"
         style={{
           background: 'rgba(5, 10, 20, 0.95)',
+          willChange: 'transform, opacity'
         }}
       >
         {/* Glow accent */}
@@ -50,7 +54,7 @@ export const showLevelUpToast = (level: number) => {
         </div>
       </motion.div>
     ),
-    { duration: 3500, position: 'top-center' }
+    { duration: 2000, position: 'top-center' }
   );
 };
 

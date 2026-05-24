@@ -45,6 +45,49 @@ interface UseProfileReturn {
 // Stale-While-Revalidate Module-Level Cache
 let cachedProfile: UserProfile | null = null;
 let cachedStats: StatEntry[] = [];
+let isOptimisticUpdatePending = false;
+
+// Global observer pattern to prevent duplicate event listener updates
+const listeners = new Set<(profile: UserProfile, stats: StatEntry[]) => void>();
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('monarch-xp-granted', (e: Event) => {
+    const customEvent = e as CustomEvent<{ xpAdded: number; statNames: string[] }>;
+    const { xpAdded, statNames } = customEvent.detail || { xpAdded: 0, statNames: [] };
+
+    if (cachedProfile) {
+      isOptimisticUpdatePending = true;
+      const nextXp = cachedProfile.current_xp + xpAdded;
+      const nextLevel = Math.floor(nextXp / 100) + 1;
+      const nextProfile = {
+        ...cachedProfile,
+        current_xp: nextXp,
+        current_level: nextLevel
+      };
+      cachedProfile = nextProfile;
+
+      let nextStats = cachedStats;
+      if (cachedStats.length > 0 && statNames.length > 0) {
+        const xpPerStat = Math.floor(xpAdded / statNames.length);
+        nextStats = cachedStats.map(s => {
+          if (statNames.includes(s.stat_name.toLowerCase())) {
+            const nextStatXp = s.xp + xpPerStat;
+            const nextStatLevel = Math.floor(nextStatXp / 100) + 1;
+            return {
+              ...s,
+              xp: nextStatXp,
+              level: nextStatLevel
+            };
+          }
+          return s;
+        });
+        cachedStats = nextStats;
+      }
+
+      listeners.forEach(listener => listener(nextProfile, nextStats));
+    }
+  });
+}
 
 export function useProfile(): UseProfileReturn {
   const { user } = useAuthStore();
@@ -177,13 +220,31 @@ export function useProfile(): UseProfileReturn {
         visibility: p.visibility ?? defaultVisibility,
       };
 
+      // If a manual refetch was requested, always bypass/reset the optimistic update flag
+      if (!isSilent) {
+        isOptimisticUpdatePending = false;
+      }
+
+      // If we have a pending optimistic update, and the database fetch has a lower XP
+      // than our optimistic cache, then the database fetch is stale. We skip updating state.
+      if (isOptimisticUpdatePending && cachedProfile && merged.current_xp < cachedProfile.current_xp) {
+        console.log('useProfile: Database fetch is stale compared to optimistic cache. Keeping optimistic profile.');
+        // Re-notify active instances to keep them in sync with the optimistic cache
+        listeners.forEach(listener => listener(cachedProfile!, cachedStats));
+        return;
+      }
+
+      // Clear the pending flag if the database has caught up
+      if (isOptimisticUpdatePending && (!cachedProfile || merged.current_xp >= cachedProfile.current_xp)) {
+        isOptimisticUpdatePending = false;
+      }
+
       // Update Cache
       cachedProfile = merged;
       cachedStats = (statsData ?? []) as StatEntry[];
 
-      // Update State
-      setProfile(merged);
-      setStats(cachedStats);
+      // Notify all instances to keep everything in sync
+      listeners.forEach(listener => listener(merged, cachedStats));
     } catch (err: any) {
       setError(err.message);
       console.error('useProfile fetch error:', err);
@@ -204,51 +265,24 @@ export function useProfile(): UseProfileReturn {
   }, [fetchProfile]);
 
   useEffect(() => {
-    const handleXpGranted = (e: Event) => {
-      const customEvent = e as CustomEvent<{ xpAdded: number; statNames: string[] }>;
-      const { xpAdded, statNames } = customEvent.detail || { xpAdded: 0, statNames: [] };
+    const handleUpdate = (updatedProfile: UserProfile, updatedStats: StatEntry[]) => {
+      setProfile(updatedProfile);
+      setStats(updatedStats);
+    };
+    listeners.add(handleUpdate);
+    return () => {
+      listeners.delete(handleUpdate);
+    };
+  }, []);
 
-      console.log('XP granted event captured inside useProfile hook:', xpAdded, statNames);
-      
-      // 1. Optimistic Update of User Profile
-      if (cachedProfile) {
-        const nextXp = cachedProfile.current_xp + xpAdded;
-        const nextLevel = Math.floor(nextXp / 100) + 1;
-        const nextProfile = {
-          ...cachedProfile,
-          current_xp: nextXp,
-          current_level: nextLevel
-        };
-        cachedProfile = nextProfile;
-        setProfile(nextProfile);
-      }
-
-      // 2. Optimistic Update of Stats
-      if (cachedStats.length > 0 && statNames.length > 0) {
-        const xpPerStat = Math.floor(xpAdded / statNames.length);
-        const nextStats = cachedStats.map(s => {
-          if (statNames.includes(s.stat_name.toLowerCase())) {
-            const nextStatXp = s.xp + xpPerStat;
-            const nextStatLevel = Math.floor(nextStatXp / 100) + 1;
-            return {
-              ...s,
-              xp: nextStatXp,
-              level: nextStatLevel
-            };
-          }
-          return s;
-        });
-        cachedStats = nextStats;
-        setStats(nextStats);
-      }
-
-      // 3. Silent background database sync to ensure absolute consistency
+  useEffect(() => {
+    const handleDbSync = () => {
+      console.log('useProfile hook received DB sync event. Fetching fresh profile...');
       fetchProfile(true);
     };
-
-    window.addEventListener('monarch-xp-granted', handleXpGranted);
+    window.addEventListener('monarch-db-sync', handleDbSync);
     return () => {
-      window.removeEventListener('monarch-xp-granted', handleXpGranted);
+      window.removeEventListener('monarch-db-sync', handleDbSync);
     };
   }, [fetchProfile]);
 
@@ -259,7 +293,7 @@ export function useProfile(): UseProfileReturn {
     if (cachedProfile) {
       const nextProfile = { ...cachedProfile, ...updates };
       cachedProfile = nextProfile;
-      setProfile(nextProfile);
+      listeners.forEach(listener => listener(nextProfile, cachedStats));
     }
 
     if (!isSupabaseConfigured) {

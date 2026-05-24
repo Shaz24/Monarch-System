@@ -235,6 +235,7 @@ export function useActivityLogs(category: ActivityLog['category']) {
         const updated = [newLog, ...existing];
         localStorage.setItem(localKey, JSON.stringify(updated));
         toast.success('Activity recorded successfully (Demo Mode)!');
+        window.dispatchEvent(new CustomEvent('monarch-db-sync'));
       } catch (e: any) {
         console.error('Failed to save local log:', e);
         toast.error('Failed to save local activity.');
@@ -278,7 +279,11 @@ export function useActivityLogs(category: ActivityLog['category']) {
         
         if (rpcError) {
           console.error('RPC Error granting XP:', rpcError);
+        } else {
+          window.dispatchEvent(new CustomEvent('monarch-db-sync'));
         }
+      } else {
+        window.dispatchEvent(new CustomEvent('monarch-db-sync'));
       }
       toast.success('Activity recorded successfully!');
     } catch (err: any) {

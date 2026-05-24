@@ -309,6 +309,7 @@ export default function BossMode() {
   // Combat log terminal lines
   const [combatLogs, setCombatLogs] = useState<string[]>([]);
   const logTerminalRef = useRef<HTMLDivElement>(null);
+  const processingQuestsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     localStorage.setItem('monarchBossMode', JSON.stringify(state));
@@ -506,7 +507,8 @@ export default function BossMode() {
     }
 
     const quest = quests.find(q => q.id === questId);
-    if (!quest || quest.completed || defeated) return;
+    if (!quest || quest.completed || defeated || processingQuestsRef.current.has(questId)) return;
+    processingQuestsRef.current.add(questId);
 
     const diffSettings = DIFFICULTY_SETTINGS[difficulty || 'easy'];
 
@@ -573,7 +575,15 @@ export default function BossMode() {
     const durationMins = quest.duration ?? 0;
 
     // Log with correct category and duration
-    addLog(quest.title, durationMins, Math.round(quest.xp * diffSettings.xpMult), { isBossQuest: true }, [quest.category], targetCat).catch(console.error);
+    addLog(quest.title, durationMins, Math.round(quest.xp * diffSettings.xpMult), { isBossQuest: true }, [quest.category], targetCat)
+      .catch(err => {
+        console.error('Failed to record boss fight activity:', err);
+        processingQuestsRef.current.delete(questId);
+        setState(s => ({
+          ...s,
+          quests: s.quests.map(q => q.id === questId ? { ...q, completed: false } : q)
+        }));
+      });
 
     toast(`⚔️ ${quest.icon} ${finalDamage.toLocaleString()} DMG`, { duration: 2500 });
 

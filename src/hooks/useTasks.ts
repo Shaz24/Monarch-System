@@ -177,6 +177,7 @@ export function useTasks() {
       cachedTasks = updatedTasks;
       setTasks(updatedTasks);
       toast.success('Task completed (Demo Mode)');
+      window.dispatchEvent(new CustomEvent('monarch-db-sync'));
       return;
     }
 
@@ -214,6 +215,8 @@ export function useTasks() {
 
       if (rpcError) {
         console.error('RPC Error granting XP:', rpcError);
+      } else {
+        window.dispatchEvent(new CustomEvent('monarch-db-sync'));
       }
       toast.success('Directive completed! XP gained.');
     } catch (err: any) {
