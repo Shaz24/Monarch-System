@@ -1,14 +1,11 @@
 import toast, { type Toast } from 'react-hot-toast';
 import { Shield, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { sounds } from '../lib/sound';
 
 export const showLevelUpToast = (level: number) => {
-  // Play sound
-  try {
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
-    audio.volume = 0.5;
-    audio.play();
-  } catch (e) {}
+  // Play sound instantly using Web Audio API
+  sounds.playFanfare();
 
   toast.custom(
     (t: Toast) => (
@@ -53,7 +50,7 @@ export const showLevelUpToast = (level: number) => {
         </div>
       </motion.div>
     ),
-    { duration: 5500, position: 'top-center' }
+    { duration: 3500, position: 'top-center' }
   );
 };
 
