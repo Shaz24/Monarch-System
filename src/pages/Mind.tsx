@@ -4,6 +4,7 @@ import { Brain, BrainCircuit, Lock, ScrollText, Smartphone, UserMinus, Target, C
 import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
 import { MonkModeOverlay } from '../components/MonkModeOverlay';
+import { HabitTracker } from '../components/HabitTracker';
 import toast from 'react-hot-toast';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import { useProfile } from '../hooks/useProfile';
@@ -208,9 +209,9 @@ export default function Mind() {
       />
 
       <motion.div 
-        initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+        initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        exit={{ opacity: 0, y: -20 }}
+        exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
       >
@@ -228,7 +229,7 @@ export default function Mind() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 relative z-10">
           
           {/* Mood Tracker */}
-          <div className="glass-card p-5 flex flex-col gap-3">
+          <div className="glass-2 p-5 flex flex-col gap-3">
             <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-2">
               <Brain className="w-3.5 h-3.5 text-violet-400" /> Emotional State
             </h3>
@@ -264,7 +265,7 @@ export default function Mind() {
           </div>
 
           {/* Box Breathing */}
-          <div className="glass-card p-5 flex flex-col items-center gap-3">
+          <div className="glass-2 p-5 flex flex-col items-center gap-3">
             <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-2 w-full">
               <Target className="w-3.5 h-3.5 text-cyan-400" /> Box Breathing (4-4-4-4)
             </h3>
@@ -302,7 +303,7 @@ export default function Mind() {
           </div>
 
           {/* Affirmations */}
-          <div className="glass-card p-5 flex flex-col gap-3">
+          <div className="glass-2 p-5 flex flex-col gap-3">
             <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-2">
               <ScrollText className="w-3.5 h-3.5 text-amber-400" /> Daily Affirmation
             </h3>
@@ -337,8 +338,11 @@ export default function Mind() {
           </div>
         </div>
 
+        {/* ── HABIT TRACKER ── */}
+        <HabitTracker className="mb-6 relative z-10" />
+
         {/* ── JOURNAL QUICK ENTRY ── */}
-        <div className="glass-card p-5 mb-6 relative z-10">
+        <div className="glass-2 p-5 mb-6 relative z-10">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
               <Pencil className="w-3.5 h-3.5 text-purple-400" /> Daily Journal Entry

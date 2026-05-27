@@ -172,9 +172,9 @@ export default function Creator() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+      initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
@@ -212,7 +212,7 @@ export default function Creator() {
       </div>
 
       {/* ── CONTENT CALENDAR ── */}
-      <div className="glass-card p-5 relative z-10">
+      <div className="glass-2 p-5 relative z-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Camera className="w-3.5 h-3.5 text-orange-400" /> Content Pipeline
@@ -257,7 +257,7 @@ export default function Creator() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
 
         {/* Idea Bank */}
-        <div className="glass-card p-5">
+        <div className="glass-2 p-5">
           <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2 border-b border-white/5 pb-3 mb-3">
             <Award className="w-3.5 h-3.5 text-violet-400" /> Idea Bank
           </h3>
@@ -284,7 +284,7 @@ export default function Creator() {
         </div>
 
         {/* Revenue Tracker */}
-        <div className="glass-card p-5">
+        <div className="glass-2 p-5">
           <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
             <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
               <Video className="w-3.5 h-3.5 text-green-400" /> Revenue Tracker

@@ -227,8 +227,8 @@ export default function Schedule() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-      className="p-4 md:p-12 max-w-[1000px] mx-auto w-full space-y-6 relative"
+      initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0 }}
+      className="p-4 md:p-12 max-w-[1100px] mx-auto w-full space-y-6 relative"
     >
       <div className="absolute top-0 right-1/4 w-[300px] h-[300px] bg-accent-blue/5 rounded-full blur-[100px] pointer-events-none -z-10" />
 
@@ -236,14 +236,14 @@ export default function Schedule() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-purple-400" />
+            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(129,140,248,0.15)]">
+              <Calendar className="w-6 h-6 text-indigo-400" />
             </div>
             <div>
               <h1 className="font-orbitron text-3xl md:text-4xl font-bold uppercase tracking-widest text-white">
-                Daily <span className="text-cyan-400">Directives</span>
+                Daily <span className="text-indigo-400">Directives</span>
               </h1>
-              <p className="font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5">
+              <p className="font-mono text-xs text-white/35 tracking-widest uppercase mt-0.5">
                 Failure to complete reduces aura. Proceed with discipline.
               </p>
             </div>
@@ -268,7 +268,7 @@ export default function Schedule() {
       </div>
 
       {/* ── PROGRESS SUMMARY BAR ── */}
-      <div className="glass-card p-4">
+      <div className="glass-2 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-monarch to-cyan-500 flex items-center justify-center text-white font-bold font-mono text-sm">
@@ -295,7 +295,7 @@ export default function Schedule() {
       </div>
 
       {/* ── STREAK FREEZE SHIELD ── */}
-      <div className="glass-card p-5 border-l-4 border-[#A78BFA] bg-[#A78BFA]/5 relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="glass-2 p-5 border-l-4 border-indigo-400 bg-indigo-400/5 relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className={`p-2.5 rounded-lg bg-black/40 border transition-all ${shieldActive ? 'border-cyan-400/50 shadow-[0_0_15px_rgba(6,182,212,0.25)] text-cyan-400' : 'border-white/10 text-white/40'}`}>
             <ShieldIcon className={`w-6 h-6 ${shieldActive ? 'animate-pulse' : ''}`} />
@@ -326,7 +326,7 @@ export default function Schedule() {
       </div>
 
       {/* ── FILTER PILLS + VIEW TOGGLE ── */}
-      <div className="glass-card p-4 space-y-3">
+      <div className="glass-1 p-4 space-y-3">
         {/* Category pills */}
         <div className="flex flex-wrap gap-2">
           {activeCategories.map(cat => {

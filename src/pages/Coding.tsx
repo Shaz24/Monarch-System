@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, Code2, Plus, GitPullRequest, GitBranch } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { StatRing } from '../components/StatRing';
+import { PomodoroTimer } from '../components/PomodoroTimer';
 import toast from 'react-hot-toast';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 import { useProfile } from '../hooks/useProfile';
@@ -168,9 +169,9 @@ export default function Coding() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+      initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
@@ -236,7 +237,7 @@ const calculateStatVelocity = (logs: ActivityLog[]) => {
       </div>
 
       {/* ── TECH STACK TAGS ── */}
-      <div className="glass-card p-5 relative z-10">
+      <div className="glass-2 p-5 relative z-10">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Code2 className="w-3.5 h-3.5 text-cyan-400" /> Active Tech Stack
@@ -270,7 +271,7 @@ const calculateStatVelocity = (logs: ActivityLog[]) => {
       </div>
 
       {/* ── KANBAN BOARD ── */}
-      <div className="glass-card p-5 relative z-10">
+      <div className="glass-2 p-5 relative z-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <GitPullRequest className="w-3.5 h-3.5 text-purple-400" /> Project Kanban
@@ -325,7 +326,7 @@ const calculateStatVelocity = (logs: ActivityLog[]) => {
       </div>
 
       {/* ── LEETCODE TRACKER ── */}
-      <div className="glass-card p-5 relative z-10">
+      <div className="glass-2 p-5 relative z-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <GitBranch className="w-3.5 h-3.5 text-amber-400" /> LeetCode Progress
@@ -355,7 +356,10 @@ const calculateStatVelocity = (logs: ActivityLog[]) => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 relative z-10">
         
         {/* Left Column: Logging Form */}
-        <div className="xl:col-span-1 space-y-8">
+        <div className="xl:col-span-1 space-y-6">
+          {/* Pomodoro Focus Timer */}
+          <PomodoroTimer className="" />
+
           <div className="glass-panel p-6 border-t-2 border-t-accent-blue relative bg-void/40">
             <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-accent-blue">
               <Plus className="w-5 h-5" />

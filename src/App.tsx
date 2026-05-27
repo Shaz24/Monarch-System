@@ -11,7 +11,7 @@ import { XpParticles } from './components/XpParticles';
 import { LevelUpOverlay } from './components/LevelUpOverlay';
 import { useUIStore } from './store/uiStore';
 import { Navigation } from './components/Navigation';
-import { SkeletonCard } from './components/ui/Skeleton';
+
 
 // Global Overhaul Elements
 import { SystemBootFlash } from './components/SystemBootFlash';
@@ -34,14 +34,17 @@ const Landing = lazy(() => import('./pages/Landing'));
 const EditProfile = lazy(() => import('./pages/EditProfile'));
 const BossMode = lazy(() => import('./pages/BossMode'));
 
-const Layout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen flex flex-col md:flex-row bg-void">
-    <Navigation />
-    <main className="flex-1 md:ml-64 pb-28 md:pb-0 overflow-y-auto overflow-x-hidden relative z-10">
-      {children}
-    </main>
-  </div>
-);
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { isSidebarCollapsed } = useUIStore();
+  return (
+    <div className="min-h-screen flex flex-col md:flex-row bg-void">
+      <Navigation />
+      <main className={`flex-1 ${isSidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-60'} pb-28 md:pb-0 overflow-y-auto overflow-x-hidden relative z-10 transition-all duration-300`}>
+        {children}
+      </main>
+    </div>
+  );
+};
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>
@@ -51,11 +54,11 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
 
 const PageTransition = ({ children }: { children: React.ReactNode }) => (
   <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: 20 }}
-    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-    style={{ willChange: 'transform, opacity' }}
+    initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+    exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
+    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+    style={{ willChange: 'transform, opacity, filter' }}
   >
     {children}
   </motion.div>
@@ -63,8 +66,13 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => (
 
 const LazyPage = ({ Component }: { Component: React.ComponentType }) => (
   <Suspense fallback={
-    <div className="p-8">
-      <SkeletonCard height="h-64" />
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 border-2 border-[#7C3AED]/30 border-t-[#A78BFA] rounded-full animate-spin" />
+        <span className="font-mono text-[10px] text-white/30 uppercase tracking-[0.2em] animate-pulse">
+          Loading module...
+        </span>
+      </div>
     </div>
   }>
     <PageTransition>

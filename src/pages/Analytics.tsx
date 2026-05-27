@@ -301,7 +301,7 @@ export default function Analytics() {
       {/* PERSONAL RECORDS GRID PANEL */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
         
-        <div className="glass-card p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
+        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
           <Trophy className="w-8 h-8 text-gold shrink-0" />
           <div>
             <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Peak XP Gain</span>
@@ -309,7 +309,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        <div className="glass-card p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
+        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
           <Zap className="w-8 h-8 text-cyan-400 shrink-0" />
           <div>
             <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Cumulative XP</span>
@@ -317,7 +317,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        <div className="glass-card p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
+        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
           <Clock className="w-8 h-8 text-[#A78BFA] shrink-0" />
           <div>
             <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Focus Time</span>
@@ -325,7 +325,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        <div className="glass-card p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
+        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
           <Flame className="w-8 h-8 text-red-500 shrink-0" />
           <div>
             <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Active Streak</span>
@@ -336,7 +336,7 @@ export default function Analytics() {
       </div>
 
       {/* ── YEAR ACTIVITY HEATMAP ── */}
-      <div className="glass-card p-5 print:hidden lazy-section">
+      <div className="glass-2 p-5 print:hidden lazy-section">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Activity className="w-4 h-4 text-purple-400" /> Activity Heatmap — Last 365 Days
@@ -373,7 +373,7 @@ export default function Analytics() {
       </div>
 
       {/* ── ACHIEVEMENTS SHOWCASE ── */}
-      <div className="glass-card p-5 print:hidden lazy-section">
+      <div className="glass-2 p-5 print:hidden lazy-section">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-400" /> Achievements

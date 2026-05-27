@@ -16,12 +16,16 @@ interface UIState {
   closeLevelUp: () => void;
   theme: 'dark' | 'light';
   toggleTheme: () => void;
+  isSidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
   particles: [],
   isLevelUp: false,
   theme: (localStorage.getItem('monarchTheme') as 'dark' | 'light') || 'dark',
+  isSidebarCollapsed: localStorage.getItem('monarchSidebarCollapsed') === 'true',
   addXpParticle: (x, y, amount) => {
     const id = Math.random().toString(36).substr(2, 9);
     set((state) => ({ particles: [...state.particles, { id, x, y, amount }] }));
@@ -43,4 +47,13 @@ export const useUIStore = create<UIState>((set) => ({
     
     return { theme: nextTheme };
   }),
+  toggleSidebar: () => set((state) => {
+    const nextState = !state.isSidebarCollapsed;
+    localStorage.setItem('monarchSidebarCollapsed', String(nextState));
+    return { isSidebarCollapsed: nextState };
+  }),
+  setSidebarCollapsed: (collapsed) => {
+    localStorage.setItem('monarchSidebarCollapsed', String(collapsed));
+    set({ isSidebarCollapsed: collapsed });
+  },
 }));

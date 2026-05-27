@@ -100,9 +100,9 @@ export default function Profile() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+      initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
