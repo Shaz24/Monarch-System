@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon, Menu, X, Flame, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon, Menu, X, Flame, Clock, ChevronLeft, ChevronRight, Atom } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '../store/uiStore';
 import { useProfile } from '../hooks/useProfile';
@@ -40,6 +40,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
     title: 'Intel',
     items: [
       { path: '/analytics', icon: LineChart, label: 'Analytics', color: '#10B981', glow: 'rgba(16,185,129,0.25)' },
+      { path: '/antigravity', icon: Atom, label: 'Antigravity', color: '#9b5de5', glow: 'rgba(155,93,229,0.30)' },
       { path: '/profile', icon: User, label: 'Profile', color: '#F59E0B', glow: 'rgba(245,158,11,0.25)' },
     ],
   },
