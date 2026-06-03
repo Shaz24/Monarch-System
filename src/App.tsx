@@ -34,6 +34,7 @@ const Landing = lazy(() => import('./pages/Landing'));
 const EditProfile = lazy(() => import('./pages/EditProfile'));
 const BossMode = lazy(() => import('./pages/BossMode'));
 const Antigravity = lazy(() => import('./pages/Antigravity'));
+const Todo = lazy(() => import('./pages/Todo'));
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { isSidebarCollapsed } = useUIStore();
@@ -134,6 +135,8 @@ function AppContent() {
           navigate('/analytics');
         } else if (key === 'g') {
           navigate('/antigravity');
+        } else if (key === 't') {
+          navigate('/todo');
         }
       }
     };
@@ -161,6 +164,7 @@ function AppContent() {
           <Route path="/boss-mode" element={<ProtectedLayout><LazyPage Component={BossMode} /></ProtectedLayout>} />
           <Route path="/analytics" element={<ProtectedLayout><LazyPage Component={Analytics} /></ProtectedLayout>} />
           <Route path="/antigravity" element={<ProtectedLayout><LazyPage Component={Antigravity} /></ProtectedLayout>} />
+          <Route path="/todo" element={<ProtectedLayout><LazyPage Component={Todo} /></ProtectedLayout>} />
           <Route path="/edit-profile" element={<ProtectedLayout><LazyPage Component={EditProfile} /></ProtectedLayout>} />
           
           <Route path="*" element={<Navigate to="/" replace />} />

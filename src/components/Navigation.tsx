@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon, Menu, X, Flame, Clock, ChevronLeft, ChevronRight, Atom } from 'lucide-react';
+import { LayoutDashboard, Calendar, Dumbbell, Brain, Terminal, Video, Swords, LineChart, User, Sun, Moon, Menu, X, Flame, Clock, ChevronLeft, ChevronRight, Atom, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '../store/uiStore';
 import { useProfile } from '../hooks/useProfile';
@@ -19,6 +19,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
     items: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: '#A78BFA', glow: 'rgba(124,58,237,0.25)' },
       { path: '/schedule', icon: Calendar, label: 'Directives', color: '#818CF8', glow: 'rgba(129,140,248,0.25)' },
+      { path: '/todo', icon: CheckSquare, label: 'Quest Board', color: '#10B981', glow: 'rgba(16,185,129,0.25)' },
     ],
   },
   {
