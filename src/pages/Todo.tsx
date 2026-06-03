@@ -1,13 +1,13 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Search, Filter, Pin, Trash2, CheckCircle2, Circle,
-  ChevronDown, ChevronUp, ChevronRight, Clock, Tag, Zap,
-  Calendar, MoreHorizontal, Archive, Flame, Target, AlertTriangle,
+  ChevronDown, ChevronUp, Zap,
+  Calendar, MoreHorizontal, Archive, AlertTriangle,
   Inbox, Star, X, Edit3, Check, ArrowUpDown, LayoutGrid, List,
-  TrendingUp, Award, Brain, Dumbbell, Briefcase, Lightbulb,
-  BookOpen, AlertCircle, GripVertical, Copy, Sparkles, Timer,
-  BarChart3, FolderOpen, RefreshCw
+  Dumbbell, Briefcase, Lightbulb,
+  BookOpen, AlertCircle, GripVertical, Sparkles, Timer,
+  FolderOpen, RefreshCw
 } from 'lucide-react';
 import { useTodos, type Todo, type TodoPriority, type TodoCategory, type TodoStatus, type SubTask } from '../hooks/useTodos';
 import toast from 'react-hot-toast';
@@ -54,10 +54,7 @@ function getDueBadge(due: string, status: TodoStatus): { label: string; color: s
   return null;
 }
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+
 
 function formatTime(minutes: number) {
   if (minutes < 60) return `${minutes}m`;
@@ -474,13 +471,10 @@ interface TodoCardProps {
   viewMode: 'list' | 'grid';
 }
 
-function TodoCard({ todo, onComplete, onDelete, onEdit, onTogglePin, onToggleSubtask, onStatusChange, viewMode }: TodoCardProps) {
+function TodoCard({ todo, onComplete, onDelete, onEdit, onTogglePin, onToggleSubtask, onStatusChange }: TodoCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
-  const cfg = PRIORITY_CONFIG[todo.priority];
-  const catCfg = CATEGORY_CONFIG[todo.category];
-  const CatIcon = catCfg.icon;
   const isDone = todo.status === 'done';
   const dueBadge = todo.due_date ? getDueBadge(todo.due_date, todo.status) : null;
   const subtasksDone = todo.subtasks.filter(s => s.done).length;

@@ -51,7 +51,7 @@ function saveToStorage(todos: Todo[]) {
 
 export function useTodos() {
   const [todos, setTodos] = useState<Todo[]>(() => loadFromStorage());
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   // Persist on every change
   useEffect(() => {
