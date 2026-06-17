@@ -138,7 +138,7 @@ function AppContent() {
             toast.success(`Recorded: ${activityType} (+${xp} XP)`, { icon: '🤖' });
           } else {
             // Online mode: insert log in Supabase
-            const { data, error } = await supabase
+            const { error } = await supabase
               .from('activity_logs')
               .insert([
                 {
