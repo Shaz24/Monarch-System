@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import { useEffect, lazy, Suspense, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from './store';
@@ -91,6 +91,109 @@ function AppContent() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // ── Zen Voice Command URL Query Parameter Listener ─────────────────────────
+  useEffect(() => {
+    if (!user) return;
+
+    const queryParams = new URLSearchParams(location.search);
+    const action = queryParams.get('action');
+
+    if (action === 'log-activity') {
+      const category = queryParams.get('category') as any;
+      const activityType = queryParams.get('type') || 'Activity';
+      const duration = parseInt(queryParams.get('duration') || '0', 10);
+      const xp = parseInt(queryParams.get('xp') || '10', 10);
+      const statsStr = queryParams.get('stats') || '';
+      const statCategories = statsStr ? statsStr.split(',') : [];
+
+      const executeLog = async () => {
+        const loadingToast = toast.loading(`Zen executing: Recording ${activityType}...`);
+        
+        try {
+          if (!isSupabaseConfigured) {
+            // Offline/Local Storage Fallback
+            const localKey = `monarch_logs_${category}_${user.id}`;
+            const newLog = {
+              id: Math.random().toString(36).substring(7),
+              user_id: user.id,
+              category,
+              activity_type: activityType,
+              duration_minutes: duration,
+              xp_earned: xp,
+              metadata: {},
+              created_at: new Date().toISOString()
+            };
+            const raw = localStorage.getItem(localKey);
+            const existing = raw ? JSON.parse(raw) : [];
+            localStorage.setItem(localKey, JSON.stringify([newLog, ...existing]));
+            
+            // Dispatch global event for XP update
+            window.dispatchEvent(new CustomEvent('monarch-xp-granted', {
+              detail: { xpAdded: xp, statNames: statCategories.map(s => s.toLowerCase()) }
+            }));
+            window.dispatchEvent(new CustomEvent('monarch-db-sync'));
+            
+            toast.dismiss(loadingToast);
+            toast.success(`Recorded: ${activityType} (+${xp} XP)`, { icon: '🤖' });
+          } else {
+            // Online mode: insert log in Supabase
+            const { data, error } = await supabase
+              .from('activity_logs')
+              .insert([
+                {
+                  user_id: user.id,
+                  category,
+                  activity_type: activityType,
+                  duration_minutes: duration,
+                  xp_earned: xp,
+                  metadata: {}
+                }
+              ])
+              .select()
+              .single();
+
+            if (error) throw error;
+
+            // Grant XP via RPC
+            if (statCategories.length > 0) {
+              const { error: rpcError } = await supabase.rpc('grant_xp', {
+                p_user_id: user.id,
+                p_xp_amount: xp,
+                p_stat_names: statCategories.map(s => s.toLowerCase())
+              });
+              if (rpcError) throw rpcError;
+            }
+
+            // Dispatch events
+            window.dispatchEvent(new CustomEvent('monarch-xp-granted', {
+              detail: { xpAdded: xp, statNames: statCategories.map(s => s.toLowerCase()) }
+            }));
+            window.dispatchEvent(new CustomEvent('monarch-db-sync'));
+
+            toast.dismiss(loadingToast);
+            toast.success(`Recorded: ${activityType} (+${xp} XP)`, { icon: '🤖' });
+          }
+        } catch (e: any) {
+          console.error(e);
+          toast.dismiss(loadingToast);
+          toast.error(`Zen failed to log activity: ${e.message}`);
+        } finally {
+          // Clear query parameters from URL to prevent duplicate submissions on refresh
+          queryParams.delete('action');
+          queryParams.delete('category');
+          queryParams.delete('type');
+          queryParams.delete('duration');
+          queryParams.delete('xp');
+          queryParams.delete('stats');
+          const newSearch = queryParams.toString();
+          navigate(location.pathname + (newSearch ? `?${newSearch}` : ''), { replace: true });
+        }
+      };
+
+      executeLog();
+    }
+  }, [location.search, user, navigate]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

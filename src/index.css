@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -2078,3 +2078,4 @@ textarea::placeholder {
   }
   .ag-pulse-dot { animation: none !important; }
 }
+

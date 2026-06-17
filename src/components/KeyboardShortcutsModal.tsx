@@ -16,6 +16,8 @@ export const KeyboardShortcutsModal = ({ isOpen, onClose }: KeyboardShortcutsMod
     { key: 'R', description: 'Open broadcast console (creator)' },
     { key: 'B', description: 'Enter active boss battles mode' },
     { key: 'A', description: 'View system analytics & charts' },
+    { key: 'G', description: 'Open Antigravity module' },
+    { key: 'T', description: 'Open Quest Board (todos)' },
     { key: 'P', description: 'View hunter profile window' },
     { key: 'Ctrl+K', description: 'Activate global command palette' },
     { key: '?', description: 'Toggle keyboard shortcuts menu' },
