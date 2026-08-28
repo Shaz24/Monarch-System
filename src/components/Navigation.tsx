@@ -258,8 +258,19 @@ export const Navigation = () => {
 
   const sidebarWidth = isCollapsed ? 'w-[72px]' : 'w-60';
 
+  // Bottom nav primary items
+  const MOBILE_BOTTOM_ITEMS = [
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#A78BFA' },
+    { path: '/todo', label: 'Quests', icon: CheckSquare, color: '#10B981' },
+    { path: '/schedule', label: 'Directives', icon: Calendar, color: '#818CF8' },
+    { path: '/boss-mode', label: 'Boss Mode', icon: Swords, color: '#DC2626' },
+  ];
+
+  const location = useLocation();
+
   return (
     <>
+      {/* Desktop Left Sidebar */}
       <nav
         className={`hidden md:flex flex-col ${sidebarWidth} h-screen fixed left-0 top-0 z-50 ${isCollapsed ? 'p-3' : 'p-5'} justify-between transition-all duration-300`}
         style={{
@@ -340,74 +351,178 @@ export const Navigation = () => {
         </div>
       </nav>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-void/80 backdrop-blur-xl border-b border-white/5 z-40 flex items-center justify-between px-4">
-        <div className="flex items-center">
+      {/* Mobile Top HUD Bar */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-void/90 backdrop-blur-xl border-b border-white/10 z-40 flex items-center justify-between px-4">
+        <NavLink to="/dashboard" className="flex items-center gap-2 group">
           <CrownIcon />
-          <span className="font-display font-bold text-[12px] tracking-[0.12em] text-[#A78BFA] glow-text uppercase">
-            Monarch
-          </span>
-        </div>
+          <div className="flex flex-col">
+            <span className="font-display font-black text-[12px] tracking-[0.14em] text-[#A78BFA] glow-text uppercase leading-none">
+              Monarch
+            </span>
+            <span className="font-mono text-[8px] text-amber-400 font-bold tracking-wider uppercase mt-0.5">
+              LVL {userLevel}
+            </span>
+          </div>
+        </NavLink>
+
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] text-white/30 tracking-widest">{clockStr}</span>
+          <span className="font-mono text-[10px] text-cyan-400/80 font-bold tracking-wider">{clockStr}</span>
+          
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="p-2 rounded-xl bg-white/[0.04] border border-white/10 text-white/70 active:scale-95 transition-all"
+          >
+            {isLightMode ? <Sun className="w-4 h-4 text-cyan" /> : <Moon className="w-4 h-4 text-[#A78BFA]" />}
+          </button>
+
           <button
             onClick={() => setIsMobileOpen(true)}
-            className="p-2 bg-white/5 border border-white/10 text-white rounded-xl"
+            aria-label="Open navigation menu"
+            className="p-2 rounded-xl bg-monarch/15 border border-monarch/30 text-monarch-glow active:scale-95 transition-all"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-4 h-4" />
           </button>
         </div>
-      </div>
+      </header>
 
+      {/* Mobile Bottom Navigation Bar (Fixed HUD) */}
+      <nav 
+        aria-label="Mobile Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-bottom-nav px-2 pb-[env(safe-area-inset-bottom)]"
+      >
+        <div className="grid grid-cols-5 items-center justify-around h-16 max-w-md mx-auto">
+          {MOBILE_BOTTOM_ITEMS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = location.pathname === tab.path;
+
+            return (
+              <NavLink
+                key={tab.path}
+                to={tab.path}
+                className="mobile-bottom-nav-item"
+              >
+                <div className="relative flex flex-col items-center">
+                  {isActive && (
+                    <motion.div
+                      layoutId="mobile-nav-pill"
+                      className="absolute -top-1 w-8 h-1 rounded-full bg-monarch-glow shadow-[0_0_8px_rgba(167,139,250,0.8)]"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <Icon
+                    className={`w-5 h-5 transition-all duration-200 ${
+                      isActive ? 'scale-110' : 'opacity-60 text-[#94A3B8]'
+                    }`}
+                    style={isActive ? { color: tab.color, filter: `drop-shadow(0 0 8px ${tab.color}90)` } : {}}
+                  />
+                  <span
+                    className={`font-chakra text-[10px] mt-1 tracking-wider uppercase transition-colors ${
+                      isActive ? 'text-white font-bold' : 'text-[#94A3B8] opacity-70'
+                    }`}
+                    style={isActive ? { color: tab.color } : {}}
+                  >
+                    {tab.label}
+                  </span>
+                </div>
+              </NavLink>
+            );
+          })}
+
+          {/* More Drawer Trigger Tab */}
+          <button
+            onClick={() => setIsMobileOpen(true)}
+            className="mobile-bottom-nav-item"
+            aria-label="More modules"
+          >
+            <div className="relative flex flex-col items-center">
+              <Menu className="w-5 h-5 text-[#94A3B8] opacity-70" />
+              <span className="font-chakra text-[10px] mt-1 tracking-wider uppercase text-[#94A3B8] opacity-70">
+                More
+              </span>
+            </div>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Slide-Out Full Drawer */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 0.7 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 0.7 }} 
+              exit={{ opacity: 0 }}
               onClick={() => setIsMobileOpen(false)}
-              className="fixed inset-0 z-50 bg-black backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-50 bg-black backdrop-blur-md md:hidden"
             />
             <motion.nav
               drag="x"
               dragConstraints={{ left: -256, right: 0 }}
               dragElastic={0.1}
               onDragEnd={(_e, info) => { if (info.offset.x < -80) setIsMobileOpen(false); }}
-              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
+              initial={{ x: '-100%' }} 
+              animate={{ x: 0 }} 
+              exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 bottom-0 w-64 border-r border-white/5 p-5 z-50 flex flex-col justify-between md:hidden cursor-grab active:cursor-grabbing"
+              className="fixed top-0 left-0 bottom-0 w-[280px] max-w-[85vw] border-r border-white/10 p-5 z-50 flex flex-col justify-between md:hidden shadow-2xl pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
               style={{ background: 'var(--color-abyss)', willChange: 'transform' }}
             >
-              <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-10 rounded-full bg-white/10" />
-              <div className="space-y-5 flex flex-col flex-1 overflow-hidden">
-                <div className="flex items-center justify-between px-1">
+              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 w-1.5 h-12 rounded-full bg-white/10" />
+              
+              <div className="space-y-4 flex flex-col flex-1 overflow-hidden">
+                <div className="flex items-center justify-between px-1 pt-1">
                   <div className="flex items-center">
                     <CrownIcon />
-                    <span className="font-display font-bold text-[12px] tracking-[0.12em] text-[#A78BFA] glow-text uppercase">Monarch</span>
+                    <div>
+                      <span className="font-display font-black text-[13px] tracking-[0.14em] text-[#A78BFA] glow-text uppercase block leading-none">
+                        Monarch
+                      </span>
+                      <span className="font-mono text-[8px] text-white/40 tracking-widest uppercase">
+                        HUNTER PROTOCOL
+                      </span>
+                    </div>
                   </div>
-                  <button onClick={() => setIsMobileOpen(false)} className="p-1 text-[#94A3B8] hover:text-[#F1F5F9]">
-                    <X className="w-5 h-5" />
+                  <button 
+                    onClick={() => setIsMobileOpen(false)} 
+                    className="p-2 text-[#94A3B8] hover:text-[#F1F5F9] rounded-lg bg-white/[0.04] border border-white/5 active:scale-95"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
+
                 <div className="flex-1 overflow-y-auto space-y-4 pr-1 hide-scrollbar">
-                  {NAV_SECTIONS.map((section) => (
-                    <div key={section.title}>
-                      <p className="px-3 mb-1.5 font-mono text-[8px] text-white/20 uppercase tracking-[0.2em] font-bold">
-                        {section.title}
-                      </p>
-                      <div className="space-y-0.5">
-                        {section.items.map((item) => (
-                          <NavItemComponent key={item.path} item={item} onClick={handleNavClick} />
-                        ))}
+                  {NAV_SECTIONS.map((section) => {
+                    const accentColor = SECTION_COLORS[section.title] || '#A78BFA';
+                    return (
+                      <div key={section.title}>
+                        <div className="flex items-center gap-2 px-3 mb-1.5">
+                          <p className="font-mono text-[8px] text-white/40 uppercase tracking-[0.2em] font-bold">
+                            {section.title}
+                          </p>
+                          <div className="flex-1 h-px bg-gradient-to-r" style={{ backgroundImage: `linear-gradient(90deg, ${accentColor}40, transparent)` }} />
+                        </div>
+                        <div className="space-y-1">
+                          {section.items.map((item) => (
+                            <NavItemComponent key={item.path} item={item} onClick={handleNavClick} />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/5 space-y-3">
+              <div className="pt-3 border-t border-white/10 space-y-3">
                 <div className="flex items-center justify-between px-2">
-                  <span className="font-body text-xs text-[#94A3B8]">Theme</span>
-                  <button onClick={toggleTheme} className="p-2 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 text-[#94A3B8]">
-                    {isLightMode ? <Sun className="w-4 h-4 text-cyan" /> : <Moon className="w-4 h-4 text-[#A78BFA]" />}
+                  <span className="font-body text-xs text-[#94A3B8]">Interface Theme</span>
+                  <button 
+                    onClick={toggleTheme} 
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-[#94A3B8] text-xs font-mono"
+                  >
+                    {isLightMode ? <Sun className="w-3.5 h-3.5 text-cyan" /> : <Moon className="w-3.5 h-3.5 text-[#A78BFA]" />}
+                    <span>{isLightMode ? 'Light' : 'Dark'}</span>
                   </button>
                 </div>
                 <PlayerCard {...playerCardProps} />
@@ -417,7 +532,8 @@ export const Navigation = () => {
         )}
       </AnimatePresence>
 
-      <div className="h-14 md:hidden" />
+      {/* Top bar height spacer for mobile */}
+      <div className="h-14 md:hidden shrink-0" />
     </>
   );
 };

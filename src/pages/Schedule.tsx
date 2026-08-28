@@ -228,7 +228,7 @@ export default function Schedule() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0 }}
-      className="p-4 md:p-12 max-w-[1100px] mx-auto w-full space-y-6 relative"
+      className="p-3.5 sm:p-6 md:p-12 max-w-[1100px] mx-auto w-full space-y-5 sm:space-y-6 relative"
     >
       <div className="absolute top-0 right-1/4 w-[300px] h-[300px] bg-accent-blue/5 rounded-full blur-[100px] pointer-events-none -z-10" />
 
@@ -236,53 +236,53 @@ export default function Schedule() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 module-header">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(129,140,248,0.25)]">
-              <Calendar className="w-6 h-6 text-indigo-400" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(129,140,248,0.25)] shrink-0">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400" />
             </div>
             <div>
-              <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text">
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text">
                 Daily <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Directives</span>
               </h1>
-              <p className="font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5">
+              <p className="font-mono text-[10px] sm:text-xs text-white/40 tracking-widest uppercase mt-0.5">
                 Failure to complete reduces aura. Proceed with discipline.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <button
             onClick={() => setIsTemplateModalOpen(true)}
-            className="btn-ghost py-2.5 px-4 flex items-center gap-2 text-xs border border-monarch-glow/30 text-[#A78BFA] hover:bg-monarch/10 rounded-xl"
+            className="btn-ghost flex-1 sm:flex-initial py-2 sm:py-2.5 px-3 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-2 text-xs border border-monarch-glow/30 text-[#A78BFA] hover:bg-monarch/10 rounded-xl"
           >
-            <Award className="w-4 h-4 text-amber-400" /> Presets
+            <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" /> Presets
           </button>
           <input type="file" accept=".csv" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="btn-ghost py-2.5 px-4 flex items-center gap-2 text-xs rounded-xl">
-            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4 text-cyan-400" />} CSV Upload
+          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="btn-ghost flex-1 sm:flex-initial py-2 sm:py-2.5 px-3 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-2 text-xs rounded-xl">
+            {isUploading ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <UploadCloud className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />} CSV
           </button>
-          <button onClick={() => setIsAddModalOpen(true)} className="btn-monarch py-2.5 px-5 flex items-center gap-2 text-xs rounded-xl shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+          <button onClick={() => setIsAddModalOpen(true)} className="btn-monarch w-full sm:w-auto py-2.5 px-5 flex items-center justify-center gap-2 text-xs rounded-xl shadow-[0_0_20px_rgba(124,58,237,0.3)]">
             <Plus className="w-4 h-4" /> Add Directive
           </button>
         </div>
       </div>
 
       {/* ── PROGRESS SUMMARY BAR ── */}
-      <div className="glass-2 p-5 border border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-monarch via-purple-500 to-cyan-500 flex items-center justify-center text-white font-bold font-mono text-sm shadow-[0_0_15px_rgba(124,58,237,0.4)]">
+      <div className="glass-2 p-4 sm:p-5 border border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.3)] rounded-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-monarch via-purple-500 to-cyan-500 flex items-center justify-center text-white font-bold font-mono text-xs sm:text-sm shadow-[0_0_15px_rgba(124,58,237,0.4)] shrink-0">
               {progressPercent}%
             </div>
             <div>
-              <p className="font-display text-sm md:text-base font-bold text-white tracking-wide">{completedToday} of {totalTasks} Directives Complete</p>
-              <p className="font-mono text-[10px] text-white/50 mt-0.5">{earnedXp} / {totalXpPotential} XP earned today</p>
+              <p className="font-display text-xs sm:text-sm md:text-base font-bold text-white tracking-wide">{completedToday} of {totalTasks} Directives Complete</p>
+              <p className="font-mono text-[9px] sm:text-[10px] text-white/50 mt-0.5">{earnedXp} / {totalXpPotential} XP earned today</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-xs font-mono">
-            <span className="flex items-center gap-1.5 text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg"><Flame className="w-3.5 h-3.5 animate-pulse" />{completedToday} done</span>
-            <span className="flex items-center gap-1.5 text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-lg"><Zap className="w-3.5 h-3.5" />+{earnedXp} XP</span>
-            <span className="flex items-center gap-1.5 text-white/50 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg"><Target className="w-3.5 h-3.5" />{totalTasks - completedToday} remaining</span>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-mono">
+            <span className="flex items-center gap-1.5 text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs"><Flame className="w-3.5 h-3.5 animate-pulse" />{completedToday} done</span>
+            <span className="flex items-center gap-1.5 text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs"><Zap className="w-3.5 h-3.5" />+{earnedXp} XP</span>
+            <span className="flex items-center gap-1.5 text-white/50 bg-white/5 border border-white/10 px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs"><Target className="w-3.5 h-3.5" />{totalTasks - completedToday} left</span>
           </div>
         </div>
         <div className="mt-4 w-full h-2.5 bg-black/50 border border-white/10 rounded-full overflow-hidden shimmer-bar">
@@ -483,36 +483,39 @@ export default function Schedule() {
       {/* ── ADD TASK MODAL ── */}
       <AnimatePresence>
         {isAddModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }}
               transition={{ type: "spring", duration: 0.4 }}
-              className="glass-panel max-w-md w-full p-6 border-t-2 border-t-cyan-500 shadow-neon-blue relative z-10"
+              className="glass-panel max-w-md w-full p-5 sm:p-6 border-t-2 border-t-cyan-500 shadow-neon-blue relative z-10 rounded-t-3xl sm:rounded-2xl max-h-[90vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
             >
+              {/* Mobile drag handle */}
+              <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-3 sm:hidden" />
+
               <button onClick={() => setIsAddModalOpen(false)} className="absolute top-4 right-4 text-white/50 hover:text-white"><X className="w-5 h-5" /></button>
-              <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-cyan-400">
+              <h2 className="font-orbitron text-lg sm:text-xl font-bold uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 text-cyan-400">
                 <Calendar className="w-5 h-5" /> Establish Directive
               </h2>
-              <form onSubmit={handleSubmitManualTask} className="space-y-5">
+              <form onSubmit={handleSubmitManualTask} className="space-y-4 sm:space-y-5">
                 <div>
-                  <label className="block font-mono text-xs text-white/70 tracking-widest uppercase mb-2">Objective Title</label>
-                  <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g. 100 Pushups, Code 2 Hours" className="w-full bg-void border border-white/20 p-3 text-white font-body focus:border-cyan-500 focus:outline-none transition-colors" required autoFocus />
+                  <label className="block font-mono text-xs text-white/70 tracking-widest uppercase mb-1.5">Objective Title</label>
+                  <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g. 100 Pushups, Code 2 Hours" className="w-full bg-void border border-white/20 p-3 text-white font-body focus:border-cyan-500 focus:outline-none transition-colors rounded-xl" required autoFocus />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block font-mono text-xs text-white/70 uppercase mb-2">Time Slot</label>
-                    <input type="text" value={newTimeSlot} onChange={e => setNewTimeSlot(e.target.value)} placeholder="e.g. 08:00" className="w-full bg-void border border-white/20 p-3 text-white font-mono focus:border-cyan-500 focus:outline-none transition-colors" required />
+                    <label className="block font-mono text-xs text-white/70 uppercase mb-1.5">Time Slot</label>
+                    <input type="text" value={newTimeSlot} onChange={e => setNewTimeSlot(e.target.value)} placeholder="e.g. 08:00" className="w-full bg-void border border-white/20 p-3 text-white font-mono focus:border-cyan-500 focus:outline-none transition-colors rounded-xl" required />
                   </div>
                   <div>
-                    <label className="block font-mono text-xs text-white/70 uppercase mb-2">Stat Domain</label>
-                    <select value={newCategory} onChange={e => setNewCategory(e.target.value)} className="w-full bg-void border border-white/20 p-3 text-white font-mono focus:border-cyan-500 focus:outline-none transition-colors">
+                    <label className="block font-mono text-xs text-white/70 uppercase mb-1.5">Stat Domain</label>
+                    <select value={newCategory} onChange={e => setNewCategory(e.target.value)} className="w-full bg-void border border-white/20 p-3 text-white font-mono focus:border-cyan-500 focus:outline-none transition-colors rounded-xl">
                       {validCategories.map(cat => <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>)}
                     </select>
                   </div>
                 </div>
                 <div>
-                  <label className="block font-mono text-xs text-white/70 uppercase mb-2">Quest Rank</label>
+                  <label className="block font-mono text-xs text-white/70 uppercase mb-1.5">Quest Rank</label>
                   <div className="grid grid-cols-6 gap-1.5">
                     {(['S','A','B','C','D','E'] as const).map(r => (
                       <button
@@ -524,9 +527,9 @@ export default function Schedule() {
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-3 pt-1">
-                  <button type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 btn-ghost py-3 text-xs">ABORT</button>
-                  <button type="submit" className="flex-1 btn-primary py-3 text-xs">ESTABLISH</button>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 btn-ghost py-3 text-xs rounded-xl">ABORT</button>
+                  <button type="submit" className="flex-1 btn-primary py-3 text-xs rounded-xl">ESTABLISH</button>
                 </div>
               </form>
             </motion.div>
@@ -537,14 +540,17 @@ export default function Schedule() {
       {/* ── TEMPLATE MODAL ── */}
       <AnimatePresence>
         {isTemplateModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsTemplateModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="glass-panel max-w-lg w-full p-6 border-t-2 border-t-accent-purple relative z-10"
+              initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }}
+              className="glass-panel max-w-lg w-full p-5 sm:p-6 border-t-2 border-t-accent-purple relative z-10 rounded-t-3xl sm:rounded-2xl max-h-[90vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
             >
+              {/* Mobile drag handle */}
+              <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-3 sm:hidden" />
+
               <button onClick={() => setIsTemplateModalOpen(false)} className="absolute top-4 right-4 text-white/50 hover:text-white"><X className="w-5 h-5" /></button>
-              <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-2 text-[#A78BFA]">Seed Templates</h2>
+              <h2 className="font-orbitron text-lg sm:text-xl font-bold uppercase tracking-widest mb-1 text-[#A78BFA]">Seed Templates</h2>
               <p className="font-mono text-[10px] text-white/40 mb-5 uppercase tracking-wider">Load pre-built training protocols into your daily schedule.</p>
               <div className="space-y-3">
                 {Object.keys(PRESET_TEMPLATES).map(name => {

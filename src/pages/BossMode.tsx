@@ -828,7 +828,7 @@ export default function BossMode() {
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="relative min-h-screen p-4 md:p-10 max-w-[1400px] mx-auto w-full space-y-8"
+      className="relative min-h-screen p-3.5 sm:p-6 md:p-10 max-w-[1400px] mx-auto w-full space-y-6 sm:space-y-8"
     >
       {/* ── ATMOSPHERIC RED-NEON FOG-DRIFT VECTORS ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-void">
@@ -855,14 +855,14 @@ export default function BossMode() {
       <div className="fixed inset-0 pointer-events-none calamity-vignette z-30" />
 
       {/* Page header */}
-      <div className="relative z-10 text-center mb-6">
-        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-red-500/10 border border-red-500/30 mb-3">
+      <div className="relative z-10 text-center mb-4 sm:mb-6">
+        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1 rounded-full bg-red-500/10 border border-red-500/30 mb-2 sm:mb-3">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-          <p className="font-mono-tech text-xs text-red-400 tracking-[0.3em] uppercase font-bold">
-            [ CLASS-S CALAMITY THREAT DETECTED ]
+          <p className="font-mono-tech text-[10px] sm:text-xs text-red-400 tracking-[0.2em] sm:tracking-[0.3em] uppercase font-bold">
+            [ CLASS-S CALAMITY THREAT ]
           </p>
         </div>
-        <h1 className="font-orbitron text-5xl sm:text-6xl md:text-8xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-red-400 via-red-500 to-amber-500 drop-shadow-[0_0_35px_rgba(239,68,68,0.6)] glow-text-danger">
+        <h1 className="font-orbitron text-3xl sm:text-6xl md:text-8xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-red-400 via-red-500 to-amber-500 drop-shadow-[0_0_35px_rgba(239,68,68,0.6)] glow-text-danger leading-none">
           BOSS RAID
         </h1>
       </div>

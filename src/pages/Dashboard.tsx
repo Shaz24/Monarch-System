@@ -328,7 +328,7 @@ export default function Dashboard() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="p-4 md:p-10 max-w-[1400px] mx-auto w-full space-y-8 relative overflow-hidden text-slate-100"
+      className="p-3 sm:p-6 md:p-10 max-w-[1400px] mx-auto w-full space-y-6 sm:space-y-8 relative overflow-hidden text-slate-100"
     >
       {/* Ambient background breathing orbs */}
       <div className="ambient-orb top-0 left-1/4 w-[550px] h-[550px] bg-monarch/8 -z-10 pointer-events-none" style={{ animationDelay: '0s' }} />
@@ -336,73 +336,73 @@ export default function Dashboard() {
       <div className="ambient-orb bottom-10 left-1/3 w-[400px] h-[400px] bg-amber-500/5 -z-10 pointer-events-none" style={{ animationDelay: '4s' }} />
 
       {/* ══ HERO HUD — Character Status Sheet ══ */}
-      <div className="holo-bracket-box holo-breathe p-6 md:p-8 rounded-2xl relative overflow-hidden">
+      <div className="holo-bracket-box holo-breathe p-4 sm:p-6 md:p-8 rounded-2xl relative overflow-hidden">
         <div className="scan-sweep-beam" />
         <div className="absolute inset-0 bg-scanline-pattern opacity-15 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-5 sm:gap-6 md:gap-8">
           {/* Avatar + Hunter Aura Ring */}
           <div className="relative shrink-0">
             <ProgressRing
               percent={xpPercent}
-              size={116}
-              strokeWidth={7}
+              size={108}
+              strokeWidth={6}
               gradientFrom="#F59E0B"
               gradientTo="#A78BFA"
             >
-              <div className="w-[84px] h-[84px] rounded-2xl border border-monarch-glow/50 shadow-[0_0_25px_rgba(124,58,237,0.4)] overflow-hidden bg-void flex items-center justify-center hunter-aura">
+              <div className="w-[78px] h-[78px] rounded-2xl border border-monarch-glow/50 shadow-[0_0_25px_rgba(124,58,237,0.4)] overflow-hidden bg-void flex items-center justify-center hunter-aura">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <Shield className="w-10 h-10 text-monarch-glow filter drop-shadow-[0_0_10px_rgba(167,139,250,0.8)]" />
+                  <Shield className="w-9 h-9 text-monarch-glow filter drop-shadow-[0_0_10px_rgba(167,139,250,0.8)]" />
                 )}
               </div>
             </ProgressRing>
-            <div className="absolute -bottom-1 -right-1 rank-badge-s text-[10px] px-2.5 py-0.5 rounded-md font-orbitron z-20 shadow-[0_2px_12px_rgba(245,158,11,0.6)] border border-amber-300/60">
+            <div className="absolute -bottom-1 -right-1 rank-badge-s text-[9px] sm:text-[10px] px-2 py-0.5 rounded-md font-orbitron z-20 shadow-[0_2px_12px_rgba(245,158,11,0.6)] border border-amber-300/60">
               {rank}-RANK
             </div>
           </div>
 
           {/* Name + Meta Status */}
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1.5">
-              <span className="font-mono-tech text-[10px] text-monarch-glow tracking-[0.25em] uppercase font-bold flex items-center justify-center md:justify-start gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex-1 text-center md:text-left min-w-0">
+            <div className="flex flex-col md:flex-row md:items-center gap-1.5 mb-1">
+              <span className="font-mono-tech text-[9px] sm:text-[10px] text-monarch-glow tracking-[0.2em] uppercase font-bold flex items-center justify-center md:justify-start gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 HUNTER STATUS: ACTIVE • CLASS {rank} • RATING {grade}
               </span>
             </div>
-            <h1 className="font-orbitron text-2xl md:text-4xl font-black text-white uppercase tracking-wider glow-text-monarch leading-tight">
+            <h1 className="font-orbitron text-xl sm:text-2xl md:text-4xl font-black text-white uppercase tracking-wider glow-text-monarch leading-tight truncate">
               {profile?.display_name || profile?.username || 'SHADOW_MONARCH'}
             </h1>
-            <p className="font-mono-tech text-[11px] text-white/50 mt-1 flex items-center justify-center md:justify-start gap-2">
+            <p className="font-mono-tech text-[10px] sm:text-[11px] text-white/50 mt-1 flex items-center justify-center md:justify-start gap-2">
               <span>{dateFormatted}</span>
               <span className="text-white/20">•</span>
               <span className="text-cyan-400 font-bold tracking-widest">{clockFormatted}</span>
             </p>
 
             {/* Inline badges */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-2.5 mt-4">
-              <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+            <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3 sm:mt-4">
+              <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.2)]">
                 <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                <span className="font-rajdhani text-sm text-amber-400 font-bold tracking-wide">{animatedStreak}d STREAK</span>
+                <span className="font-rajdhani text-xs sm:text-sm text-amber-400 font-bold tracking-wide">{animatedStreak}d STREAK</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/30 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(167,139,250,0.2)]">
+              <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/30 px-3 py-1 rounded-full shadow-[0_0_12px_rgba(167,139,250,0.2)]">
                 <Star className="w-3.5 h-3.5 text-purple-400" />
-                <span className="font-rajdhani text-sm text-purple-400 font-bold tracking-wide">{animatedAura}% AURA</span>
+                <span className="font-rajdhani text-xs sm:text-sm text-purple-400 font-bold tracking-wide">{animatedAura}% AURA</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.2)]">
+              <div className="flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.2)]">
                 <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="font-rajdhani text-sm text-cyan-400 font-bold tracking-wide">{completedTaskIds.size}/{tasks.length} DIRECTIVES</span>
+                <span className="font-rajdhani text-xs sm:text-sm text-cyan-400 font-bold tracking-wide">{completedTaskIds.size}/{tasks.length} DIRECTIVES</span>
               </div>
             </div>
           </div>
 
           {/* Level + XP Gauge */}
-          <div className="flex flex-col items-center gap-1 shrink-0 p-5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-[inset_0_0_25px_rgba(0,0,0,0.5)]">
-            <span className="font-mono-tech text-[10px] text-monarch-glow uppercase tracking-widest font-bold">LEVEL PROGRESS</span>
-            <span className="font-orbitron text-5xl font-black text-[#F59E0B] glow-text-gold tabular-nums">{animatedLevel}</span>
-            <div className="w-44 space-y-1.5 mt-1.5">
-              <div className="w-full h-3 bg-black/60 border border-white/15 rounded-full overflow-hidden">
+          <div className="w-full md:w-auto flex flex-col items-center gap-1 shrink-0 p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-[inset_0_0_25px_rgba(0,0,0,0.5)]">
+            <span className="font-mono-tech text-[9px] sm:text-[10px] text-monarch-glow uppercase tracking-widest font-bold">LEVEL PROGRESS</span>
+            <span className="font-orbitron text-4xl sm:text-5xl font-black text-[#F59E0B] glow-text-gold tabular-nums">{animatedLevel}</span>
+            <div className="w-full max-w-[200px] md:w-44 space-y-1 mt-1">
+              <div className="w-full h-2.5 sm:h-3 bg-black/60 border border-white/15 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${xpPercent}%` }}
@@ -410,7 +410,7 @@ export default function Dashboard() {
                   className="h-full bg-gradient-to-r from-[#F59E0B] via-[#EC4899] to-[#A78BFA] rounded-full shadow-[0_0_15px_rgba(245,158,11,0.6)]"
                 />
               </div>
-              <div className="flex justify-between font-mono-tech text-[9px]">
+              <div className="flex justify-between font-mono-tech text-[8px] sm:text-[9px]">
                 <span className="text-white/40">{currentXp} XP</span>
                 <span className="text-amber-400 font-bold">{xpNeeded} XP GOAL</span>
               </div>
@@ -420,7 +420,7 @@ export default function Dashboard() {
       </div>
 
       {/* ══ QUICK STATS ROW ══ */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5">
         <StatBadge icon={Flame} label="Today's XP" value={todayXp} suffix=" XP" color="#F59E0B" />
         <StatBadge icon={Target} label="Daily Goal" value={goalPercent} suffix="%" color={todayXp >= dailyGoal ? '#10B981' : '#06B6D4'} />
         <StatBadge icon={Shield} label="System Health" value={systemHealth} suffix="%" color="#A78BFA" />
@@ -435,36 +435,36 @@ export default function Dashboard() {
       </div>
 
       {/* ══ CORE SYSTEMS NAVIGATOR ══ */}
-      <div className="holo-bracket-box p-6 rounded-2xl relative overflow-hidden">
-        <div className="mb-5 flex items-center justify-between">
+      <div className="holo-bracket-box p-4 sm:p-6 rounded-2xl relative overflow-hidden">
+        <div className="mb-4 sm:mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-2 h-4 rounded-full bg-gradient-to-b from-monarch to-cyan-400" />
-            <h2 className="font-rajdhani text-sm font-bold uppercase tracking-widest text-white">CORE PROTOCOL MODULES</h2>
+            <h2 className="font-rajdhani text-xs sm:text-sm font-bold uppercase tracking-widest text-white">CORE PROTOCOL MODULES</h2>
           </div>
-          <span className="font-mono-tech text-[9px] text-white/40 tracking-widest uppercase">QUICK LINK SHORTCUTS</span>
+          <span className="font-mono-tech text-[8px] sm:text-[9px] text-white/40 tracking-widest uppercase">QUICK LINKS</span>
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2.5 sm:gap-3">
           {MODULE_SHORTCUTS.map((mod) => {
             const Icon = mod.icon;
             return (
               <motion.button
                 key={mod.path}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.94 }}
                 onClick={() => navigate(mod.path)}
-                className="flex flex-col items-center gap-2.5 p-3.5 cursor-pointer group relative overflow-hidden transition-all duration-150 rounded-xl bg-white/[0.02] border border-white/10 hover:border-cyan-400/50 hover:bg-white/[0.05]"
+                className="flex flex-col items-center gap-2 p-2.5 sm:p-3.5 cursor-pointer group relative overflow-hidden transition-all duration-150 rounded-xl bg-white/[0.02] border border-white/10 hover:border-cyan-400/50 hover:bg-white/[0.05]"
               >
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner"
                   style={{
                     background: mod.bg,
                     border: `1px solid ${mod.border}`,
                     boxShadow: `0 0 20px ${mod.color}30`,
                   }}
                 >
-                  <Icon className="w-5 h-5" style={{ color: mod.color, filter: `drop-shadow(0 0 6px ${mod.color}90)` }} />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: mod.color, filter: `drop-shadow(0 0 6px ${mod.color}90)` }} />
                 </div>
-                <span className="font-rajdhani text-xs uppercase tracking-wider text-white/80 group-hover:text-white transition-colors font-bold">{mod.label}</span>
+                <span className="font-rajdhani text-[11px] sm:text-xs uppercase tracking-wider text-white/80 group-hover:text-white transition-colors font-bold text-center">{mod.label}</span>
                 <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded bg-black/50 border border-white/10 font-mono-tech text-[8px] text-white/40">{mod.key}</kbd>
               </motion.button>
             );

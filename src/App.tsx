@@ -41,7 +41,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-void">
       <Navigation />
-      <main className={`flex-1 ${isSidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-60'} pb-28 md:pb-0 overflow-y-auto overflow-x-hidden relative z-10 transition-all duration-300`}>
+      <main className={`flex-1 ${isSidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-60'} pb-24 pb-safe-nav md:pb-8 overflow-y-auto overflow-x-hidden relative z-10 transition-all duration-300`}>
         {children}
       </main>
     </div>
@@ -276,29 +276,32 @@ function AppContent() {
 
       {/* Floating Control Hub */}
       {user && (
-        <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 flex flex-col gap-3">
+        <div className="fixed bottom-20 right-3 md:bottom-8 md:right-8 z-30 flex flex-col gap-2.5">
           <button
             onClick={() => setIsPaletteOpen(true)}
-            className="w-11 h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-cyan-400 hover:text-cyan-300 hover:border-cyan-500/30 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all cursor-pointer"
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/15 flex items-center justify-center text-cyan-400 hover:text-cyan-300 hover:border-cyan-500/30 shadow-[0_4px_16px_rgba(0,0,0,0.5)] active:scale-95 transition-all cursor-pointer"
             title="Search command palette (Ctrl+K)"
+            aria-label="Search"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4 h-4 md:w-5 md:h-5" />
           </button>
           
           <button
             onClick={() => setIsShortcutsOpen(true)}
-            className="w-11 h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-monarch hover:text-monarch/80 hover:border-monarch/30 hover:shadow-[0_0_15px_rgba(124,58,237,0.3)] transition-all cursor-pointer"
+            className="hidden md:flex w-11 h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/15 items-center justify-center text-monarch hover:text-monarch/80 hover:border-monarch/30 shadow-[0_4px_16px_rgba(0,0,0,0.5)] transition-all cursor-pointer"
             title="Keyboard shortcuts (?)"
+            aria-label="Shortcuts"
           >
             <Keyboard className="w-5 h-5" />
           </button>
 
           <button
             onClick={() => setIsDrawerOpen(true)}
-            className="w-11 h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-gold hover:text-gold/80 hover:border-gold/30 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all cursor-pointer"
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-void/90 backdrop-blur-xl border border-white/15 flex items-center justify-center text-gold hover:text-gold/80 hover:border-gold/30 shadow-[0_4px_16px_rgba(0,0,0,0.5)] active:scale-95 transition-all cursor-pointer"
             title="System notifications"
+            aria-label="Notifications"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4 h-4 md:w-5 md:h-5" />
           </button>
         </div>
       )}

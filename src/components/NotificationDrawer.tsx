@@ -53,7 +53,7 @@ export const NotificationDrawer = ({ isOpen, onClose }: NotificationDrawerProps)
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full sm:w-[400px] bg-void/90 backdrop-blur-2xl border-l border-white/5 shadow-2xl z-[101] p-6 flex flex-col justify-between"
+            className="fixed right-0 top-0 bottom-0 w-full sm:w-[400px] bg-void/95 backdrop-blur-2xl border-l border-white/10 shadow-2xl z-[101] p-4 sm:p-6 flex flex-col justify-between pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
           >
             <div className="flex flex-col flex-1 overflow-hidden space-y-6">
               {/* Header */}

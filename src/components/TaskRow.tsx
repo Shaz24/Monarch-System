@@ -152,11 +152,11 @@ export const TaskRow = memo(({
             )}
           </div>
 
-          <div className="hidden sm:flex items-center gap-2.5 flex-shrink-0">
-            <span className={`px-2.5 py-0.5 text-[10px] font-mono font-black border rounded-md uppercase tracking-wider ${diffCfg.badge} ${diffCfg.glow}`}>
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+            <span className={`px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-black border rounded-md uppercase tracking-wider ${diffCfg.badge} ${diffCfg.glow}`}>
               {task.difficulty}
             </span>
-            <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md">
+            <span className="px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md">
               +{task.xp_reward} XP
             </span>
             {isEditing ? (
@@ -176,7 +176,7 @@ export const TaskRow = memo(({
                   e.stopPropagation();
                   setIsEditing(true);
                 }}
-                className="text-white/30 hover:text-white px-2 py-1 text-xs font-mono rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                className="hidden sm:inline-block text-white/30 hover:text-white px-2 py-1 text-xs font-mono rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
               >
                 EDIT
               </button>
@@ -187,7 +187,7 @@ export const TaskRow = memo(({
                   e.stopPropagation();
                   setIsDeleteConfirmOpen(true);
                 }}
-                className="text-red-400/40 hover:text-red-400 px-2 py-1 text-xs font-mono rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
+                className="hidden sm:inline-block text-red-400/40 hover:text-red-400 px-2 py-1 text-xs font-mono rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
               >
                 DEL
               </button>
@@ -207,36 +207,54 @@ export const TaskRow = memo(({
             transition={{ duration: 0.3 }}
             className="overflow-hidden border-t border-white/[0.06] bg-black/20"
           >
-            <div className="p-5 flex flex-col md:flex-row gap-5">
+            <div className="p-3.5 sm:p-5 flex flex-col md:flex-row gap-4 sm:gap-5">
               
+              {/* Mobile Quick Action Buttons (when collapsed header hid them) */}
+              <div className="flex sm:hidden items-center justify-between gap-2 pt-1 pb-2 border-b border-white/5">
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 text-xs font-mono active:scale-95"
+                >
+                  {isEditing ? 'Cancel Edit' : 'Edit Directive'}
+                </button>
+                {onDelete && (
+                  <button
+                    onClick={() => setIsDeleteConfirmOpen(true)}
+                    className="flex-1 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono active:scale-95"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+
               {/* Pomodoro Timer */}
-              <div className="flex-1 glass-3 p-5 rounded-xl border border-white/[0.08] relative overflow-hidden">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="flex-1 glass-3 p-4 sm:p-5 rounded-xl border border-white/[0.08] relative overflow-hidden">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
                   <Clock className="w-4 h-4 text-monarch-glow" />
                   <span className="font-mono text-xs uppercase text-monarch-glow tracking-widest font-bold">
                     {isBreak ? 'Rest Cycle' : 'Deep Focus Interval'}
                   </span>
                 </div>
                 
-                <div className="text-center my-4">
-                  <span className="font-display text-4xl md:text-5xl font-black text-cyan-400 glow-text tracking-wider tabular-nums">
+                <div className="text-center my-3 sm:my-4">
+                  <span className="font-display text-3xl sm:text-4xl md:text-5xl font-black text-cyan-400 glow-text tracking-wider tabular-nums">
                     {formatTime(timeLeft)}
                   </span>
                 </div>
                 
-                <div className="flex justify-center gap-3">
-                  <button onClick={toggleTimer} className="btn-monarch py-2 px-5 text-xs rounded-xl flex items-center gap-2">
+                <div className="flex justify-center gap-2.5 sm:gap-3">
+                  <button onClick={toggleTimer} className="btn-monarch py-2 px-4 sm:px-5 text-xs rounded-xl flex items-center gap-2">
                     {isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                     {isActive ? 'PAUSE' : 'START FOCUS'}
                   </button>
-                  <button onClick={resetTimer} className="btn-ghost py-2 px-4 text-xs rounded-xl">
+                  <button onClick={resetTimer} className="btn-ghost py-2 px-3.5 sm:px-4 text-xs rounded-xl">
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
               {/* Notes */}
-              <div className="flex-1 glass-3 p-5 rounded-xl border border-white/[0.08] flex flex-col">
+              <div className="flex-1 glass-3 p-4 sm:p-5 rounded-xl border border-white/[0.08] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <PenTool className="w-4 h-4 text-white/40" />
                   <span className="font-mono text-xs uppercase text-white/50 tracking-widest font-bold">Tactical Notes</span>
@@ -244,7 +262,7 @@ export const TaskRow = memo(({
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full flex-1 bg-black/30 border border-white/5 rounded-lg p-3 resize-none focus:outline-none focus:border-monarch-glow/40 text-white font-mono text-xs placeholder:text-white/20 min-h-[90px]"
+                  className="w-full flex-1 bg-black/30 border border-white/5 rounded-lg p-3 resize-none focus:outline-none focus:border-monarch-glow/40 text-white font-mono text-xs placeholder:text-white/20 min-h-[80px]"
                   placeholder="Record objective data, roadblocks, or notes..."
                 />
               </div>

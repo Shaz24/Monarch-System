@@ -173,17 +173,20 @@ function TodoModal({ initial, onSave, onClose }: TodoModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-md"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
-        initial={{ scale: 0.92, y: 20 }}
+        initial={{ scale: 0.95, y: 40 }}
         animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.92, y: 20 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="glass-3 w-full max-w-lg relative overflow-hidden"
+        exit={{ scale: 0.95, y: 40 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+        className="glass-3 w-full max-w-lg relative overflow-hidden rounded-t-3xl sm:rounded-2xl max-h-[88vh] flex flex-col pb-[env(safe-area-inset-bottom)]"
         style={accentColor ? { borderColor: accentColor + '40' } : {}}
       >
+        {/* Mobile handle indicator */}
+        <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mt-2.5 sm:hidden shrink-0" />
+
         {/* Top accent line */}
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
@@ -729,6 +732,7 @@ export default function TodoPage() {
   const [editingTodo, setEditingTodo]         = useState<Todo | null>(null);
   const [showFilters, setShowFilters]         = useState(false);
   const [quickInput, setQuickInput]           = useState('');
+  const [isSortOpen, setIsSortOpen]           = useState(false);
   const [showArchived, setShowArchived]       = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -739,7 +743,7 @@ export default function TodoPage() {
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
       if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setIsModalOpen(true); }
       if (e.key === '/') { e.preventDefault(); searchRef.current?.focus(); }
-      if (e.key === 'Escape') { setIsModalOpen(false); setEditingTodo(null); }
+      if (e.key === 'Escape') { setIsModalOpen(false); setEditingTodo(null); setIsSortOpen(false); }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -834,35 +838,35 @@ export default function TodoPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-4 md:p-8 max-w-[1200px] mx-auto w-full space-y-6"
+      className="p-3.5 sm:p-6 md:p-8 max-w-[1200px] mx-auto w-full space-y-5 sm:space-y-6"
     >
       {/* Ambient orbs */}
       <div className="ambient-orb top-1/4 left-1/4 w-[350px] h-[350px] bg-monarch/5 -z-10" />
       <div className="ambient-orb bottom-1/3 right-1/5 w-[300px] h-[300px] bg-emerald-500/4 -z-10" />
 
       {/* ── Page Header ── */}
-      <div className="holo-bracket-box p-6 md:p-8 relative overflow-hidden">
+      <div className="holo-bracket-box p-4 sm:p-6 md:p-8 relative overflow-hidden">
         <div className="scan-sweep-beam" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 animate-pulse" />
-              <span className="font-mono-tech text-[10px] text-emerald-400 uppercase tracking-[0.25em] font-bold">TACTICAL DIRECTIVE HUB</span>
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 animate-pulse" />
+              <span className="font-mono-tech text-[9px] sm:text-[10px] text-emerald-400 uppercase tracking-[0.25em] font-bold">TACTICAL DIRECTIVE HUB</span>
             </div>
-            <h1 className="font-orbitron text-2xl md:text-3xl font-black uppercase tracking-wider text-white glow-text-monarch">
+            <h1 className="font-orbitron text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-wider text-white glow-text-monarch">
               HUNTER QUEST BOARD
             </h1>
-            <p className="font-mono-tech text-xs text-white/50 mt-1 uppercase tracking-wider">
-              {stats.active + stats.inProgress} active • {stats.done} completed • <span className="text-amber-400 font-bold">+{stats.todayXp} XP</span> EARNED TODAY
+            <p className="font-mono-tech text-[11px] sm:text-xs text-white/50 mt-1 uppercase tracking-wider">
+              {stats.active + stats.inProgress} active • {stats.done} completed • <span className="text-amber-400 font-bold">+{stats.todayXp} XP</span> TODAY
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
             {stats.done > 0 && (
               <button
                 onClick={archiveDone}
-                className="btn-tech-outline flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-white/70 hover:text-white text-xs font-mono-tech"
+                className="btn-tech-outline flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-white/70 hover:text-white text-xs font-mono-tech"
               >
                 <Archive className="w-4 h-4 text-cyan-400" />
                 Archive Done ({stats.done})
@@ -870,7 +874,7 @@ export default function TodoPage() {
             )}
             <button
               onClick={() => { setEditingTodo(null); setIsModalOpen(true); }}
-              className="btn-hunter flex items-center gap-2 py-3 px-5 text-xs font-bold tracking-widest rounded-xl"
+              className="btn-hunter flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 sm:px-5 text-xs font-bold tracking-widest rounded-xl"
             >
               <Plus className="w-4 h-4" />
               NEW DIRECTIVE
@@ -884,18 +888,18 @@ export default function TodoPage() {
       <StatsBar stats={stats} />
 
       {/* ── Quick-add bar ── */}
-      <div className="holo-bracket-box flex items-center gap-3 p-3.5 px-5 rounded-xl transition-all input-tech-glow">
+      <div className="holo-bracket-box flex items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 px-3.5 sm:px-5 rounded-xl transition-all input-tech-glow">
         <Plus className="w-4 h-4 text-emerald-400 shrink-0" />
         <input
           type="text"
           value={quickInput}
           onChange={e => setQuickInput(e.target.value)}
           onKeyDown={handleQuickAdd}
-          placeholder="Quick add directive... type objective and press Enter (or press 'N' for tactical modal)"
+          placeholder="Quick add directive... type and press Enter"
           className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30 font-chakra"
         />
         {quickInput && (
-          <kbd className="px-2 py-1 rounded bg-black/60 border border-white/15 font-mono-tech text-[10px] text-cyan-300">↵ Enter</kbd>
+          <kbd className="px-2 py-1 rounded bg-black/60 border border-white/15 font-mono-tech text-[10px] text-cyan-300 shrink-0">↵ Enter</kbd>
         )}
       </div>
 
@@ -903,14 +907,14 @@ export default function TodoPage() {
       <div className="space-y-2">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Search */}
-          <div className="flex-1 min-w-[180px] relative">
+          <div className="flex-1 min-w-[150px] relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <input
               ref={searchRef}
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search tasks...  (/)"
+              placeholder="Search tasks..."
               className="w-full pl-9 text-sm"
             />
             {searchQuery && (
@@ -923,14 +927,14 @@ export default function TodoPage() {
           {/* Filter toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-mono transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl border text-xs font-mono transition-all ${
               showFilters || activeFiltersCount > 0
                 ? 'bg-monarch/15 border-monarch/30 text-monarch-glow'
                 : 'bg-white/5 border-white/10 text-white/50 hover:text-white/80'
             }`}
           >
             <Filter className="w-3.5 h-3.5" />
-            Filters
+            <span>Filters</span>
             {activeFiltersCount > 0 && (
               <span className="w-4 h-4 rounded-full bg-monarch text-white text-[8px] font-bold flex items-center justify-center">
                 {activeFiltersCount}
@@ -939,25 +943,33 @@ export default function TodoPage() {
           </button>
 
           {/* Sort */}
-          <div className="relative group">
-            <button className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/50 hover:text-white/80 text-xs font-mono transition-all">
+          <div className="relative">
+            <button 
+              onClick={() => setIsSortOpen(!isSortOpen)}
+              className="flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/50 hover:text-white/80 text-xs font-mono transition-all active:scale-95"
+            >
               <ArrowUpDown className="w-3.5 h-3.5" />
-              Sort: {sortKey}
+              <span>Sort: {sortKey.replace('_', ' ')}</span>
             </button>
-            <div className="absolute right-0 top-10 z-20 w-40 glass-2 border border-white/10 rounded-xl p-1 shadow-xl hidden group-hover:block">
-              {(['priority', 'due_date', 'xp_reward', 'created_at', 'title'] as SortKey[]).map(key => (
-                <button
-                  key={key}
-                  onClick={() => toggleSort(key)}
-                  className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-mono hover:bg-white/8 flex items-center justify-between transition-colors ${
-                    sortKey === key ? 'text-monarch-glow' : 'text-white/50'
-                  }`}
-                >
-                  {key.replace('_', ' ')}
-                  {sortKey === key && <span>{sortDir === 'asc' ? '↑' : '↓'}</span>}
-                </button>
-              ))}
-            </div>
+            {isSortOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setIsSortOpen(false)} />
+                <div className="absolute right-0 top-11 z-40 w-44 glass-2 border border-white/10 rounded-xl p-1.5 shadow-2xl">
+                  {(['priority', 'due_date', 'xp_reward', 'created_at', 'title'] as SortKey[]).map(key => (
+                    <button
+                      key={key}
+                      onClick={() => { toggleSort(key); setIsSortOpen(false); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-mono hover:bg-white/10 flex items-center justify-between transition-colors ${
+                        sortKey === key ? 'text-monarch-glow font-bold bg-monarch/10' : 'text-white/60'
+                      }`}
+                    >
+                      <span>{key.replace('_', ' ')}</span>
+                      {sortKey === key && <span>{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* View mode */}

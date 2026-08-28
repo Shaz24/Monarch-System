@@ -107,13 +107,13 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
           />
 
           {/* Palette Container */}
-          <div className="fixed inset-0 z-[151] flex items-start justify-center pt-[15vh] px-4 pointer-events-none">
+          <div className="fixed inset-0 z-[151] flex items-start justify-center pt-[6vh] sm:pt-[15vh] px-3 sm:px-4 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="w-full max-w-xl bg-void/95 border border-white/10 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(124,58,237,0.25)] pointer-events-auto"
+              className="w-full max-w-xl bg-void/95 border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,58,237,0.25)] pointer-events-auto max-h-[80vh] flex flex-col"
             >
               {/* Search bar */}
               <div className="flex items-center px-4 border-b border-white/5 bg-white/[0.01]">
@@ -121,13 +121,13 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Ctrl+K: Search directives, pages, or commands..."
+                  placeholder="Search directives, pages, or commands..."
                   value={query}
                   onChange={(e) => {
                     setQuery(e.target.value);
                     setSelectedIndex(0);
                   }}
-                  className="w-full py-4 bg-transparent border-0 text-sm text-white placeholder-white/30 focus:ring-0 outline-none font-body"
+                  className="w-full py-3.5 sm:py-4 bg-transparent border-0 text-sm text-white placeholder-white/30 focus:ring-0 outline-none font-body"
                 />
               </div>
 
