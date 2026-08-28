@@ -210,27 +210,28 @@ const calculateStatVelocity = (logs: ActivityLog[]) => {
       </div>
 
       {/* Header ZONE with Clock */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6 relative z-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6 relative z-10 module-header">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-void border border-accent-blue flex items-center justify-center shadow-neon-blue">
-            <Terminal className="w-8 h-8 text-accent-blue animate-pulse" />
+          <div className="w-16 h-16 rounded-2xl bg-cyan-950/40 border border-cyan-400/50 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.3)]">
+            <Terminal className="w-8 h-8 text-cyan-400 animate-pulse filter drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]" />
           </div>
           <div>
-            <h1 className="font-orbitron text-4xl font-bold uppercase tracking-widest text-white">
-              Software <span className="text-accent-blue">Engineering</span>
+            <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text">
+              Software <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">Engineering</span>
             </h1>
-            <p className="font-space-mono text-sm text-white/50 tracking-widest uppercase mt-1">
+            <p className="font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5">
               Build systems. Automate reality.
             </p>
           </div>
         </div>
 
         {/* Live Session Clock */}
-        <div className="glass-panel px-4 py-2 border border-accent-blue/30 flex flex-col items-end md:items-end justify-center self-start md:self-auto bg-void/50">
-          <span className="font-space-mono text-[9px] text-accent-blue/70 uppercase tracking-widest font-bold">
-            ACTIVE SESSION
+        <div className="glass-3 px-5 py-3 rounded-2xl border border-cyan-400/30 flex flex-col items-end md:items-end justify-center self-start md:self-auto shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+          <span className="font-mono text-[9px] text-cyan-400 uppercase tracking-widest font-bold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            ACTIVE TERMINAL SESSION
           </span>
-          <span className="font-space-mono text-lg font-bold text-white tracking-widest mt-0.5">
+          <span className="font-display text-2xl font-black text-white tracking-widest mt-0.5 tabular-nums text-flicker">
             {formatTimer(secondsElapsed)}
           </span>
         </div>

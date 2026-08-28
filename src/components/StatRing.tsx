@@ -17,7 +17,7 @@ export const StatRing = memo(({ statName, level, xp }: StatRingProps) => {
   const offset = circumference - percent * circumference;
 
   return (
-    <div className="glass-panel p-4 flex flex-col items-center justify-center relative shadow-sm hover:shadow-neon-blue transition-shadow duration-300 group">
+    <div className="glass-2 p-5 rounded-2xl flex flex-col items-center justify-center relative border border-white/[0.08] shadow-md hover:scale-105 transition-all duration-300 group">
       <div className="relative w-24 h-24 flex items-center justify-center">
         <svg className="transform -rotate-90 w-full h-full">
           <circle
@@ -27,8 +27,7 @@ export const StatRing = memo(({ statName, level, xp }: StatRingProps) => {
             stroke="currentColor"
             strokeWidth="6"
             fill="transparent"
-            className="text-border border-white/5"
-            style={{ opacity: 0.8 }}
+            className="text-white/10"
           />
           <motion.circle
             initial={{ strokeDashoffset: circumference }}
@@ -39,18 +38,19 @@ export const StatRing = memo(({ statName, level, xp }: StatRingProps) => {
             r={radius}
             stroke="currentColor"
             strokeWidth="6"
+            strokeLinecap="round"
             fill="transparent"
             strokeDasharray={circumference}
-            className="text-accent-blue group-hover:text-accent-purple transition-colors duration-500"
-            style={{ filter: 'drop-shadow(0 0 4px rgba(0,212,255,0.8))' }}
+            className="text-cyan-400 group-hover:text-purple-400 transition-colors duration-500"
+            style={{ filter: 'drop-shadow(0 0 6px rgba(6,182,212,0.8))' }}
           />
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className="font-space-mono text-xl font-bold text-white">LVL</span>
-          <span className="font-orbitron text-2xl neon-text-blue">{level}</span>
+          <span className="font-mono text-[9px] font-bold text-white/50 tracking-wider">LVL</span>
+          <span className="font-display text-2xl font-black text-white glow-text tabular-nums">{level}</span>
         </div>
       </div>
-      <p className="mt-3 font-space-mono text-sm tracking-widest uppercase text-white/70 group-hover:text-white transition-colors">
+      <p className="mt-3 font-mono text-xs tracking-widest uppercase text-white/80 group-hover:text-white transition-colors font-bold">
         {statName}
       </p>
     </div>

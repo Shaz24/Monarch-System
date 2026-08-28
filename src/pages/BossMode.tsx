@@ -842,95 +842,102 @@ export default function BossMode() {
         />
         {/* Fog drift orbs */}
         <div 
-          className="absolute w-[800px] h-[800px] rounded-full filter blur-[150px] opacity-[8%] -top-40 -left-40 animate-[fog-drift_25s_infinite_alternate]"
+          className="absolute w-[800px] h-[800px] rounded-full filter blur-[150px] opacity-[12%] -top-40 -left-40 animate-[fog-drift_25s_infinite_alternate]"
           style={{ background: 'radial-gradient(circle, #ff003c 0%, transparent 80%)', willChange: 'transform', transform: 'translateZ(0)' }}
         />
         <div 
-          className="absolute w-[600px] h-[600px] rounded-full filter blur-[120px] opacity-[6%] bottom-10 right-10 animate-[fog-drift_20s_infinite_alternate_reverse]"
+          className="absolute w-[600px] h-[600px] rounded-full filter blur-[120px] opacity-[8%] bottom-10 right-10 animate-[fog-drift_20s_infinite_alternate_reverse]"
           style={{ background: 'radial-gradient(circle, #7B2FFF 0%, transparent 80%)', willChange: 'transform', transform: 'translateZ(0)' }}
         />
       </div>
 
+      {/* Calamity Vignette Edge Overlay */}
+      <div className="fixed inset-0 pointer-events-none calamity-vignette z-30" />
+
       {/* Page header */}
       <div className="relative z-10 text-center mb-6">
-        <p className="font-space-mono text-xs text-[#ff003c] tracking-[0.5em] uppercase mb-2 font-bold animate-pulse">
-          ⚠ Class-S Threat Detected ⚠
-        </p>
-        <h1 className="font-orbitron text-6xl md:text-8xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-[#ff003c] via-[#cc0028] to-[#4d0010] drop-shadow-[0_0_20px_rgba(255,0,60,0.25)]">
-          BOSS FIGHT
+        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-red-500/10 border border-red-500/30 mb-3">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+          <p className="font-mono-tech text-xs text-red-400 tracking-[0.3em] uppercase font-bold">
+            [ CLASS-S CALAMITY THREAT DETECTED ]
+          </p>
+        </div>
+        <h1 className="font-orbitron text-5xl sm:text-6xl md:text-8xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-red-400 via-red-500 to-amber-500 drop-shadow-[0_0_35px_rgba(239,68,68,0.6)] glow-text-danger">
+          BOSS RAID
         </h1>
       </div>
 
       {/* Hunter Status Header Panel */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-black/85 p-5 border border-white/5 rounded-xl backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-red-950/40 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-            <Heart className={`w-6 h-6 ${playerHp < 35 ? 'text-[#ff003c] animate-pulse' : 'text-red-500'}`} />
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 holo-bracket-box p-6 rounded-2xl">
+        <div className="scan-sweep-beam" />
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-red-950/50 border border-red-500/40 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+            <Heart className={`w-6 h-6 ${playerHp < 35 ? 'text-red-500 animate-pulse' : 'text-red-400'}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-center text-[10px] text-white/40 uppercase tracking-widest font-mono">
-              <span>Hunter HP</span>
+            <div className="flex justify-between items-center text-[10px] text-white/60 uppercase tracking-widest font-mono-tech">
+              <span className="font-bold">Hunter HP</span>
               <span className="font-bold text-white font-orbitron">{playerHp}/100</span>
             </div>
-            <div className="w-full h-2 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden mt-1">
+            <div className="w-full h-2.5 bg-black/60 border border-white/15 rounded-full overflow-hidden mt-1.5">
               <div 
-                className="h-full bg-gradient-to-r from-[#ff003c] to-red-500 transition-all duration-300"
+                className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(239,68,68,0.6)]"
                 style={{ width: `${playerHp}%` }}
               />
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-amber-950/40 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-amber-950/50 border border-amber-500/30 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
             <Coins className="w-6 h-6 text-amber-400" />
           </div>
           <div>
-            <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">Inventory Gold</div>
-            <div className="text-xl font-orbitron font-black text-amber-400 mt-0.5">{gold.toLocaleString()} <span className="text-xs text-white/40 font-mono font-normal">G</span></div>
+            <div className="text-[10px] text-white/50 uppercase tracking-widest font-mono font-bold">Inventory Gold</div>
+            <div className="text-2xl font-display font-black text-amber-400 mt-0.5 tabular-nums glow-gold">{gold.toLocaleString()} <span className="text-xs text-amber-300/50 font-mono font-normal">G</span></div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-blue-950/40 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-            <Shield className="w-6 h-6 text-blue-400" />
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+            <Shield className="w-6 h-6 text-cyan-400" />
           </div>
           <div>
-            <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">Active Buffs</div>
+            <div className="text-[10px] text-white/50 uppercase tracking-widest font-mono font-bold">Active Buffs</div>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {shieldCharges > 0 && (
-                <span className="text-[9px] px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded font-mono font-bold">
+                <span className="text-[9px] px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-md font-mono font-bold">
                   🛡️ SHIELD x{shieldCharges}
                 </span>
               )}
               {focusCharges > 0 && (
-                <span className="text-[9px] px-1.5 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 rounded font-mono font-bold">
+                <span className="text-[9px] px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-md font-mono font-bold">
                   ⚡ FOCUS x{focusCharges}
                 </span>
               )}
               {shieldCharges === 0 && focusCharges === 0 && (
-                <span className="text-[10px] text-white/20 italic font-mono">No active buffs</span>
+                <span className="text-[10px] text-white/30 italic font-mono">No active buffs</span>
               )}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-purple-950/40 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-purple-950/50 border border-purple-500/30 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(167,139,250,0.2)]">
             <Users className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">Shadow Soldiers</div>
-            <div className="text-xl font-orbitron font-black text-purple-400 mt-0.5">
+            <div className="text-[10px] text-white/50 uppercase tracking-widest font-mono font-bold">Shadow Soldiers</div>
+            <div className="text-2xl font-display font-black text-purple-400 mt-0.5 tabular-nums glow-text">
               {Object.values(shadowArmy).reduce((a, b) => a + b, 0)}
-              <span className="text-xs text-white/40 font-mono font-normal"> units</span>
+              <span className="text-xs text-purple-300/50 font-mono font-normal"> units</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs Navigation Bar */}
-      <div className="relative z-10 flex border-b border-white/5 pb-0.5 gap-2 overflow-x-auto hide-scrollbar">
+      <div className="relative z-10 flex border-b border-white/10 pb-0.5 gap-2 overflow-x-auto hide-scrollbar">
         {[
           { id: 'active', label: 'Active Sector', icon: <Swords className="w-4 h-4" /> },
           { id: 'world', label: 'World Raid', icon: <Skull className="w-4 h-4" /> },
@@ -943,9 +950,9 @@ export default function BossMode() {
               sounds.playBeep();
               setState(s => ({ ...s, activeTab: t.id as any }));
             }}
-            className={`flex items-center gap-2 px-5 py-3 font-orbitron text-xs uppercase tracking-widest border-b-2 transition-all duration-200 flex-shrink-0 ${
+            className={`flex items-center gap-2 px-5 py-3 font-display text-xs uppercase tracking-widest border-b-2 transition-all duration-200 flex-shrink-0 cursor-pointer rounded-t-xl ${
               activeTab === t.id 
-                ? 'border-[#ff003c] text-white bg-white/[0.02] shadow-[inset_0_-8px_16px_rgba(255,0,60,0.05)]' 
+                ? 'border-red-500 text-white bg-white/[0.04] shadow-[inset_0_-8px_16px_rgba(239,68,68,0.1)] font-bold' 
                 : 'border-transparent text-white/40 hover:text-white hover:border-white/20'
             }`}
           >

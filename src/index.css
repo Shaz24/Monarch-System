@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -163,14 +163,17 @@ html {
 body {
   background-color: var(--color-void);
   background-image:
-    radial-gradient(circle at 20% 20%, rgba(124,58,237,0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(6,182,212,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(124,58,237,0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(6,182,212,0.035) 0%, transparent 50%),
     radial-gradient(circle, rgba(124,58,237, var(--dot-grid-opacity)) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 32px 32px;
+  background-size: 100% 100%, 100% 100%, 28px 28px;
   color: var(--color-text-primary);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -2072,10 +2075,564 @@ textarea::placeholder {
   .ag-card,
   .ag-strip-item,
   .ag-card:hover,
-  .ag-strip-item:hover {
+  .ag-strip-item:hover,
+  .ambient-orb,
+  .shimmer-bar::after,
+  .border-glow-cycle,
+  .btn-monarch::before {
     animation: none !important;
     transform: none !important;
   }
   .ag-pulse-dot { animation: none !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   GLOBAL UI OVERHAUL ENHANCEMENTS (PHASE 0)
+══════════════════════════════════════════════════════════════════════ */
+
+/* Scrollbar refinement */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(8, 11, 18, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.6), rgba(167, 139, 250, 0.35));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.8), rgba(124, 58, 237, 0.6));
+}
+
+/* ── Keyframe Animations ── */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes ambient-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.9;
+  }
+}
+
+@keyframes scanline-sweep {
+  0% { transform: translateY(-100%); opacity: 0; }
+  25% { opacity: 0.6; }
+  75% { opacity: 0.6; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+
+@keyframes text-flicker {
+  0%, 100% { opacity: 1; }
+  33% { opacity: 0.88; }
+  66% { opacity: 0.94; }
+  85% { opacity: 0.82; }
+}
+
+@keyframes border-glow-cycle {
+  0%, 100% {
+    border-color: rgba(124, 58, 237, 0.5);
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.25);
+  }
+  33% {
+    border-color: rgba(6, 182, 212, 0.5);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
+  }
+  66% {
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+  }
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0px) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.7;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-80px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes count-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* ── Utility Classes ── */
+.shimmer-bar {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-100%);
+  animation: shimmer-sweep 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(100px);
+  pointer-events: none;
+  animation: ambient-pulse 6s ease-in-out infinite;
+}
+
+.border-glow-cycle {
+  animation: border-glow-cycle 8s ease-in-out infinite;
+}
+
+.text-flicker {
+  animation: text-flicker 4s infinite;
+}
+
+.count-pulse {
+  display: inline-block;
+  animation: count-pulse 0.35s ease-out;
+}
+
+/* Module Header standard */
+.module-header {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 1.5rem;
+}
+.module-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--color-monarch), var(--color-cyan));
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+}
+
+/* KBD shortcut styling */
+kbd.tech-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Button enhancements */
+.btn-monarch::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.btn-monarch:hover::before {
+  transform: translateX(200%);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #F1F5F9;
+  padding: 10px 22px;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8125rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+}
+.btn-danger:hover {
+  background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #F1F5F9;
+  padding: 10px 22px;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8125rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+.btn-success:hover {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-color: rgba(167, 139, 250, 0.7);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SOLO LEVELING MONARCH SYSTEM — HOLOGRAPHIC CYBER-HUD DESIGN SYSTEM
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Cyberpunk HUD Frame with corner brackets */
+.hud-corner-frame {
+  position: relative;
+}
+.hud-corner-frame::before,
+.hud-corner-frame::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  z-index: 20;
+}
+.hud-corner-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--color-monarch-glow);
+  border-left: 2px solid var(--color-monarch-glow);
+}
+.hud-corner-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--color-cyan);
+  border-right: 2px solid var(--color-cyan);
+}
+
+/* Full 4-corner HUD frame */
+.hud-box {
+  position: relative;
+  background: linear-gradient(145deg, rgba(13, 17, 23, 0.85) 0%, rgba(8, 11, 18, 0.95) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(124, 58, 237, 0.05);
+}
+.hud-box:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(124, 58, 237, 0.15), inset 0 0 30px rgba(124, 58, 237, 0.08);
+}
+
+/* Solo Leveling Rank Badges */
+.rank-badge-s {
+  background: linear-gradient(135deg, #F59E0B, #DC2626, #7C3AED);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #000;
+  font-weight: 900;
+}
+.rank-badge-a {
+  background: linear-gradient(135deg, #7C3AED, #A78BFA);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-weight: 800;
+}
+
+/* Holographic card with animated corner glow */
+.holo-panel {
+  background: radial-gradient(circle at 10% 10%, rgba(124, 58, 237, 0.08) 0%, transparent 60%),
+              linear-gradient(160deg, rgba(20, 24, 35, 0.9) 0%, rgba(10, 13, 20, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Hunter Status Hologram Glitch Animation */
+@keyframes holo-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.holo-shimmer-text {
+  background: linear-gradient(90deg, #F1F5F9 0%, #A78BFA 25%, #67E8F9 50%, #F59E0B 75%, #F1F5F9 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: holo-shimmer 6s linear infinite;
+}
+
+/* Aura Ring Animation */
+@keyframes hunter-aura {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.4), 0 0 30px rgba(6, 182, 212, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(124, 58, 237, 0.7), 0 0 50px rgba(6, 182, 212, 0.4);
+    transform: scale(1.02);
+  }
+}
+.hunter-aura {
+  animation: hunter-aura 3.5s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SOLO LEVELING HUNTER SYSTEM HUD 2.0 — DIEGETIC HOLO-INTERFACE
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Custom Font Utilities */
+.font-rajdhani {
+  font-family: 'Rajdhani', sans-serif;
+}
+.font-chakra {
+  font-family: 'Chakra Petch', sans-serif;
+}
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+.font-mono-tech {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Text Glow Shadows */
+.glow-text-monarch {
+  text-shadow: 0 0 12px rgba(167, 139, 250, 0.6), 0 0 24px rgba(124, 58, 237, 0.3);
+}
+.glow-text-cyan {
+  text-shadow: 0 0 12px rgba(103, 232, 249, 0.6), 0 0 24px rgba(6, 182, 212, 0.3);
+}
+.glow-text-gold {
+  text-shadow: 0 0 12px rgba(253, 230, 138, 0.7), 0 0 25px rgba(245, 158, 11, 0.4);
+}
+.glow-text-danger {
+  text-shadow: 0 0 12px rgba(248, 113, 113, 0.7), 0 0 25px rgba(239, 68, 68, 0.5);
+}
+
+/* Diegetic Self-Drawing Animated Corner Frame */
+.holo-bracket-box {
+  position: relative;
+  background: linear-gradient(135deg, rgba(13, 17, 26, 0.88) 0%, rgba(6, 9, 15, 0.96) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: border-color 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.holo-bracket-box::before,
+.holo-bracket-box::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 10;
+  transition: all 0.15s ease-out;
+}
+.holo-bracket-box::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #A78BFA;
+  border-left: 2px solid #A78BFA;
+}
+.holo-bracket-box::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #06B6D4;
+  border-right: 2px solid #06B6D4;
+}
+.holo-bracket-box:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(124, 58, 237, 0.15), inset 0 0 20px rgba(124, 58, 237, 0.06);
+}
+.holo-bracket-box:hover::before {
+  width: 16px;
+  height: 16px;
+  border-color: #67E8F9;
+}
+.holo-bracket-box:hover::after {
+  width: 16px;
+  height: 16px;
+  border-color: #A78BFA;
+}
+
+/* Breathing Idle Panel Border */
+@keyframes holo-breathe {
+  0%, 100% {
+    border-color: rgba(167, 139, 250, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(124, 58, 237, 0.02);
+  }
+  50% {
+    border-color: rgba(167, 139, 250, 0.28);
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(124, 58, 237, 0.05);
+  }
+}
+.holo-breathe {
+  animation: holo-breathe 4s ease-in-out infinite;
+}
+
+/* Scan-line Sweep Keyframe */
+@keyframes scan-sweep {
+  0% { transform: translateY(-100%); opacity: 0; }
+  30% { opacity: 0.5; }
+  70% { opacity: 0.5; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+.scan-sweep-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.8), rgba(167, 139, 250, 0.8), transparent);
+  box-shadow: 0 0 15px rgba(103, 232, 249, 0.8);
+  pointer-events: none;
+  animation: scan-sweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* High Impact Hunter Button with snappy spring feel */
+.btn-hunter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 26px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.1s ease, border-color 0.1s ease;
+}
+.btn-hunter:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: rgba(103, 232, 249, 0.8);
+  box-shadow: 0 6px 28px rgba(124, 58, 237, 0.55), 0 0 20px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.btn-hunter:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4);
+}
+.btn-hunter::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.btn-hunter:hover::before {
+  opacity: 1;
+}
+
+/* Secondary Tech Button */
+.btn-tech-outline {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: rgba(13, 17, 26, 0.7);
+  color: #E2E8F0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-tech-outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(167, 139, 250, 0.5);
+  color: #FFFFFF;
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Calamity Vignette for Boss Mode */
+.calamity-vignette {
+  box-shadow: inset 0 0 120px rgba(220, 38, 38, 0.35), inset 0 0 40px rgba(220, 38, 38, 0.2);
+}
+
+/* Blood Danger Pulse */
+@keyframes danger-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4), inset 0 0 15px rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(239, 68, 68, 0.8), inset 0 0 30px rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.9);
+  }
+}
+.danger-aura-pulse {
+  animation: danger-pulse 2s ease-in-out infinite;
+}
+
+/* Input Focus Charge Effect */
+.input-tech-glow:focus-within {
+  border-color: rgba(103, 232, 249, 0.7);
+  box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.4), 0 0 20px rgba(6, 182, 212, 0.25);
+}
+
+/* Reduced Motion Fallbacks */
+@media (prefers-reduced-motion: reduce) {
+  .hunter-aura,
+  .holo-breathe,
+  .scan-sweep-beam,
+  .danger-aura-pulse,
+  .holo-shimmer-text {
+    animation: none !important;
+  }
+  .btn-hunter,
+  .holo-bracket-box {
+    transition: none !important;
+  }
+}
+
 

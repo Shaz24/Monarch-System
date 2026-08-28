@@ -179,24 +179,24 @@ export default function Creator() {
       className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
       {/* Pulse REC Monitor on the far top-right */}
-      <div className="absolute top-8 right-6 md:right-12 flex items-center gap-2 z-20 pointer-events-none select-none">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#ff003c] animate-[pulse-rec_1s_infinite]" />
-        <span className="font-space-mono text-[10px] text-[#ff003c] font-bold tracking-widest uppercase">
-          ● REC
+      <div className="absolute top-8 right-6 md:right-12 flex items-center gap-2.5 z-20 pointer-events-none select-none px-3 py-1.5 rounded-full bg-red-950/60 border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+        <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+        <span className="font-mono text-[10px] text-red-400 font-black tracking-widest uppercase glow-text">
+          ● ON AIR
         </span>
       </div>
 
       {/* Header zone with title & horizontal broadcast ticker tape */}
-      <div className="border-b border-white/5 pb-6 relative z-10">
+      <div className="border-b border-white/10 pb-6 relative z-10 module-header">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-void border border-[#ff5a00]/60 flex items-center justify-center shadow-[0_0_15px_rgba(255,90,0,0.2)]">
-            <Radio className="w-8 h-8 text-[#ff5a00] animate-pulse" />
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-[0_0_25px_rgba(245,158,11,0.25)]">
+            <Radio className="w-8 h-8 text-amber-400 animate-pulse filter drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
           </div>
           <div>
-            <h1 className="font-orbitron text-4xl font-bold uppercase tracking-widest text-white">
-              Content <span className="text-[#ff5a00]">Creation</span>
+            <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text">
+              Content <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-red-500">Creation</span>
             </h1>
-            <p className="font-space-mono text-sm text-white/50 tracking-widest uppercase mt-1">
+            <p className="font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5">
               Broadcast to the masses. Accrue resources.
             </p>
           </div>

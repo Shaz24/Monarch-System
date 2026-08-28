@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Target, Clock, ArrowRight, Volume2, Dumbbell, Brain, Terminal,
   Video, Swords, LineChart as LineChartIcon, Flame, Star, CheckCircle2, Circle,
-  TrendingUp, Calendar, ChevronRight
+  TrendingUp, Calendar, ChevronRight, Zap
 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line } from 'recharts';
 import { StatRing } from '../components/StatRing';
@@ -142,7 +142,7 @@ export default function Dashboard() {
     return sum + (r?.xp ?? 0);
   }, 0);
 
-  // Time & Clock — pauses when tab is hidden to save CPU
+  // Time & Clock
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
     const start = () => { timer = setInterval(() => setCurrentTime(new Date()), 1000); };
@@ -152,7 +152,6 @@ export default function Dashboard() {
     document.addEventListener('visibilitychange', onVisibility);
     return () => { stop(); document.removeEventListener('visibilitychange', onVisibility); };
   }, []);
-
 
   // Quotes cycling
   useEffect(() => {
@@ -240,10 +239,9 @@ export default function Dashboard() {
     return Math.round((streakVal * 0.3) + (statVal * 0.4) + (tasksVal * 0.3));
   }, [profile, stats, tasks, completedTaskIds]);
 
-  // ── Single O(n) pass over recentLogs → shared date+category index ──────────
   const logsIndex = useMemo(() => {
-    const byDate: Record<string, number> = {};       // dateStr -> total xp
-    const byCatDate: Record<string, Record<string, number>> = {}; // cat -> dateStr -> xp
+    const byDate: Record<string, number> = {};
+    const byCatDate: Record<string, Record<string, number>> = {};
     const activeDates = new Set<string>();
 
     for (const log of recentLogs) {
@@ -295,7 +293,6 @@ export default function Dashboard() {
     return velocities;
   }, [stats, logsIndex]);
 
-  // Streak mini calendar (last 30 days)
   const streakCalendar = useMemo(() => {
     return Array.from({ length: 30 }, (_, i) => {
       const d = new Date(); d.setDate(d.getDate() - (29 - i)); d.setHours(0, 0, 0, 0);
@@ -304,7 +301,6 @@ export default function Dashboard() {
     });
   }, [logsIndex]);
 
-  // Power Forecast
   const powerForecast = useMemo(() => {
     const totalXp = recentLogs.reduce((s, l) => s + (l.xp_earned || 0), 0);
     const uniqueDays = Object.keys(logsIndex.byDate).length;
@@ -314,15 +310,14 @@ export default function Dashboard() {
     return { avgDailyXp: Math.round(avgDailyXp), projectedWeek, projectedLevel };
   }, [recentLogs, logsIndex, currentLevel, currentXp, xpNeeded]);
 
-  // Typewriter for quote
   const currentQuote = MOTIVATIONAL_QUOTES[quoteIndex];
   const { displayed: displayedQuote, done: quoteDone } = useTypewriter(currentQuote.text, 35);
 
   if (profileLoading || tasksLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-void">
-        <div className="font-display text-xs text-[#A78BFA] uppercase tracking-[0.2em] animate-pulse glow-text">
-          Syncing Core Monarch Systems...
+        <div className="font-orbitron text-xs text-monarch-glow uppercase tracking-[0.2em] animate-pulse glow-text-monarch">
+          [ SYNCHRONIZING CORE MONARCH SYSTEMS... ]
         </div>
       </div>
     );
@@ -333,87 +328,91 @@ export default function Dashboard() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="p-4 md:p-10 max-w-[1400px] mx-auto w-full space-y-8 relative overflow-hidden"
+      className="p-4 md:p-10 max-w-[1400px] mx-auto w-full space-y-8 relative overflow-hidden text-slate-100"
     >
-      {/* Ambient background effects */}
-      <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-monarch/4 rounded-full blur-[120px] pointer-events-none -z-10" />
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-cyan-500/4 rounded-full blur-[100px] pointer-events-none -z-10" />
+      {/* Ambient background breathing orbs */}
+      <div className="ambient-orb top-0 left-1/4 w-[550px] h-[550px] bg-monarch/8 -z-10 pointer-events-none" style={{ animationDelay: '0s' }} />
+      <div className="ambient-orb top-1/2 right-1/4 w-[450px] h-[450px] bg-cyan-500/6 -z-10 pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="ambient-orb bottom-10 left-1/3 w-[400px] h-[400px] bg-amber-500/5 -z-10 pointer-events-none" style={{ animationDelay: '4s' }} />
 
-      {/* ══ HERO HUD — Profile + Level + XP ══ */}
-      <div className="glass-3 p-6 md:p-8 relative overflow-hidden">
-        <div className="absolute inset-0 scanline-overlay opacity-20" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-monarch-glow/50 to-transparent" />
+      {/* ══ HERO HUD — Character Status Sheet ══ */}
+      <div className="holo-bracket-box holo-breathe p-6 md:p-8 rounded-2xl relative overflow-hidden">
+        <div className="scan-sweep-beam" />
+        <div className="absolute inset-0 bg-scanline-pattern opacity-15 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
-          {/* Avatar + Ring */}
+          {/* Avatar + Hunter Aura Ring */}
           <div className="relative shrink-0">
             <ProgressRing
               percent={xpPercent}
-              size={100}
-              strokeWidth={5}
+              size={116}
+              strokeWidth={7}
               gradientFrom="#F59E0B"
               gradientTo="#A78BFA"
             >
-              <div className="w-[72px] h-[72px] rounded-2xl border border-monarch-glow/30 overflow-hidden bg-void flex items-center justify-center">
+              <div className="w-[84px] h-[84px] rounded-2xl border border-monarch-glow/50 shadow-[0_0_25px_rgba(124,58,237,0.4)] overflow-hidden bg-void flex items-center justify-center hunter-aura">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <Shield className="w-9 h-9 text-[#A78BFA]" />
+                  <Shield className="w-10 h-10 text-monarch-glow filter drop-shadow-[0_0_10px_rgba(167,139,250,0.8)]" />
                 )}
               </div>
             </ProgressRing>
-            <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-[#F59E0B] to-[#FF6B00] text-black text-[8px] font-black px-2 py-0.5 rounded-md font-mono z-20 shadow-lg">
-              {rank}
+            <div className="absolute -bottom-1 -right-1 rank-badge-s text-[10px] px-2.5 py-0.5 rounded-md font-orbitron z-20 shadow-[0_2px_12px_rgba(245,158,11,0.6)] border border-amber-300/60">
+              {rank}-RANK
             </div>
           </div>
 
-          {/* Name + Meta */}
+          {/* Name + Meta Status */}
           <div className="flex-1 text-center md:text-left">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1">
-              <span className="font-mono text-[9px] text-monarch-glow/70 tracking-[0.2em] uppercase font-bold">
-                {rank}-Class Hunter • Rating: {grade}
+            <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1.5">
+              <span className="font-mono-tech text-[10px] text-monarch-glow tracking-[0.25em] uppercase font-bold flex items-center justify-center md:justify-start gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                HUNTER STATUS: ACTIVE • CLASS {rank} • RATING {grade}
               </span>
             </div>
-            <h1 className="font-display text-2xl md:text-4xl font-black text-[#F1F5F9] uppercase tracking-wider glow-text">
-              {profile?.display_name || profile?.username || 'Player_01'}
+            <h1 className="font-orbitron text-2xl md:text-4xl font-black text-white uppercase tracking-wider glow-text-monarch leading-tight">
+              {profile?.display_name || profile?.username || 'SHADOW_MONARCH'}
             </h1>
-            <p className="font-mono text-[10px] text-white/30 mt-1">{dateFormatted} • {clockFormatted}</p>
+            <p className="font-mono-tech text-[11px] text-white/50 mt-1 flex items-center justify-center md:justify-start gap-2">
+              <span>{dateFormatted}</span>
+              <span className="text-white/20">•</span>
+              <span className="text-cyan-400 font-bold tracking-widest">{clockFormatted}</span>
+            </p>
 
             {/* Inline badges */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
-              <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
-                <Flame className="w-3 h-3 text-amber-400" />
-                <span className="font-mono text-[10px] text-amber-400 font-bold">{animatedStreak}d Streak</span>
+            <div className="flex flex-wrap justify-center md:justify-start gap-2.5 mt-4">
+              <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                <span className="font-rajdhani text-sm text-amber-400 font-bold tracking-wide">{animatedStreak}d STREAK</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full">
-                <Star className="w-3 h-3 text-purple-400" />
-                <span className="font-mono text-[10px] text-purple-400 font-bold">{animatedAura}% Aura</span>
+              <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/30 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(167,139,250,0.2)]">
+                <Star className="w-3.5 h-3.5 text-purple-400" />
+                <span className="font-rajdhani text-sm text-purple-400 font-bold tracking-wide">{animatedAura}% AURA</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full">
-                <CheckCircle2 className="w-3 h-3 text-cyan-400" />
-                <span className="font-mono text-[10px] text-cyan-400 font-bold">{completedTaskIds.size}/{tasks.length} Directives</span>
+              <div className="flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.2)]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="font-rajdhani text-sm text-cyan-400 font-bold tracking-wide">{completedTaskIds.size}/{tasks.length} DIRECTIVES</span>
               </div>
             </div>
           </div>
 
-          {/* Level + XP Column */}
-          <div className="flex flex-col items-center gap-1 shrink-0">
-            <span className="font-mono text-[9px] text-white/40 uppercase tracking-widest">Level</span>
-            <span className="font-display text-5xl font-black text-[#F59E0B] glow-gold tabular-nums">{animatedLevel}</span>
-            <div className="w-32 space-y-1 mt-2">
-              <div className="w-full h-2 bg-black/40 border border-white/5 rounded-full overflow-hidden">
+          {/* Level + XP Gauge */}
+          <div className="flex flex-col items-center gap-1 shrink-0 p-5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-[inset_0_0_25px_rgba(0,0,0,0.5)]">
+            <span className="font-mono-tech text-[10px] text-monarch-glow uppercase tracking-widest font-bold">LEVEL PROGRESS</span>
+            <span className="font-orbitron text-5xl font-black text-[#F59E0B] glow-text-gold tabular-nums">{animatedLevel}</span>
+            <div className="w-44 space-y-1.5 mt-1.5">
+              <div className="w-full h-3 bg-black/60 border border-white/15 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${xpPercent}%` }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-[#F59E0B] to-[#A78BFA] rounded-full relative"
-                >
-                  <div className="progress-glow absolute inset-0 rounded-full" />
-                </motion.div>
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  className="h-full bg-gradient-to-r from-[#F59E0B] via-[#EC4899] to-[#A78BFA] rounded-full shadow-[0_0_15px_rgba(245,158,11,0.6)]"
+                />
               </div>
-              <div className="flex justify-between font-mono text-[8px] text-white/30">
-                <span>{currentXp} XP</span>
-                <span>{xpNeeded} XP</span>
+              <div className="flex justify-between font-mono-tech text-[9px]">
+                <span className="text-white/40">{currentXp} XP</span>
+                <span className="text-amber-400 font-bold">{xpNeeded} XP GOAL</span>
               </div>
             </div>
           </div>
@@ -421,7 +420,7 @@ export default function Dashboard() {
       </div>
 
       {/* ══ QUICK STATS ROW ══ */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 stagger-grid">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         <StatBadge icon={Flame} label="Today's XP" value={todayXp} suffix=" XP" color="#F59E0B" />
         <StatBadge icon={Target} label="Daily Goal" value={goalPercent} suffix="%" color={todayXp >= dailyGoal ? '#10B981' : '#06B6D4'} />
         <StatBadge icon={Shield} label="System Health" value={systemHealth} suffix="%" color="#A78BFA" />
@@ -436,30 +435,37 @@ export default function Dashboard() {
       </div>
 
       {/* ══ CORE SYSTEMS NAVIGATOR ══ */}
-      <div className="glass-2 p-5">
-        <div className="section-divider mb-4">
-          <h2 className="font-display text-xs font-bold uppercase tracking-widest text-[#F1F5F9]">Core Systems</h2>
+      <div className="holo-bracket-box p-6 rounded-2xl relative overflow-hidden">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-4 rounded-full bg-gradient-to-b from-monarch to-cyan-400" />
+            <h2 className="font-rajdhani text-sm font-bold uppercase tracking-widest text-white">CORE PROTOCOL MODULES</h2>
+          </div>
+          <span className="font-mono-tech text-[9px] text-white/40 tracking-widest uppercase">QUICK LINK SHORTCUTS</span>
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 stagger-grid">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
           {MODULE_SHORTCUTS.map((mod) => {
             const Icon = mod.icon;
             return (
               <motion.button
                 key={mod.path}
-                whileHover={{ scale: 1.05, y: -3 }}
+                whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(mod.path)}
-                className="card-elevated flex flex-col items-center gap-2.5 p-3.5 cursor-pointer group"
-                style={{ borderColor: `${mod.color}20` }}
+                className="flex flex-col items-center gap-2.5 p-3.5 cursor-pointer group relative overflow-hidden transition-all duration-150 rounded-xl bg-white/[0.02] border border-white/10 hover:border-cyan-400/50 hover:bg-white/[0.05]"
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
-                  style={{ background: mod.bg, border: `1px solid ${mod.border}` }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner"
+                  style={{
+                    background: mod.bg,
+                    border: `1px solid ${mod.border}`,
+                    boxShadow: `0 0 20px ${mod.color}30`,
+                  }}
                 >
-                  <Icon className="w-5 h-5" style={{ color: mod.color }} />
+                  <Icon className="w-5 h-5" style={{ color: mod.color, filter: `drop-shadow(0 0 6px ${mod.color}90)` }} />
                 </div>
-                <span className="font-mono text-[9px] uppercase tracking-wider text-white/50 group-hover:text-white transition-colors">{mod.label}</span>
-                <span className="font-mono text-[7px] text-white/15 hidden sm:block">[{mod.key}]</span>
+                <span className="font-rajdhani text-xs uppercase tracking-wider text-white/80 group-hover:text-white transition-colors font-bold">{mod.label}</span>
+                <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded bg-black/50 border border-white/10 font-mono-tech text-[8px] text-white/40">{mod.key}</kbd>
               </motion.button>
             );
           })}
@@ -469,114 +475,114 @@ export default function Dashboard() {
       {/* ══ DAILY RITUALS + DAILY XP GOAL ══ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Rituals */}
-        <div className="lg:col-span-2 glass-2 p-6">
-          <div className="section-divider mb-4">
-            <Flame className="w-4 h-4 text-amber-400" />
-            <h2 className="font-display text-xs font-bold uppercase tracking-widest text-[#F1F5F9]">Daily Rituals</h2>
-            <span className="font-mono text-[10px] text-amber-400 font-bold ml-auto">
-              {completedRituals.size}/{DAILY_RITUALS.length}
+        <div className="lg:col-span-2 holo-bracket-box p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-amber-400 animate-pulse" />
+              <h2 className="font-rajdhani text-sm font-bold uppercase tracking-widest text-white">Daily Rituals</h2>
+            </div>
+            <span className="font-mono-tech text-[10px] text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+              {completedRituals.size}/{DAILY_RITUALS.length} COMPLETE
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {DAILY_RITUALS.map((ritual) => {
               const done = completedRituals.has(ritual.id);
               return (
                 <motion.button
                   key={ritual.id}
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ y: -1 }}
                   onClick={() => toggleRitual(ritual.id)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left cursor-pointer group ${
+                  className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left cursor-pointer group ${
                     done
-                      ? 'bg-emerald-500/8 border-emerald-500/25 shadow-[0_0_12px_rgba(16,185,129,0.08)]'
-                      : 'bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]'
+                      ? 'bg-emerald-500/15 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                      : 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.05]'
                   }`}
                 >
-                  <span className="text-lg">{ritual.icon}</span>
+                  <span className="text-xl filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform">{ritual.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-medium truncate ${done ? 'text-emerald-400/70 line-through' : 'text-white/80'}`}>
+                    <p className={`font-rajdhani text-sm font-semibold truncate transition-colors ${done ? 'text-emerald-400 line-through opacity-80' : 'text-white group-hover:text-white'}`}>
                       {ritual.label}
                     </p>
-                    <p className="font-mono text-[9px] text-white/25">+{ritual.xp} XP</p>
+                    <p className="font-mono-tech text-[10px] text-amber-400 font-bold mt-0.5">+{ritual.xp} XP</p>
                   </div>
                   {done
-                    ? <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 ritual-check-anim" />
-                    : <Circle className="w-5 h-5 text-white/15 shrink-0 group-hover:text-white/30 transition-colors" />
+                    ? <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 filter drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
+                    : <Circle className="w-5 h-5 text-white/20 shrink-0 group-hover:text-white/40 transition-colors" />
                   }
                 </motion.button>
               );
             })}
           </div>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex-1 h-2 bg-black/40 border border-white/5 rounded-full overflow-hidden">
+          <div className="mt-5 flex items-center gap-3 pt-3 border-t border-white/10">
+            <div className="flex-1 h-2.5 bg-black/40 border border-white/10 rounded-full overflow-hidden">
               <motion.div
                 animate={{ width: `${(completedRituals.size / DAILY_RITUALS.length) * 100}%` }}
-                className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full"
-                transition={{ duration: 0.5 }}
+                className="h-full bg-gradient-to-r from-amber-500 via-emerald-400 to-emerald-300 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                transition={{ duration: 0.4 }}
               />
             </div>
-            <span className="font-mono text-[10px] text-amber-400 font-bold whitespace-nowrap">+{ritualXpTotal} XP</span>
+            <span className="font-mono-tech text-[10px] text-amber-400 font-bold whitespace-nowrap bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">+{ritualXpTotal} XP EARNED</span>
           </div>
         </div>
 
         {/* Right side: XP Goal + Power Forecast */}
         <div className="space-y-4">
           {/* Daily XP Goal */}
-          <div className={`glass-2 p-5 transition-all ${todayXp >= dailyGoal ? 'border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.06)]' : ''}`}>
+          <div className={`holo-bracket-box p-5 transition-all ${todayXp >= dailyGoal ? 'border-emerald-500/40 shadow-[0_0_25px_rgba(16,185,129,0.2)]' : ''}`}>
             <div className="flex justify-between items-center mb-3">
-              <span className="font-display text-[10px] font-bold uppercase tracking-widest text-white/50">Daily XP Quota</span>
-              <span className="font-mono text-xs text-white/80 font-bold tabular-nums">{todayXp} / {dailyGoal}</span>
+              <span className="font-rajdhani text-xs font-bold uppercase tracking-widest text-white/70">Daily XP Quota</span>
+              <span className="font-mono-tech text-xs text-amber-400 font-bold tabular-nums">{todayXp} / {dailyGoal} XP</span>
             </div>
-            <div className="w-full h-3 bg-black/50 border border-white/5 rounded-full overflow-hidden">
+            <div className="w-full h-3 bg-black/50 border border-white/10 rounded-full overflow-hidden">
               <motion.div
                 animate={{ width: `${goalPercent}%` }}
-                className={`h-full rounded-full ${todayXp >= dailyGoal ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-monarch to-cyan-400'}`}
-              >
-                <div className="progress-glow absolute inset-0" />
-              </motion.div>
+                className={`h-full rounded-full shadow-[0_0_10px_rgba(6,182,212,0.4)] ${todayXp >= dailyGoal ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-monarch via-purple-400 to-cyan-400'}`}
+              />
             </div>
-            <p className={`mt-2 text-center font-mono text-[9px] uppercase tracking-widest ${todayXp >= dailyGoal ? 'text-emerald-400 font-bold animate-pulse' : 'text-white/25'}`}>
-              {todayXp >= dailyGoal ? '✓ Quota fulfilled! +Bonus' : `${dailyGoal - todayXp} XP remaining`}
+            <p className={`mt-2 text-center font-mono-tech text-[10px] uppercase tracking-widest ${todayXp >= dailyGoal ? 'text-emerald-400 font-bold animate-pulse' : 'text-white/40'}`}>
+              {todayXp >= dailyGoal ? '✓ Quota fulfilled! +System Multiplier Active' : `${dailyGoal - todayXp} XP remaining today`}
             </p>
           </div>
 
           {/* Power Forecast */}
-          <div className="glass-2 p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-monarch/5 rounded-full blur-[30px]" />
+          <div className="holo-bracket-box p-5 relative overflow-hidden">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-monarch" />
-              <span className="font-display text-[10px] font-bold uppercase tracking-widest text-white/50">Power Forecast</span>
+              <TrendingUp className="w-4 h-4 text-cyan-400" />
+              <span className="font-rajdhani text-xs font-bold uppercase tracking-widest text-white/70">Power Forecast</span>
             </div>
-            <div className="space-y-2.5 text-[11px] font-mono">
+            <div className="space-y-2.5 text-xs font-mono-tech">
               <div className="flex justify-between items-center">
-                <span className="text-white/40">Avg Daily</span>
+                <span className="text-white/50">Avg Daily Velocity</span>
                 <span className="text-cyan-400 font-bold">{powerForecast.avgDailyXp} XP/day</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-white/40">7-Day Projection</span>
-                <span className="text-monarch font-bold">+{powerForecast.projectedWeek} XP</span>
+                <span className="text-white/50">7-Day Trajectory</span>
+                <span className="text-monarch-glow font-bold">+{powerForecast.projectedWeek} XP</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-white/40">Est. Level</span>
+                <span className="text-white/50">Est. Rank Level</span>
                 <span className="text-amber-400 font-bold">LVL {powerForecast.projectedLevel}</span>
               </div>
             </div>
           </div>
 
           {/* System Clock */}
-          <div className="glass-1 p-4">
-            <div className="flex items-center justify-between text-[10px] font-mono text-white/40 uppercase">
+          <div className="holo-bracket-box p-4">
+            <div className="flex items-center justify-between text-[11px] font-mono-tech text-white/60 uppercase">
               <div className="flex items-center gap-1.5">
-                <Clock className="w-3 h-3 text-cyan-400" />
-                <span>Day Cycle</span>
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Active Day Cycle</span>
               </div>
               <span className={hoursLeft < 4 ? "text-red-400 font-bold animate-pulse" : "text-cyan-400 font-bold"}>
-                {hoursLeft.toFixed(1)} HR
+                {hoursLeft.toFixed(1)} HR LEFT
               </span>
             </div>
-            <div className="w-full h-1.5 bg-black/40 border border-white/5 rounded-full overflow-hidden mt-2">
+            <div className="w-full h-2 bg-black/40 border border-white/10 rounded-full overflow-hidden mt-2">
               <motion.div
                 animate={{ width: `${hoursPercent}%` }}
-                className={`h-full rounded-full ${hoursLeft < 4 ? 'bg-red-500' : 'bg-cyan-400'}`}
+                className={`h-full rounded-full ${hoursLeft < 4 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.5)]'}`}
               />
             </div>
           </div>
@@ -584,18 +590,21 @@ export default function Dashboard() {
       </div>
 
       {/* ══ STAT VELOCITIES ══ */}
-      <div className="glass-2 p-6">
-        <div className="section-divider mb-5">
-          <Target className="w-4 h-4 text-monarch" />
-          <h2 className="font-display text-xs font-bold uppercase tracking-widest text-[#F1F5F9]">Stat Velocities</h2>
+      <div className="holo-bracket-box p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-monarch-glow" />
+            <h2 className="font-rajdhani text-sm font-bold uppercase tracking-widest text-white">Stat Velocities</h2>
+          </div>
+          <span className="font-mono-tech text-[9px] text-white/40 tracking-widest uppercase">7-Day Delta</span>
         </div>
         {stats.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 stagger-grid">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {stats.map((stat) => {
               const statKey = stat.stat_name.toLowerCase();
               const vel = statVelocities[statKey] || { thisWeek: 0, sparkline: [] };
               return (
-                <div key={stat.stat_name} className="card-elevated p-3 flex flex-col items-center gap-2">
+                <div key={stat.stat_name} className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col items-center gap-2 transition-all hover:border-cyan-400/40 hover:bg-white/[0.04]">
                   <StatRing
                     statName={stat.stat_name.charAt(0).toUpperCase() + stat.stat_name.slice(1)}
                     level={stat.level}
@@ -604,11 +613,11 @@ export default function Dashboard() {
                   <div className="w-full h-8 flex items-center justify-center overflow-hidden pointer-events-none">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={vel.sparkline}>
-                        <Line type="monotone" dataKey="val" stroke="#06B6D4" strokeWidth={1.5} dot={false} />
+                        <Line type="monotone" dataKey="val" stroke="#06B6D4" strokeWidth={2} dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                  <span className="font-mono text-[9px] text-cyan-400 font-bold bg-cyan-950/20 px-2 py-0.5 rounded-md border border-cyan-500/10">
+                  <span className="font-mono-tech text-[9px] text-cyan-400 font-bold bg-cyan-950/40 px-2 py-0.5 rounded-md border border-cyan-500/20 shadow-[0_0_8px_rgba(6,182,212,0.1)]">
                     +{vel.thisWeek} XP/wk
                   </span>
                 </div>
@@ -616,20 +625,22 @@ export default function Dashboard() {
             })}
           </div>
         ) : (
-          <div className="text-center py-12 text-white/20 font-mono text-xs uppercase tracking-widest border border-dashed border-white/5 rounded-xl">
+          <div className="text-center py-12 text-white/30 font-mono-tech text-xs uppercase tracking-widest border border-dashed border-white/10 rounded-xl">
             No stats initialized. Complete directives to level up.
           </div>
         )}
       </div>
 
-      {/* ══ CONTRIBUTION HEATMAP + QUOTE ══ */}
+      {/* ══ CONTRIBUTION HEATMAP + QUOTE TERMINAL ══ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Heatmap */}
-        <div className="lg:col-span-2 glass-2 p-6">
-          <div className="section-divider mb-4">
-            <Calendar className="w-4 h-4 text-cyan-400" />
-            <h2 className="font-display text-xs font-bold uppercase tracking-widest text-[#F1F5F9]">Activity Heatmap</h2>
-            <span className="font-mono text-[9px] text-white/25 uppercase ml-auto">Last 12 Weeks</span>
+        <div className="lg:col-span-2 holo-bracket-box p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-cyan-400" />
+              <h2 className="font-rajdhani text-sm font-bold uppercase tracking-widest text-white">Activity Heatmap</h2>
+            </div>
+            <span className="font-mono-tech text-[10px] text-white/40 uppercase">Last 12 Weeks</span>
           </div>
           <div className="overflow-x-auto hide-scrollbar">
             <Heatmap
@@ -637,32 +648,32 @@ export default function Dashboard() {
               weeks={12}
               colors={[
                 'var(--heatmap-empty)',
-                'rgba(6,182,212,0.2)',
-                'rgba(6,182,212,0.45)',
-                'rgba(124,58,237,0.5)',
-                'rgba(167,139,250,0.75)',
+                'rgba(6,182,212,0.25)',
+                'rgba(6,182,212,0.5)',
+                'rgba(124,58,237,0.6)',
+                'rgba(167,139,250,0.85)',
                 '#F59E0B',
               ]}
             />
           </div>
 
           {/* Streak mini-calendar */}
-          <div className="mt-4 pt-4 border-t border-white/5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> 30-Day Activity
+          <div className="mt-5 pt-4 border-t border-white/10">
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="font-mono-tech text-[10px] text-white/50 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+                <Calendar className="w-3 h-3 text-amber-400" /> 30-Day Activity Log
               </span>
             </div>
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-1.5 flex-wrap">
               {streakCalendar.map((day, i) => (
                 <div
                   key={i}
                   title={day.date.toLocaleDateString()}
                   className={`w-4 h-4 rounded-sm transition-all hover:scale-125 ${
                     day.isToday
-                      ? 'ring-1 ring-cyan-400 ' + (day.hasActivity ? 'bg-cyan-400' : 'bg-white/10')
+                      ? 'ring-2 ring-cyan-400 ' + (day.hasActivity ? 'bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]' : 'bg-white/20')
                       : day.hasActivity
-                      ? 'bg-monarch/60'
+                      ? 'bg-monarch-glow/80 shadow-[0_0_6px_rgba(167,139,250,0.4)]'
                       : 'bg-white/[0.04]'
                   }`}
                 />
@@ -671,35 +682,41 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Motivational Quote */}
-        <div className="glass-2 p-6 flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+        {/* Motivational Quote Terminal */}
+        <div className="holo-bracket-box p-6 flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10 flex flex-col h-full">
-            <div className="flex justify-between items-center text-[10px] font-mono text-white/30 uppercase tracking-widest pb-3 border-b border-white/5">
-              <span>Daily Laws</span>
-              <Volume2 className="w-3.5 h-3.5" />
+            {/* Terminal Window Header */}
+            <div className="flex justify-between items-center text-[10px] font-mono-tech pb-3 border-b border-white/10">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block shadow-[0_0_4px_rgba(239,68,68,0.5)]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-[0_0_4px_rgba(245,158,11,0.5)]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
+                <span className="ml-2 text-white/50 tracking-wider">// MONARCH_LAWS.SYS</span>
+              </div>
+              <Volume2 className="w-3.5 h-3.5 text-monarch-glow/70" />
             </div>
 
-            <div className="flex-1 flex flex-col justify-center my-6 min-h-[100px]">
+            <div className="flex-1 flex flex-col justify-center my-6 min-h-[110px] pl-3 border-l-2 border-monarch-glow/60 bg-black/30 p-3 rounded-r-xl">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={quoteIndex}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.4 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <p className={`font-display font-medium text-sm text-[#F1F5F9] leading-relaxed italic ${!quoteDone ? 'typewriter-cursor' : ''}`}>
+                  <p className="font-chakra font-medium text-sm md:text-base text-white leading-relaxed italic">
                     "{displayedQuote}"
+                    {!quoteDone && <span className="inline-block w-1.5 h-4 bg-cyan-400 ml-1 animate-pulse" />}
                   </p>
                   <AnimatePresence>
                     {quoteDone && (
                       <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="font-mono text-[10px] text-monarch font-bold uppercase tracking-wider mt-3"
+                        className="font-mono-tech text-[11px] text-monarch-glow font-bold uppercase tracking-wider mt-3 flex items-center gap-1.5"
                       >
-                        — {currentQuote.author}
+                        <span className="text-cyan-400">→</span> {currentQuote.author}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -709,9 +726,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)}
-              className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/8 border border-white/8 text-white/70 font-mono text-[10px] tracking-widest uppercase hover:text-white transition-all flex items-center justify-center gap-2"
+              className="btn-tech-outline w-full py-2.5 text-xs tracking-widest uppercase flex items-center justify-center gap-2 cursor-pointer"
             >
-              Next Principle <ChevronRight className="w-3 h-3" />
+              Next Protocol Principle <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -719,34 +736,32 @@ export default function Dashboard() {
 
       {/* ══ BOSS BATTLE PREVIEW ══ */}
       {activeBoss && (
-        <div className="glass-3 p-6 border-red-500/15 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
-          <div className="absolute top-0 right-0 w-40 h-40 bg-red-500/5 rounded-full blur-[50px] pointer-events-none" />
-
+        <div className="holo-bracket-box p-6 border-red-500/40 relative overflow-hidden shadow-[0_0_30px_rgba(220,38,38,0.2)] danger-aura-pulse">
+          <div className="scan-sweep-beam" />
           <div className="absolute top-4 left-4">
-            <div className={`w-3 h-3 rounded-full bg-red-500 ${bossRadarPing ? 'opacity-100' : 'opacity-30'} transition-opacity duration-500`} />
-            <div className={`absolute inset-0 rounded-full bg-red-500/30 ${bossRadarPing ? 'animate-ping' : ''}`} />
+            <div className={`w-3 h-3 rounded-full bg-red-500 ${bossRadarPing ? 'opacity-100' : 'opacity-40'} transition-opacity duration-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]`} />
+            <div className={`absolute inset-0 rounded-full bg-red-500/40 ${bossRadarPing ? 'animate-ping' : ''}`} />
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pl-8">
             <div className="space-y-1 flex-1">
-              <div className="flex items-center gap-2 text-red-500 font-mono text-[10px] font-bold uppercase tracking-[0.2em] animate-pulse">
-                <Swords className="w-3 h-3" /> Boss Threat Detected
+              <div className="flex items-center gap-2 text-red-400 font-mono-tech text-[10px] font-bold uppercase tracking-[0.25em] animate-pulse">
+                <Swords className="w-3.5 h-3.5 text-red-500" /> Class-S Boss Encounter Active
               </div>
-              <h3 className="font-display text-xl font-bold uppercase tracking-wider text-white mt-1">{activeBoss.boss_name}</h3>
-              <div className="flex items-center gap-3 text-[10px] font-mono text-white/30 uppercase">
-                <span>Reward: <span className="text-red-400 font-bold">+{activeBoss.reward_xp} XP</span></span>
+              <h3 className="font-orbitron text-xl md:text-2xl font-black uppercase tracking-wider text-white mt-1 drop-shadow-[0_0_12px_rgba(239,68,68,0.5)] glow-text-danger">{activeBoss.boss_name}</h3>
+              <div className="flex items-center gap-3 text-[10px] font-mono-tech text-white/50 uppercase">
+                <span>Victory Bounty: <span className="text-amber-400 font-bold">+{activeBoss.reward_xp} XP</span></span>
               </div>
             </div>
 
-            <div className="w-full md:w-56 space-y-1">
-              <div className="flex justify-between font-mono text-[9px] uppercase text-white/40">
-                <span>HP</span>
-                <span className="text-red-400">{Math.round((activeBoss.condition_current / activeBoss.condition_target) * 100)}%</span>
+            <div className="w-full md:w-64 space-y-1.5">
+              <div className="flex justify-between font-mono-tech text-[9px] uppercase text-white/60">
+                <span>Boss Vitality</span>
+                <span className="text-red-400 font-bold">{Math.round((activeBoss.condition_current / activeBoss.condition_target) * 100)}% HP</span>
               </div>
-              <div className="w-full h-2.5 bg-black/60 border border-white/5 overflow-hidden rounded-full">
+              <div className="w-full h-3 bg-black/60 border border-white/15 overflow-hidden rounded-full">
                 <div
-                  className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+                  className="h-full bg-gradient-to-r from-red-600 via-red-500 to-amber-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]"
                   style={{ width: `${(activeBoss.condition_current / activeBoss.condition_target) * 100}%` }}
                 />
               </div>
@@ -754,9 +769,10 @@ export default function Dashboard() {
 
             <button
               onClick={() => navigate('/boss-mode')}
-              className="px-5 py-3 rounded-xl bg-red-950/20 hover:bg-red-950/30 border border-red-500/25 hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] text-red-400 hover:text-red-300 font-display text-xs font-bold tracking-widest uppercase flex items-center gap-2 transition-all cursor-pointer shrink-0"
+              className="btn-hunter py-3 px-6 text-xs font-bold tracking-widest uppercase flex items-center gap-2 cursor-pointer shrink-0"
+              style={{ background: 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)', borderColor: 'rgba(248,113,113,0.5)' }}
             >
-              Engage <ArrowRight className="w-4 h-4" />
+              Engage Boss <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>

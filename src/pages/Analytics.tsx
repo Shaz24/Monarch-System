@@ -274,16 +274,16 @@ export default function Analytics() {
       className="p-4 md:p-12 max-w-[1400px] mx-auto w-full space-y-8 print:p-0 print:bg-white print:text-black"
     >
       {/* HEADER HUD */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6 print:border-black print:pb-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6 print:border-black print:pb-2 module-header">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-void border border-accent-blue flex items-center justify-center shadow-neon-blue print:shadow-none print:border-black">
-            <Activity className="w-8 h-8 text-accent-blue print:text-black" />
+          <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.25)] print:shadow-none print:border-black">
+            <Activity className="w-8 h-8 text-cyan-400 print:text-black animate-pulse filter drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
           </div>
           <div>
-            <h1 className="font-orbitron text-4xl font-bold uppercase tracking-widest text-white print:text-black">
-              System <span className="text-[#06B6D4] print:text-black">Analytics</span>
+            <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text print:text-black">
+              System <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 print:text-black">Analytics</span>
             </h1>
-            <p className="font-space-mono text-xs text-white/50 tracking-widest uppercase mt-1 print:text-black/60">
+            <p className="font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5 print:text-black/60">
               Biometric telemetry progression and core system matrices
             </p>
           </div>
@@ -291,45 +291,53 @@ export default function Analytics() {
 
         <button
           onClick={handlePrintReport}
-          className="btn-primary py-2.5 px-5 flex items-center gap-2 text-xs tracking-widest uppercase shrink-0 print:hidden"
+          className="btn-ghost py-2.5 px-5 flex items-center gap-2 text-xs tracking-widest uppercase shrink-0 print:hidden rounded-xl border border-cyan-400/30 text-cyan-300 hover:bg-cyan-950/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
         >
-          <FileDown className="w-4 h-4" />
+          <FileDown className="w-4 h-4 text-cyan-400" />
           Export Telemetry PDF
         </button>
       </div>
 
       {/* PERSONAL RECORDS GRID PANEL */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4 stagger-grid">
         
-        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
-          <Trophy className="w-8 h-8 text-gold shrink-0" />
+        <div className="glass-2 p-5 rounded-2xl border border-white/[0.08] flex items-center gap-4 relative overflow-hidden print:border-black shadow-md hover:scale-105 transition-all">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+            <Trophy className="w-6 h-6 text-amber-400" />
+          </div>
           <div>
-            <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Peak XP Gain</span>
-            <span className="block font-display text-2xl font-black text-white glow-text mt-0.5 print:text-black">{records.maxXP} XP</span>
+            <span className="block font-mono text-[9px] uppercase text-white/40 tracking-widest font-bold print:text-black/60">Peak XP Gain</span>
+            <span className="block font-display text-2xl font-black text-white glow-gold mt-0.5 print:text-black tabular-nums">{records.maxXP} <span className="text-xs font-mono font-normal text-amber-400">XP</span></span>
           </div>
         </div>
 
-        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
-          <Zap className="w-8 h-8 text-cyan-400 shrink-0" />
+        <div className="glass-2 p-5 rounded-2xl border border-white/[0.08] flex items-center gap-4 relative overflow-hidden print:border-black shadow-md hover:scale-105 transition-all">
+          <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0">
+            <Zap className="w-6 h-6 text-cyan-400" />
+          </div>
           <div>
-            <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Cumulative XP</span>
-            <span className="block font-display text-2xl font-black text-white glow-text mt-0.5 print:text-black">{records.totalXp} XP</span>
+            <span className="block font-mono text-[9px] uppercase text-white/40 tracking-widest font-bold print:text-black/60">Cumulative XP</span>
+            <span className="block font-display text-2xl font-black text-white glow-text mt-0.5 print:text-black tabular-nums">{records.totalXp} <span className="text-xs font-mono font-normal text-cyan-400">XP</span></span>
           </div>
         </div>
 
-        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
-          <Clock className="w-8 h-8 text-[#A78BFA] shrink-0" />
+        <div className="glass-2 p-5 rounded-2xl border border-white/[0.08] flex items-center gap-4 relative overflow-hidden print:border-black shadow-md hover:scale-105 transition-all">
+          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
+            <Clock className="w-6 h-6 text-[#A78BFA]" />
+          </div>
           <div>
-            <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Focus Time</span>
-            <span className="block font-display text-2xl font-black text-white glow-text mt-0.5 print:text-black">{records.focusHours} HR</span>
+            <span className="block font-mono text-[9px] uppercase text-white/40 tracking-widest font-bold print:text-black/60">Focus Time</span>
+            <span className="block font-display text-2xl font-black text-white glow-text mt-0.5 print:text-black tabular-nums">{records.focusHours} <span className="text-xs font-mono font-normal text-purple-400">HR</span></span>
           </div>
         </div>
 
-        <div className="glass-2 p-5 border border-white/5 flex items-center gap-4 relative overflow-hidden print:border-black">
-          <Flame className="w-8 h-8 text-red-500 shrink-0" />
+        <div className="glass-2 p-5 rounded-2xl border border-white/[0.08] flex items-center gap-4 relative overflow-hidden print:border-black shadow-md hover:scale-105 transition-all">
+          <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center shrink-0">
+            <Flame className="w-6 h-6 text-red-400 animate-pulse" />
+          </div>
           <div>
-            <span className="block font-space-mono text-[9px] uppercase text-white/40 tracking-wider print:text-black/60">Active Streak</span>
-            <span className="block font-display text-2xl font-black text-white glow-text mt-0.5 print:text-black">{profile?.streak_days || 0} Days</span>
+            <span className="block font-mono text-[9px] uppercase text-white/40 tracking-widest font-bold print:text-black/60">Active Streak</span>
+            <span className="block font-display text-2xl font-black text-white glow-text mt-0.5 print:text-black tabular-nums">{profile?.streak_days || 0} <span className="text-xs font-mono font-normal text-red-400">Days</span></span>
           </div>
         </div>
 

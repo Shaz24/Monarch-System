@@ -369,15 +369,15 @@ export default function Mind() {
         </div>
 
         {/* Header HUD */}
-        <div className="flex items-center gap-4 mb-6 relative z-10">
-          <div className="w-16 h-16 bg-void border border-accent-purple/60 glow-brain-ring flex items-center justify-center">
-            <Brain className="w-8 h-8 text-[#7B2FFF] animate-pulse" />
+        <div className="flex items-center gap-4 mb-6 relative z-10 module-header">
+          <div className="w-16 h-16 rounded-2xl bg-monarch-dim border border-monarch-glow/50 shadow-[0_0_30px_rgba(124,58,237,0.3)] flex items-center justify-center">
+            <Brain className="w-8 h-8 text-[#A78BFA] animate-pulse filter drop-shadow-[0_0_10px_rgba(167,139,250,0.6)]" />
           </div>
           <div>
-            <h1 className="font-orbitron text-4xl font-bold uppercase tracking-widest text-white">
-              Mental <span className="text-[#7B2FFF]">Fortitude</span>
+            <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text">
+              Mental <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">Fortitude</span>
             </h1>
-            <p className="font-space-mono text-sm text-white/50 tracking-widest uppercase mt-1">
+            <p className="font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5">
               Control the mind, conquer the system.
             </p>
           </div>
@@ -389,23 +389,23 @@ export default function Mind() {
           <div className="xl:col-span-1 space-y-8">
             
             {/* Monk Mode Initiator */}
-            <div className={`glass-panel p-6 relative overflow-hidden group transition-all duration-300 ${
-              shockwaveActive ? 'shockwave-effect active' : 'border-t-2 border-t-accent-purple border-accent-purple/30 animate-[pulse-border_3s_infinite]'
+            <div className={`glass-3 p-7 rounded-2xl relative overflow-hidden group transition-all duration-300 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] ${
+              shockwaveActive ? 'shockwave-effect active' : 'border-t-2 border-t-monarch-glow'
             }`}>
-              <div className="absolute inset-0 bg-accent-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-monarch/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               
-              <h2 className="font-orbitron text-xl font-bold uppercase tracking-widest mb-2 flex items-center gap-2 text-accent-purple">
-                <Lock className="w-5 h-5" />
+              <h2 className="font-display text-xl font-black uppercase tracking-widest mb-2 flex items-center gap-2 text-monarch-glow glow-text">
+                <Lock className="w-5 h-5 text-amber-400" />
                 Monk Mode
               </h2>
-              <p className="font-space-mono text-xs text-white/60 mb-6">
-                Enter total lockdown. Extreme focus protocol. Yields 1.5x XP multiplier.
+              <p className="font-mono text-xs text-white/50 mb-6">
+                Enter total lockdown. Extreme focus protocol. Yields <span className="text-amber-400 font-bold">1.5x XP multiplier</span>.
               </p>
               
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-space-mono text-xs text-white/50 uppercase tracking-widest">Duration</span>
-                  <span className="font-orbitron font-bold text-2xl text-accent-purple">{monkTarget}<span className="text-sm text-white/50 ml-1">min</span></span>
+                  <span className="font-mono text-xs text-white/40 uppercase tracking-widest font-bold">Session Duration</span>
+                  <span className="font-display font-black text-2xl text-monarch-glow tabular-nums">{monkTarget}<span className="text-sm text-white/40 ml-1 font-mono font-normal">min</span></span>
                 </div>
                 <div className="relative flex items-center h-8">
                   <input 
@@ -415,12 +415,8 @@ export default function Mind() {
                     step="10"
                     value={monkTarget}
                     onChange={(e) => setMonkTarget(parseInt(e.target.value))}
-                    className="w-full h-1.5 appearance-none cursor-pointer rounded-full bg-transparent focus:outline-none 
-                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-[#7B2FFF] [&::-webkit-slider-thumb]:to-[#b829e3] [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-white/50 [&::-webkit-slider-thumb]:shadow-[0_0_8px_#7B2FFF]
-                      [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gradient-to-r [&::-moz-range-thumb]:from-[#7B2FFF] [&::-moz-range-thumb]:to-[#b829e3] [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-white/50 [&::-moz-range-thumb]:shadow-[0_0_8px_#7B2FFF]"
-                    style={{
-                      background: `linear-gradient(to right, #7B2FFF 0%, #b829e3 ${((monkTarget - 10) / (120 - 10)) * 100}%, rgba(255,255,255,0.1) ${((monkTarget - 10) / (120 - 10)) * 100}%, rgba(255,255,255,0.1) 100%)`
-                    }}
+                    className="w-full h-2 appearance-none cursor-pointer rounded-full bg-black/50 border border-white/10 focus:outline-none 
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-[#7C3AED] [&::-webkit-slider-thumb]:to-[#EC4899] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-[0_0_12px_#7C3AED]"
                   />
                 </div>
                 {/* Tick marks & glowing active indicators */}
@@ -430,10 +426,10 @@ export default function Mind() {
                     return (
                       <div key={t} className="flex flex-col items-center">
                         <div className={`w-1 h-1 rounded-full mb-1 transition-all ${
-                          isActive ? 'bg-[#7B2FFF] shadow-[0_0_4px_#7B2FFF]' : 'bg-white/10'
+                          isActive ? 'bg-monarch-glow shadow-[0_0_4px_#A78BFA]' : 'bg-white/10'
                         }`} />
-                        <span className={`font-space-mono text-[9px] transition-colors ${
-                          monkTarget === t ? 'text-accent-purple font-bold' : 'text-white/20'
+                        <span className={`font-mono text-[9px] transition-colors ${
+                          monkTarget === t ? 'text-monarch-glow font-bold' : 'text-white/20'
                         }`}>{t}m</span>
                       </div>
                     );
@@ -446,8 +442,8 @@ export default function Mind() {
                 <button
                   type="button"
                   onClick={() => setSilence(!silence)}
-                  className={`p-3 glass-panel border flex flex-col items-center gap-1.5 transition-all text-center ${
-                    silence ? 'border-accent-purple/60 bg-accent-purple/10 text-accent-purple shadow-[0_0_12px_rgba(123,47,255,0.25)]' : 'border-white/5 text-white/50'
+                  className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-center cursor-pointer ${
+                    silence ? 'border-monarch-glow/60 bg-monarch/20 text-white shadow-[0_0_15px_rgba(124,58,237,0.3)]' : 'border-white/5 bg-white/[0.02] text-white/40 hover:bg-white/[0.05]'
                   }`}
                   data-tooltip="Silence Protocol: No Notifications"
                 >

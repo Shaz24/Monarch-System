@@ -14,11 +14,11 @@ import toast from 'react-hot-toast';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PRIORITY_CONFIG: Record<TodoPriority, { label: string; color: string; bg: string; border: string; glow: string }> = {
-  critical: { label: 'Critical', color: 'text-red-400',    bg: 'bg-red-500/15',    border: 'border-red-500/30',    glow: 'rgba(239,68,68,0.3)'   },
-  high:     { label: 'High',     color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/30', glow: 'rgba(249,115,22,0.3)'  },
-  medium:   { label: 'Medium',   color: 'text-amber-400',  bg: 'bg-amber-500/15',  border: 'border-amber-500/30',  glow: 'rgba(245,158,11,0.3)'  },
-  low:      { label: 'Low',      color: 'text-slate-400',  bg: 'bg-white/8',       border: 'border-white/10',      glow: 'rgba(100,116,139,0.2)' },
+const PRIORITY_CONFIG: Record<TodoPriority, { label: string; rank: string; color: string; bg: string; border: string; glow: string }> = {
+  critical: { label: 'Critical', rank: 'S-RANK', color: 'text-red-400',    bg: 'bg-red-500/20',    border: 'border-red-500/50',    glow: 'rgba(239,68,68,0.5)'   },
+  high:     { label: 'High',     rank: 'A-RANK', color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/40', glow: 'rgba(249,115,22,0.4)'  },
+  medium:   { label: 'Medium',   rank: 'B-RANK', color: 'text-amber-400',  bg: 'bg-amber-500/20',  border: 'border-amber-500/40',  glow: 'rgba(245,158,11,0.4)'  },
+  low:      { label: 'Low',      rank: 'C-RANK', color: 'text-slate-300',  bg: 'bg-white/10',      border: 'border-white/15',      glow: 'rgba(100,116,139,0.2)' },
 };
 
 const CATEGORY_CONFIG: Record<TodoCategory, { label: string; icon: any; color: string; bg: string }> = {
@@ -47,14 +47,12 @@ function getDueBadge(due: string, status: TodoStatus): { label: string; color: s
   const dueDate = new Date(due);
   const now = new Date();
   const diff = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff < 0) return { label: 'Overdue', color: 'text-red-400' };
-  if (diff === 0) return { label: 'Due today', color: 'text-orange-400' };
-  if (diff === 1) return { label: 'Due tomorrow', color: 'text-amber-400' };
-  if (diff <= 7) return { label: `${diff}d left`, color: 'text-cyan-400' };
+  if (diff < 0) return { label: 'Overdue', color: 'text-red-400 font-bold animate-pulse' };
+  if (diff === 0) return { label: 'Due today', color: 'text-orange-400 font-bold' };
+  if (diff === 1) return { label: 'Due tomorrow', color: 'text-amber-400 font-medium' };
+  if (diff <= 7) return { label: `${diff}d left`, color: 'text-cyan-400 font-medium' };
   return null;
 }
-
-
 
 function formatTime(minutes: number) {
   if (minutes < 60) return `${minutes}m`;
@@ -66,9 +64,11 @@ function formatTime(minutes: number) {
 function PriorityBadge({ priority }: { priority: TodoPriority }) {
   const cfg = PRIORITY_CONFIG[priority];
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-      {priority === 'critical' && <span className="w-1 h-1 rounded-full bg-red-400 animate-pulse inline-block" />}
-      {cfg.label}
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-orbitron font-black uppercase tracking-wider border ${cfg.color} ${cfg.bg} ${cfg.border} shadow-[0_0_10px_${cfg.glow}]`}>
+      {priority === 'critical' && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping inline-block" />}
+      <span>{cfg.rank}</span>
+      <span className="opacity-40">|</span>
+      <span className="font-mono-tech font-normal text-[8px]">{cfg.label}</span>
     </span>
   );
 }
@@ -489,20 +489,20 @@ function TodoCard({ todo, onComplete, onDelete, onEdit, onTogglePin, onToggleSub
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
-      whileHover={{ y: -1 }}
-      transition={{ duration: 0.25 }}
-      className={`glass-card relative overflow-hidden group transition-all duration-200 ${
-        isDone ? 'opacity-60' : ''
-      } ${todo.pinned ? 'ring-1 ring-amber-500/20' : ''}`}
-      style={todo.color_accent ? { borderColor: todo.color_accent + '30' } : {}}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.15 }}
+      className={`holo-bracket-box relative overflow-hidden group transition-all duration-150 rounded-xl ${
+        isDone ? 'opacity-50 grayscale-[0.2]' : ''
+      } ${todo.pinned ? 'ring-1 ring-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : ''}`}
+      style={todo.color_accent ? { borderColor: todo.color_accent + '50' } : {}}
     >
       {/* Priority accent bar */}
       <div
-        className="absolute top-0 left-0 w-[3px] h-full rounded-l-md"
+        className="absolute top-0 left-0 w-[4px] h-full rounded-l-md"
         style={{ background: `linear-gradient(180deg, ${todo.color_accent || (
           todo.priority === 'critical' ? '#EF4444' :
           todo.priority === 'high' ? '#F97316' :
-          todo.priority === 'medium' ? '#F59E0B' : '#475569'
+          todo.priority === 'medium' ? '#F59E0B' : '#64748B'
         )}, transparent)` }}
       />
 
@@ -513,23 +513,23 @@ function TodoCard({ todo, onComplete, onDelete, onEdit, onTogglePin, onToggleSub
           <button
             onClick={isDone ? undefined : onComplete}
             disabled={isDone}
-            className={`shrink-0 mt-0.5 transition-all ${isDone ? 'cursor-default' : 'hover:scale-110'}`}
+            className={`shrink-0 mt-0.5 transition-all ${isDone ? 'cursor-default' : 'hover:scale-110 active:scale-95'}`}
           >
             {isDone
-              ? <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              ? <CheckCircle2 className="w-5 h-5 text-emerald-400 filter drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
               : todo.status === 'in-progress'
                 ? <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                    <Circle className="w-5 h-5 text-cyan-400" />
+                    <Circle className="w-5 h-5 text-cyan-400 filter drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
                   </motion.div>
-                : <Circle className="w-5 h-5 text-white/20 hover:text-monarch-glow transition-colors" />
+                : <Circle className="w-5 h-5 text-white/30 hover:text-cyan-300 transition-colors" />
             }
           </button>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <p className={`font-body font-medium text-sm leading-snug ${isDone ? 'line-through text-white/40' : 'text-white/90'}`}>
-                {todo.pinned && <Pin className="w-3 h-3 text-amber-400 inline mr-1 mb-0.5" />}
+              <p className={`font-rajdhani font-bold text-base leading-snug tracking-wide ${isDone ? 'line-through text-white/40' : 'text-white'}`}>
+                {todo.pinned && <Pin className="w-3.5 h-3.5 text-amber-400 inline mr-1.5 mb-0.5" />}
                 {todo.title}
               </p>
 
@@ -680,23 +680,23 @@ function TodoCard({ todo, onComplete, onDelete, onEdit, onTogglePin, onToggleSub
 
 function StatsBar({ stats }: { stats: ReturnType<typeof useTodos>['stats'] }) {
   const items = [
-    { label: 'Total',       value: stats.total,      icon: Inbox,        color: 'text-white/60' },
-    { label: 'Active',      value: stats.active,     icon: Circle,       color: 'text-white/70' },
-    { label: 'In Progress', value: stats.inProgress, icon: RefreshCw,    color: 'text-cyan-400' },
-    { label: 'Completed',   value: stats.done,       icon: CheckCircle2, color: 'text-emerald-400' },
-    { label: 'Overdue',     value: stats.overdue,    icon: AlertTriangle,color: stats.overdue > 0 ? 'text-red-400' : 'text-white/25' },
-    { label: "Today's XP",  value: stats.todayXp,    icon: Zap,          color: 'text-amber-400' },
+    { label: 'Total Quests', value: stats.total, icon: Inbox, color: 'text-white/80', bg: 'bg-white/[0.03]', border: 'border-white/10' },
+    { label: 'Active', value: stats.active, icon: Circle, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
+    { label: 'In Progress', value: stats.inProgress, icon: RefreshCw, color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+    { label: 'Completed', value: stats.done, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+    { label: 'Overdue', value: stats.overdue, icon: AlertTriangle, color: stats.overdue > 0 ? 'text-red-400' : 'text-white/30', bg: stats.overdue > 0 ? 'bg-red-500/10' : 'bg-white/[0.02]', border: stats.overdue > 0 ? 'border-red-500/30' : 'border-white/5' },
+    { label: "Today's XP", value: stats.todayXp, suffix: ' XP', icon: Zap, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
   ];
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 stagger-grid">
       {items.map(item => {
         const Icon = item.icon;
         return (
-          <div key={item.label} className="glass-card p-3 flex flex-col items-center gap-1 relative overflow-hidden">
-            <Icon className={`w-4 h-4 ${item.color}`} />
-            <span className={`font-display text-lg font-black ${item.color}`}>{item.value}</span>
-            <span className="font-mono text-[8px] text-white/25 uppercase tracking-widest">{item.label}</span>
+          <div key={item.label} className={`glass-2 p-3.5 flex flex-col items-center gap-1.5 relative overflow-hidden rounded-xl border ${item.border} ${item.bg} shadow-md transition-all hover:scale-105`}>
+            <Icon className={`w-4 h-4 ${item.color} filter drop-shadow-[0_0_6px_currentColor]`} />
+            <span className={`font-display text-xl font-black ${item.color} tabular-nums`}>{item.value}{item.suffix || ''}</span>
+            <span className="font-mono text-[8px] text-white/40 uppercase tracking-widest font-bold">{item.label}</span>
           </div>
         );
       })}
@@ -837,45 +837,44 @@ export default function TodoPage() {
       className="p-4 md:p-8 max-w-[1200px] mx-auto w-full space-y-6"
     >
       {/* Ambient orbs */}
-      <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-monarch/4 rounded-full blur-[100px] pointer-events-none -z-10" />
-      <div className="absolute bottom-1/3 right-1/5 w-[250px] h-[250px] bg-cyan-500/3 rounded-full blur-[80px] pointer-events-none -z-10" />
+      <div className="ambient-orb top-1/4 left-1/4 w-[350px] h-[350px] bg-monarch/5 -z-10" />
+      <div className="ambient-orb bottom-1/3 right-1/5 w-[300px] h-[300px] bg-emerald-500/4 -z-10" />
 
       {/* ── Page Header ── */}
-      <div className="glass-3 p-6 md:p-8 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
-        <div className="absolute inset-0 scanline-overlay opacity-10" />
+      <div className="holo-bracket-box p-6 md:p-8 relative overflow-hidden">
+        <div className="scan-sweep-beam" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              <span className="font-mono text-[10px] text-emerald-400/70 uppercase tracking-[0.25em] font-bold">Task Commander</span>
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 animate-pulse" />
+              <span className="font-mono-tech text-[10px] text-emerald-400 uppercase tracking-[0.25em] font-bold">TACTICAL DIRECTIVE HUB</span>
             </div>
-            <h1 className="font-display text-2xl md:text-3xl font-black uppercase tracking-wider text-white glow-text">
-              Quest Board
+            <h1 className="font-orbitron text-2xl md:text-3xl font-black uppercase tracking-wider text-white glow-text-monarch">
+              HUNTER QUEST BOARD
             </h1>
-            <p className="font-mono text-xs text-white/35 mt-1 uppercase tracking-wider">
-              {stats.active + stats.inProgress} active • {stats.done} completed • {stats.todayXp} XP earned today
+            <p className="font-mono-tech text-xs text-white/50 mt-1 uppercase tracking-wider">
+              {stats.active + stats.inProgress} active • {stats.done} completed • <span className="text-amber-400 font-bold">+{stats.todayXp} XP</span> EARNED TODAY
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             {stats.done > 0 && (
               <button
                 onClick={archiveDone}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/50 hover:text-white/80 hover:bg-white/8 transition-all text-xs font-mono"
+                className="btn-tech-outline flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-white/70 hover:text-white text-xs font-mono-tech"
               >
-                <Archive className="w-3.5 h-3.5" />
+                <Archive className="w-4 h-4 text-cyan-400" />
                 Archive Done ({stats.done})
               </button>
             )}
             <button
               onClick={() => { setEditingTodo(null); setIsModalOpen(true); }}
-              className="btn-monarch flex items-center gap-2 py-2.5 px-5 text-sm"
+              className="btn-hunter flex items-center gap-2 py-3 px-5 text-xs font-bold tracking-widest rounded-xl"
             >
               <Plus className="w-4 h-4" />
-              New Task
-              <kbd className="font-mono text-[9px] bg-black/20 px-1.5 py-0.5 rounded-md border border-white/10">N</kbd>
+              NEW DIRECTIVE
+              <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded bg-black/50 border border-white/10 font-mono-tech text-[8px] text-white/60 ml-1">N</kbd>
             </button>
           </div>
         </div>
@@ -885,19 +884,18 @@ export default function TodoPage() {
       <StatsBar stats={stats} />
 
       {/* ── Quick-add bar ── */}
-      <div className="glass-card flex items-center gap-3 p-3 px-4">
-        <Plus className="w-4 h-4 text-white/30 shrink-0" />
+      <div className="holo-bracket-box flex items-center gap-3 p-3.5 px-5 rounded-xl transition-all input-tech-glow">
+        <Plus className="w-4 h-4 text-emerald-400 shrink-0" />
         <input
           type="text"
           value={quickInput}
           onChange={e => setQuickInput(e.target.value)}
           onKeyDown={handleQuickAdd}
-          placeholder="Quick add... press Enter to create with defaults  (or press N for full form)"
-          className="flex-1 bg-transparent border-none outline-none text-sm text-white/80 placeholder:text-white/20 font-body"
-          style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, borderRadius: 0 }}
+          placeholder="Quick add directive... type objective and press Enter (or press 'N' for tactical modal)"
+          className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30 font-chakra"
         />
         {quickInput && (
-          <span className="font-mono text-[9px] text-white/25">↵ Enter</span>
+          <kbd className="px-2 py-1 rounded bg-black/60 border border-white/15 font-mono-tech text-[10px] text-cyan-300">↵ Enter</kbd>
         )}
       </div>
 

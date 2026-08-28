@@ -93,61 +93,70 @@ export const TaskRow = memo(({
     return `${m}:${s}`;
   };
 
-  const difficultyColors: Record<string, string> = {
-    'S': 'text-[#FFD700] border-[#FFD700]',
-    'A': 'text-accent-purple border-accent-purple',
-    'B': 'text-accent-blue border-accent-blue',
-    'C': 'text-[#4ade80] border-[#4ade80]',
-    'D': 'text-white border-white',
-    'E': 'text-white/50 border-white/50',
+  const difficultyColors: Record<string, { badge: string; glow: string }> = {
+    'S': { badge: 'text-[#F59E0B] bg-amber-500/10 border-amber-500/30', glow: 'shadow-[0_0_10px_rgba(245,158,11,0.3)]' },
+    'A': { badge: 'text-purple-400 bg-purple-500/10 border-purple-500/30', glow: 'shadow-[0_0_10px_rgba(167,139,250,0.3)]' },
+    'B': { badge: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30', glow: 'shadow-[0_0_10px_rgba(6,182,212,0.3)]' },
+    'C': { badge: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30', glow: 'shadow-[0_0_10px_rgba(16,185,129,0.3)]' },
+    'D': { badge: 'text-white/60 bg-white/5 border-white/10', glow: '' },
+    'E': { badge: 'text-white/40 bg-white/[0.02] border-white/5', glow: '' },
   };
+
+  const diffCfg = difficultyColors[task.difficulty] || difficultyColors['D'];
 
   return (
     <motion.div 
       layout
-      className={`glass-panel border-l-4 transition-colors duration-300 ${completed ? 'border-l-accent-purple opacity-60' : 'border-l-accent-blue hover:shadow-neon-blue'}`}
+      className={`glass-2 border transition-all duration-300 rounded-xl overflow-hidden ${
+        completed 
+          ? 'border-emerald-500/20 bg-emerald-500/[0.03] opacity-70' 
+          : 'border-white/[0.08] hover:border-monarch-glow/30 hover:shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+      }`}
     >
-      <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => setExpanded(!expanded)}>
-        <div className="flex items-center gap-4 flex-1">
+      <div className="p-4 flex items-center justify-between cursor-pointer group" onClick={() => setExpanded(!expanded)}>
+        <div className="flex items-center gap-3.5 flex-1 min-w-0">
           <button 
             onClick={(e) => { e.stopPropagation(); handleComplete(e); }}
-            className="text-accent-blue hover:text-accent-purple transition-colors"
+            className="text-cyan-400 hover:text-emerald-400 transition-colors p-1 cursor-pointer flex-shrink-0"
           >
-            {completed ? <CheckSquare className="w-6 h-6" /> : <Square className="w-6 h-6" />}
+            {completed 
+              ? <CheckSquare className="w-5 h-5 text-emerald-400 filter drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]" /> 
+              : <Square className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+            }
           </button>
           
-          <div className="font-space-mono text-sm tracking-widest text-white/50 w-16">
+          <div className="font-mono text-xs font-bold tracking-wider text-cyan-400/90 bg-cyan-950/40 border border-cyan-500/20 px-2.5 py-1 rounded-lg flex-shrink-0 shadow-inner">
             {task.time_slot}
           </div>
           
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {isEditing ? (
               <div className="flex flex-col gap-2" onClick={e => e.stopPropagation()}>
                 <input 
                   type="text" 
                   value={editTime}
                   onChange={e => setEditTime(e.target.value)}
-                  className="bg-void border border-white/20 p-1 text-white font-space-mono text-sm w-24"
+                  className="bg-black/50 border border-white/20 p-1.5 rounded-lg text-white font-mono text-xs w-24"
                 />
                 <input 
                   type="text" 
                   value={editTitle}
                   onChange={e => setEditTitle(e.target.value)}
-                  className="bg-void border border-white/20 p-1 text-white font-archivo-narrow text-lg w-full"
+                  className="bg-black/50 border border-white/20 p-1.5 rounded-lg text-white font-display text-sm w-full"
                 />
               </div>
             ) : (
-              <h3 className={`font-archivo-narrow text-lg ${completed ? 'line-through text-white/50' : 'text-white'}`}>
+              <h3 className={`font-display text-sm md:text-base font-semibold truncate transition-colors ${completed ? 'line-through text-white/40' : 'text-white/90 group-hover:text-white'}`}>
                 {task.title}
               </h3>
             )}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
-            <span className={`px-2 py-1 text-xs font-space-mono font-bold border ${difficultyColors[task.difficulty]} rounded-none`}>
+          <div className="hidden sm:flex items-center gap-2.5 flex-shrink-0">
+            <span className={`px-2.5 py-0.5 text-[10px] font-mono font-black border rounded-md uppercase tracking-wider ${diffCfg.badge} ${diffCfg.glow}`}>
               {task.difficulty}
             </span>
-            <span className="px-2 py-1 text-xs font-space-mono bg-accent-blue/10 text-accent-blue">
+            <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md">
               +{task.xp_reward} XP
             </span>
             {isEditing ? (
@@ -157,7 +166,7 @@ export const TaskRow = memo(({
                   setIsEditing(false);
                   if (onUpdate) onUpdate({ title: editTitle, time_slot: editTime });
                 }}
-                className="text-accent-blue hover:text-white px-2 text-xs font-space-mono"
+                className="btn-success py-1 px-3 text-[10px] rounded-lg cursor-pointer"
               >
                 SAVE
               </button>
@@ -167,7 +176,7 @@ export const TaskRow = memo(({
                   e.stopPropagation();
                   setIsEditing(true);
                 }}
-                className="text-white/30 hover:text-white px-2 text-xs font-space-mono"
+                className="text-white/30 hover:text-white px-2 py-1 text-xs font-mono rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
               >
                 EDIT
               </button>
@@ -178,14 +187,14 @@ export const TaskRow = memo(({
                   e.stopPropagation();
                   setIsDeleteConfirmOpen(true);
                 }}
-                className="text-red-500/50 hover:text-red-500 px-2 text-xs font-space-mono"
+                className="text-red-400/40 hover:text-red-400 px-2 py-1 text-xs font-mono rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
               >
                 DEL
               </button>
             )}
           </div>
 
-          <ChevronDown className={`w-5 h-5 text-white/50 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-4 h-4 text-white/40 transition-transform duration-300 ${expanded ? 'rotate-180 text-white' : ''}`} />
         </div>
       </div>
 
@@ -195,47 +204,48 @@ export const TaskRow = memo(({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-white/5"
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden border-t border-white/[0.06] bg-black/20"
           >
-            <div className="p-4 bg-void/30 flex flex-col md:flex-row gap-6">
+            <div className="p-5 flex flex-col md:flex-row gap-5">
               
               {/* Pomodoro Timer */}
-              <div className="flex-1 glass-panel p-4 border border-white/5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Clock className="w-4 h-4 text-accent-purple" />
-                  <span className="font-space-mono text-xs uppercase text-accent-purple tracking-widest">
-                    {isBreak ? 'Rest Phase' : 'Focus Phase'}
+              <div className="flex-1 glass-3 p-5 rounded-xl border border-white/[0.08] relative overflow-hidden">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="w-4 h-4 text-monarch-glow" />
+                  <span className="font-mono text-xs uppercase text-monarch-glow tracking-widest font-bold">
+                    {isBreak ? 'Rest Cycle' : 'Deep Focus Interval'}
                   </span>
                 </div>
                 
-                <div className="text-center mb-6">
-                  <span className="font-orbitron text-5xl font-bold neon-text-blue tracking-widest">
+                <div className="text-center my-4">
+                  <span className="font-display text-4xl md:text-5xl font-black text-cyan-400 glow-text tracking-wider tabular-nums">
                     {formatTime(timeLeft)}
                   </span>
                 </div>
                 
-                <div className="flex justify-center gap-4">
-                  <button onClick={toggleTimer} className="btn-primary py-2 px-4 rounded-none flex items-center gap-2">
-                    {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    {isActive ? 'PAUSE' : 'START'}
+                <div className="flex justify-center gap-3">
+                  <button onClick={toggleTimer} className="btn-monarch py-2 px-5 text-xs rounded-xl flex items-center gap-2">
+                    {isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                    {isActive ? 'PAUSE' : 'START FOCUS'}
                   </button>
-                  <button onClick={resetTimer} className="btn-ghost py-2 px-4 rounded-none">
-                    <RotateCcw className="w-4 h-4" />
+                  <button onClick={resetTimer} className="btn-ghost py-2 px-4 text-xs rounded-xl">
+                    <RotateCcw className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
               {/* Notes */}
-              <div className="flex-1 glass-panel p-4 border border-white/5 flex flex-col">
+              <div className="flex-1 glass-3 p-5 rounded-xl border border-white/[0.08] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
-                  <PenTool className="w-4 h-4 text-white/50" />
-                  <span className="font-space-mono text-xs uppercase text-white/50 tracking-widest">Quest Notes</span>
+                  <PenTool className="w-4 h-4 text-white/40" />
+                  <span className="font-mono text-xs uppercase text-white/50 tracking-widest font-bold">Tactical Notes</span>
                 </div>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full flex-1 bg-transparent border-none resize-none focus:ring-0 text-white font-archivo-narrow p-0 text-sm"
-                  placeholder="Record tactical data here..."
+                  className="w-full flex-1 bg-black/30 border border-white/5 rounded-lg p-3 resize-none focus:outline-none focus:border-monarch-glow/40 text-white font-mono text-xs placeholder:text-white/20 min-h-[90px]"
+                  placeholder="Record objective data, roadblocks, or notes..."
                 />
               </div>
 
@@ -246,9 +256,9 @@ export const TaskRow = memo(({
 
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
-        title="DELETE QUEST DIRECTIVE"
-        message={`Are you sure you want to delete "${task.title}"? This directive and its XP value will be permanently removed from your log.`}
-        confirmLabel="DELETE DIRECTIVE"
+        title="DELETE DIRECTIVE"
+        message={`Are you sure you want to delete "${task.title}"? This directive will be permanently removed.`}
+        confirmLabel="CONFIRM DELETE"
         cancelLabel="ABORT"
         onConfirm={() => {
           setIsDeleteConfirmOpen(false);

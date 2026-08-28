@@ -314,17 +314,19 @@ export default function Antigravity() {
 
         {/* ── MODULE HEADER ── */}
         <motion.div
-          className="ag-header"
+          className="ag-header module-header"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <div>
-            <h1 className="ag-title">Antigravity</h1>
-            <p className="ag-subtitle">// GRAVITATIONAL OVERRIDE ACTIVE</p>
+            <h1 className="ag-title font-display text-4xl md:text-5xl font-black uppercase tracking-widest text-white glow-text">
+              Anti<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">gravity</span>
+            </h1>
+            <p className="ag-subtitle font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5">// GRAVITATIONAL OVERRIDE ACTIVE</p>
           </div>
-          <div className="ag-header-badge">
-            <span className="ag-pulse-dot" />
+          <div className="ag-header-badge font-mono text-xs font-bold tracking-widest px-4 py-2 rounded-full border border-purple-500/30 bg-purple-950/40 text-purple-300 shadow-[0_0_15px_rgba(167,139,250,0.25)]">
+            <span className="ag-pulse-dot bg-cyan-400" />
             ZERO-G MODE
           </div>
         </motion.div>

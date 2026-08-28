@@ -711,34 +711,38 @@ export default function Fitness() {
       className="p-4 md:p-10 max-w-[1400px] mx-auto w-full space-y-8"
     >
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 flex items-center justify-center bg-red-950/20 border border-red-500/40">
-            <Activity className="w-7 h-7 text-red-500" />
+      <div className="holo-bracket-box p-6 md:p-8 rounded-2xl relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="scan-sweep-beam" />
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-red-500/15 border border-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.35)]">
+            <Activity className="w-7 h-7 text-red-500 animate-pulse" />
           </div>
           <div>
-            <h1 className="font-orbitron text-3xl md:text-4xl font-bold uppercase tracking-widest text-white">
-              Physical <span className="text-red-500">Conditioning</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono-tech text-[10px] text-red-400 uppercase tracking-[0.25em] font-bold">PHYSICAL PROTOCOL • HUNTER VESSEL</span>
+            </div>
+            <h1 className="font-orbitron text-3xl md:text-4xl font-black uppercase tracking-wider text-white glow-text-danger">
+              PHYSICAL <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">CONDITIONING</span>
             </h1>
-            <p className="font-space-mono text-xs text-white/40 tracking-widest uppercase mt-1">
-              Build the vessel to wield the aura.
+            <p className="font-chakra text-xs text-white/50 tracking-wider uppercase mt-0.5">
+              Build the vessel to wield the shadow monarch aura.
             </p>
           </div>
         </div>
         
-        <div className="px-4 py-2 text-center bg-red-950/10 border border-red-500/30">
-          <p className="font-space-mono text-[10px] text-white/30 uppercase tracking-widest">Current Stage</p>
-          <p className="font-orbitron text-sm font-bold text-red-500 uppercase mt-0.5">{stage.name}</p>
+        <div className="px-5 py-2.5 rounded-xl text-center bg-red-950/40 border border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.2)] relative z-10">
+          <p className="font-mono-tech text-[9px] text-white/50 uppercase tracking-widest font-bold">Current Stage</p>
+          <p className="font-orbitron text-sm font-black text-red-400 uppercase mt-0.5 tracking-wider">{stage.name}</p>
         </div>
       </div>
 
       {/* OVERTRAINING COOLDOWN WARNING */}
       {isCooldownWarningActive && (
-        <div className="glass-panel p-4 border-l-4 border-red-600 bg-red-950/20 flex items-center gap-4 animate-pulse">
+        <div className="holo-bracket-box p-4 rounded-xl border-l-4 border-red-600 bg-red-950/30 flex items-center gap-4 danger-aura-pulse">
           <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
           <div>
             <h4 className="font-orbitron text-xs font-bold text-red-500 uppercase tracking-widest">DANGER: OVERTRAINING DETECTED</h4>
-            <p className="font-space-mono text-[10px] text-white/60 uppercase mt-0.5">
+            <p className="font-mono-tech text-[10px] text-white/70 uppercase mt-0.5">
               3 Strength logs in under 24 hours. Initiate active rest cooldown to protect aura recovery!
             </p>
           </div>
@@ -747,22 +751,23 @@ export default function Fitness() {
 
       {/* LIFT PR CELEBRATION BANNER */}
       {recentPr && (
-        <div className="glass-panel p-5 border border-green-500/30 bg-green-950/20 flex items-center justify-between gap-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-[40px] pointer-events-none" />
+        <div className="holo-bracket-box p-5 rounded-2xl border border-green-500/50 bg-green-950/20 flex items-center justify-between gap-4 relative overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[40px] pointer-events-none" />
           <div className="flex items-center gap-4">
-            <Trophy className="w-8 h-8 text-gold animate-bounce" />
+            <Trophy className="w-8 h-8 text-amber-400 animate-bounce" />
             <div>
-              <h4 className="font-orbitron text-sm font-black text-green-400 uppercase tracking-wider">
+              <h4 className="font-orbitron text-sm font-black text-green-400 uppercase tracking-wider glow-text-gold">
                 PERSONAL RECORD ESTABLISHED!
               </h4>
-              <p className="font-space-mono text-xs text-white/80 mt-1">
-                You successfully conquered the <span className="font-bold text-white">{recentPr.exercise}</span> set at <span className="font-bold text-green-400">{recentPr.weight}kg</span>!
+              <p className="font-chakra text-xs text-white mt-1">
+                You successfully conquered the <span className="font-bold text-amber-400">{recentPr.exercise}</span> set at <span className="font-bold text-green-400">{recentPr.weight}kg</span>!
               </p>
             </div>
           </div>
           <button 
             onClick={() => setRecentPr(null)}
-            className="px-3 py-1 bg-green-950/40 border border-green-500/20 text-green-400 text-[10px] font-space-mono uppercase tracking-widest hover:bg-green-950/60"
+            className="btn-hunter py-1.5 px-4 text-xs font-mono-tech tracking-widest cursor-pointer"
+            style={{ background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', borderColor: 'rgba(110,231,183,0.5)' }}
           >
             Acknowledge
           </button>
@@ -772,16 +777,17 @@ export default function Fitness() {
       {/* STATS SUMMARY ROW */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Sessions', value: totalSessions, icon: <Dumbbell className="w-4 h-4" />, color: '#ff5a00' },
-          { label: 'Total Minutes',  value: `${totalMinutes}m`, icon: <Timer className="w-4 h-4" />, color: '#00D4FF' },
-          { label: 'Total XP',       value: totalXP.toLocaleString(), icon: <Zap className="w-4 h-4" />, color: '#7B2FFF' },
-          { label: 'This Week',      value: `${thisWeekSessions}/7`, icon: <Flame className="w-4 h-4" />, color: '#ff003c' },
+          { label: 'Total Sessions', value: totalSessions, icon: <Dumbbell className="w-4 h-4 text-orange-400" />, color: '#ff5a00' },
+          { label: 'Total Minutes',  value: `${totalMinutes}m`, icon: <Timer className="w-4 h-4 text-cyan-400" />, color: '#00D4FF' },
+          { label: 'Total XP',       value: totalXP.toLocaleString(), icon: <Zap className="w-4 h-4 text-purple-400" />, color: '#7B2FFF' },
+          { label: 'This Week',      value: `${thisWeekSessions}/7`, icon: <Flame className="w-4 h-4 text-red-400" />, color: '#ff003c' },
         ].map(s => (
-          <div key={s.label} className="p-4 bg-black/60 border border-white/[0.03]" style={{ borderLeft: `3px solid ${s.color}` }}>
-            <div className="flex items-center gap-2 mb-1" style={{ color: s.color }}>{s.icon}
-              <span className="font-space-mono text-[9px] uppercase tracking-widest text-white/30">{s.label}</span>
+          <div key={s.label} className="holo-bracket-box p-4 rounded-xl transition-all hover:scale-[1.02]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-rajdhani text-xs font-bold uppercase tracking-wider text-white/60">{s.label}</span>
+              {s.icon}
             </div>
-            <p className="font-orbitron text-2xl font-bold text-white mt-0.5">{s.value}</p>
+            <p className="font-orbitron text-xl font-black text-white glow-text-monarch">{s.value}</p>
           </div>
         ))}
       </div>
@@ -790,54 +796,55 @@ export default function Fitness() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* Workout Countdown Timer */}
-        <div className="glass-panel p-5 border-t-2 border-t-red-500 flex flex-col items-center justify-between gap-4">
+        <div className="glass-2 p-6 rounded-2xl border-t-2 border-t-red-500 border border-white/[0.08] flex flex-col items-center justify-between gap-4 shadow-lg">
           <div className="flex items-center justify-between w-full">
-            <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <h3 className="font-display text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
               <Timer className="w-4 h-4 text-red-500" /> Session Timer
             </h3>
             <select
               value={timerDuration}
               onChange={e => { setTimerDuration(parseInt(e.target.value)); setTimerSeconds(0); setTimerRunning(false); }}
-              className="text-[9px] font-mono bg-black/40 border border-white/10 text-white/70 px-2 py-1 rounded"
+              className="text-[10px] font-mono bg-black/50 border border-white/15 text-white/80 px-2.5 py-1 rounded-lg focus:outline-none"
             >
               {[15,30,45,60,90].map(m => <option key={m} value={m*60}>{m} MIN</option>)}
             </select>
           </div>
 
           {/* Circular timer */}
-          <div className="relative w-28 h-28">
+          <div className="relative w-32 h-32">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
               <circle
                 cx="50" cy="50" r="44" fill="none"
-                stroke={timerPercent >= 100 ? '#22c55e' : '#EF4444'}
+                stroke={timerPercent >= 100 ? '#10B981' : '#EF4444'}
                 strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={276.46}
                 strokeDashoffset={276.46 * (1 - timerPercent / 100)}
                 style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease' }}
+                className="filter drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-mono text-xl font-bold text-white">{timerDisplay}</span>
-              <span className="font-mono text-[8px] text-white/30 uppercase">{timerRunning ? 'Running' : 'Paused'}</span>
+              <span className="font-display text-2xl font-black text-white glow-text tabular-nums">{timerDisplay}</span>
+              <span className="font-mono text-[8px] text-white/40 uppercase font-bold mt-0.5">{timerRunning ? 'ACTIVE' : 'PAUSED'}</span>
             </div>
           </div>
 
           <div className="flex gap-2 w-full">
             <button
               onClick={() => setTimerRunning(r => !r)}
-              className={`flex-1 py-2 text-xs font-mono font-bold border rounded transition-all ${timerRunning ? 'bg-amber-950/20 border-amber-500/30 text-amber-400' : 'bg-red-950/20 border-red-500/30 text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]'}`}
+              className={`flex-1 py-2.5 text-xs font-mono font-bold rounded-xl transition-all cursor-pointer ${timerRunning ? 'bg-amber-950/30 border border-amber-500/40 text-amber-400' : 'btn-danger shadow-[0_0_15px_rgba(239,68,68,0.3)]'}`}
             >
-              {timerRunning ? 'PAUSE' : 'START'}
+              {timerRunning ? 'PAUSE' : 'START SESSION'}
             </button>
-            <button onClick={() => { setTimerSeconds(0); setTimerRunning(false); }} className="px-3 py-2 text-xs font-mono border border-white/10 text-white/40 rounded hover:text-white/70 transition-all">RESET</button>
+            <button onClick={() => { setTimerSeconds(0); setTimerRunning(false); }} className="btn-ghost px-4 py-2.5 text-xs font-mono rounded-xl cursor-pointer">RESET</button>
           </div>
         </div>
 
         {/* Rest Timer */}
-        <div className="glass-panel p-5 border-t-2 border-t-cyan-500 flex flex-col gap-4">
-          <h3 className="font-orbitron text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+        <div className="glass-2 p-6 rounded-2xl border-t-2 border-t-cyan-500 border border-white/[0.08] flex flex-col gap-4 shadow-lg">
+          <h3 className="font-display text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Timer className="w-4 h-4 text-cyan-400" /> Rest Timer
           </h3>
           
@@ -847,7 +854,7 @@ export default function Fitness() {
               <button
                 key={s}
                 onClick={() => setRestPreset(s)}
-                className={`py-1.5 text-[10px] font-mono font-bold rounded border transition-all ${restPreset === s ? 'bg-cyan-950/30 border-cyan-400/50 text-cyan-400' : 'border-white/10 text-white/30 hover:text-white/60'}`}
+                className={`py-1.5 text-[10px] font-mono font-bold rounded-lg border transition-all cursor-pointer ${restPreset === s ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'border-white/10 text-white/40 hover:text-white/80 hover:bg-white/5'}`}
               >
                 {s}s
               </button>

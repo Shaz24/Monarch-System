@@ -107,67 +107,66 @@ export default function Profile() {
       className="p-4 md:p-12 max-w-[1200px] mx-auto w-full space-y-8 relative"
     >
       {/* Header zone with rotating avatar border */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10 module-header">
         <div className="flex items-center gap-5">
           
           {/* Conic Gradient rotating border avatar wrapper */}
           <div className="relative group/avatar cursor-pointer" onClick={() => navigate('/edit-profile')}>
             <div 
-              className="absolute -inset-0.5 rounded-full opacity-70 blur-sm transition duration-500 group-hover/avatar:opacity-100"
+              className="absolute -inset-1 rounded-full opacity-70 blur-sm transition duration-500 group-hover/avatar:opacity-100 border-glow-cycle"
               style={{
                 background: 'conic-gradient(from var(--angle), #00D4FF, #7B2FFF, #ff5a00, #00D4FF)',
-                animation: 'spin-border 3s linear infinite'
               }}
             />
-            <div className="w-20 h-20 bg-void border border-accent-blue/30 rounded-full flex items-center justify-center overflow-hidden relative z-10">
+            <div className="w-20 h-20 bg-void border border-cyan-400/40 rounded-full flex items-center justify-center overflow-hidden relative z-10 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover rounded-full" />
               ) : (
-                <User className="w-10 h-10 text-accent-blue" />
+                <User className="w-10 h-10 text-cyan-400" />
               )}
               {/* EDIT Overlay on hover */}
               <div className="absolute inset-0 bg-void/80 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                <span className="font-space-mono text-[10px] text-accent-blue font-bold tracking-widest">EDIT</span>
+                <span className="font-mono text-[10px] text-cyan-300 font-bold tracking-widest">EDIT</span>
               </div>
             </div>
           </div>
 
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="font-orbitron text-3xl md:text-4xl font-bold uppercase tracking-widest text-white">
+              <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text">
                 {profile?.display_name || profile?.username || 'Player_01'}
               </h1>
               
               {/* Custom Hexagonal Rank Badge */}
               <div 
-                className={`w-8 h-9 flex items-center justify-center relative ${rankStyle.glow} select-none`}
+                className={`w-9 h-10 flex items-center justify-center relative ${rankStyle.glow} select-none`}
                 data-tooltip={`${rank}-Class Rank Rating`}
               >
                 <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
                   <polygon points="50,3 93,25 93,75 50,97 7,75 7,25" fill="#080D1A" stroke={rankStyle.fill} strokeWidth="6" />
                 </svg>
-                <span className="font-orbitron font-black text-sm z-10" style={{ color: rankStyle.fill }}>
+                <span className="font-display font-black text-base z-10" style={{ color: rankStyle.fill }}>
                   {rank}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-3 mt-1.5">
-              <span className="font-space-mono text-xs text-accent-blue tracking-widest uppercase font-bold">
+              <span className="font-mono text-xs text-cyan-400 tracking-widest uppercase font-bold">
                 {rank}-Class Hunter
               </span>
               <span className="text-white/20">•</span>
-              <span className="font-space-mono text-xs text-white/40">@{profile?.username || '—'}</span>
+              <span className="font-mono text-xs text-white/40">@{profile?.username || '—'}</span>
             </div>
             {profile?.bio && (
-              <p className="font-archivo-narrow text-white/60 mt-2 text-sm max-w-sm">{profile.bio}</p>
+              <p className="font-body text-white/70 mt-2 text-sm max-w-sm leading-relaxed">{profile.bio}</p>
             )}
           </div>
         </div>
         
         <button 
           onClick={handleLogout}
-          className="btn-ghost flex items-center gap-2 px-4 py-2 text-sm text-[#ff5a00] hover:text-void hover:bg-[#ff5a00] border-[#ff5a00] active:scale-95 transition-transform"
+          className="btn-danger flex items-center gap-2 px-5 py-2.5 text-xs font-mono tracking-widest uppercase active:scale-95 transition-transform rounded-xl cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           Disconnect
@@ -175,24 +174,19 @@ export default function Profile() {
       </div>
 
       {/* XP Progress Bar with Shimmer Effect and Arrow marker */}
-      <div className="glass-panel p-5 border border-white/5 relative z-10 bg-void/50">
-        <div className="flex justify-between font-space-mono text-xs text-white/50 uppercase tracking-widest mb-3">
-          <span>System XP — Level {profile?.current_level ?? 1}</span>
-          <span>{profile?.current_xp ?? 0} / {(profile?.current_level ?? 1) * 100} XP</span>
+      <div className="glass-2 p-6 rounded-2xl border border-white/[0.08] relative z-10 shadow-lg">
+        <div className="flex justify-between font-mono text-xs text-white/50 uppercase tracking-widest mb-3">
+          <span className="font-bold text-white">System XP — Level {profile?.current_level ?? 1}</span>
+          <span className="text-cyan-400 font-bold tabular-nums">{profile?.current_xp ?? 0} / {(profile?.current_level ?? 1) * 100} XP</span>
         </div>
-        <div className="relative h-3.5 bg-white/5 rounded overflow-hidden flex items-center border border-white/10">
+        <div className="relative h-4 bg-black/60 rounded-full overflow-hidden flex items-center border border-white/10 shimmer-bar">
           
           {/* Shimmering fill bar */}
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${xpPercent}%` }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
-            className="h-full bg-gradient-to-r from-accent-blue to-[#7B2FFF] relative shadow-neon-blue"
-            style={{
-              backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 2s infinite linear'
-            }}
+            className="h-full bg-gradient-to-r from-monarch via-purple-400 to-cyan-400 rounded-full shadow-[0_0_15px_rgba(124,58,237,0.5)]"
           />
 
           {/* Glowing cursor arrow marker at the end of the XP percentage */}
@@ -201,11 +195,11 @@ export default function Profile() {
               className="absolute h-full flex items-center z-10 pointer-events-none transition-all duration-300"
               style={{ left: `calc(${xpPercent}% - 5px)` }}
             >
-              <span className="text-[10px] text-[#00D4FF] filter drop-shadow-[0_0_4px_#00D4FF] animate-pulse">▶</span>
+              <span className="text-[10px] text-cyan-300 filter drop-shadow-[0_0_6px_#00D4FF] animate-pulse">▶</span>
             </div>
           )}
         </div>
-        <p className="font-space-mono text-[10px] text-white/30 mt-2">{xpPercent}% to next level</p>
+        <p className="font-mono text-[10px] text-white/40 mt-2 font-bold">{xpPercent}% progress to Level {(profile?.current_level ?? 1) + 1}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">

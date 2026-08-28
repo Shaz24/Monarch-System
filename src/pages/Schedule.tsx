@@ -233,94 +233,95 @@ export default function Schedule() {
       <div className="absolute top-0 right-1/4 w-[300px] h-[300px] bg-accent-blue/5 rounded-full blur-[100px] pointer-events-none -z-10" />
 
       {/* ── HEADER ── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 module-header">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(129,140,248,0.15)]">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(129,140,248,0.25)]">
               <Calendar className="w-6 h-6 text-indigo-400" />
             </div>
             <div>
-              <h1 className="font-orbitron text-3xl md:text-4xl font-bold uppercase tracking-widest text-white">
-                Daily <span className="text-indigo-400">Directives</span>
+              <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-widest text-white glow-text">
+                Daily <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Directives</span>
               </h1>
-              <p className="font-mono text-xs text-white/35 tracking-widest uppercase mt-0.5">
+              <p className="font-mono text-xs text-white/40 tracking-widest uppercase mt-0.5">
                 Failure to complete reduces aura. Proceed with discipline.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5">
           <button
             onClick={() => setIsTemplateModalOpen(true)}
-            className="btn-ghost py-2 px-3 flex items-center gap-2 text-xs border border-accent-purple/20 text-[#A78BFA]"
+            className="btn-ghost py-2.5 px-4 flex items-center gap-2 text-xs border border-monarch-glow/30 text-[#A78BFA] hover:bg-monarch/10 rounded-xl"
           >
-            <Award className="w-4 h-4" /> Presets
+            <Award className="w-4 h-4 text-amber-400" /> Presets
           </button>
           <input type="file" accept=".csv" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="btn-ghost py-2 px-3 flex items-center gap-2 text-xs">
-            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />} CSV
+          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="btn-ghost py-2.5 px-4 flex items-center gap-2 text-xs rounded-xl">
+            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4 text-cyan-400" />} CSV Upload
           </button>
-          <button onClick={() => setIsAddModalOpen(true)} className="btn-primary py-2 px-4 flex items-center gap-2 text-xs">
+          <button onClick={() => setIsAddModalOpen(true)} className="btn-monarch py-2.5 px-5 flex items-center gap-2 text-xs rounded-xl shadow-[0_0_20px_rgba(124,58,237,0.3)]">
             <Plus className="w-4 h-4" /> Add Directive
           </button>
         </div>
       </div>
 
       {/* ── PROGRESS SUMMARY BAR ── */}
-      <div className="glass-2 p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="glass-2 p-5 border border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-monarch to-cyan-500 flex items-center justify-center text-white font-bold font-mono text-sm">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-monarch via-purple-500 to-cyan-500 flex items-center justify-center text-white font-bold font-mono text-sm shadow-[0_0_15px_rgba(124,58,237,0.4)]">
               {progressPercent}%
             </div>
             <div>
-              <p className="font-display text-sm font-bold text-white">{completedToday} of {totalTasks} Directives Complete</p>
-              <p className="font-mono text-[10px] text-white/40 mt-0.5">{earnedXp} / {totalXpPotential} XP earned today</p>
+              <p className="font-display text-sm md:text-base font-bold text-white tracking-wide">{completedToday} of {totalTasks} Directives Complete</p>
+              <p className="font-mono text-[10px] text-white/50 mt-0.5">{earnedXp} / {totalXpPotential} XP earned today</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-[10px] font-mono">
-            <span className="flex items-center gap-1 text-amber-400"><Flame className="w-3 h-3" />{completedToday} done</span>
-            <span className="flex items-center gap-1 text-cyan-400"><Zap className="w-3 h-3" />+{earnedXp} XP</span>
-            <span className="flex items-center gap-1 text-white/40"><Target className="w-3 h-3" />{totalTasks - completedToday} left</span>
+          <div className="flex items-center gap-3 text-xs font-mono">
+            <span className="flex items-center gap-1.5 text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg"><Flame className="w-3.5 h-3.5 animate-pulse" />{completedToday} done</span>
+            <span className="flex items-center gap-1.5 text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-lg"><Zap className="w-3.5 h-3.5" />+{earnedXp} XP</span>
+            <span className="flex items-center gap-1.5 text-white/50 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg"><Target className="w-3.5 h-3.5" />{totalTasks - completedToday} remaining</span>
           </div>
         </div>
-        <div className="mt-3 w-full h-2 bg-black/40 rounded-full overflow-hidden">
+        <div className="mt-4 w-full h-2.5 bg-black/50 border border-white/10 rounded-full overflow-hidden shimmer-bar">
           <motion.div
             animate={{ width: `${progressPercent}%` }}
-            className="h-full bg-gradient-to-r from-monarch to-cyan-400 rounded-full"
+            className="h-full bg-gradient-to-r from-monarch via-purple-400 to-cyan-400 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.5)]"
             transition={{ duration: 0.8 }}
           />
         </div>
       </div>
 
       {/* ── STREAK FREEZE SHIELD ── */}
-      <div className="glass-2 p-5 border-l-4 border-indigo-400 bg-indigo-400/5 relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className={`p-2.5 rounded-lg bg-black/40 border transition-all ${shieldActive ? 'border-cyan-400/50 shadow-[0_0_15px_rgba(6,182,212,0.25)] text-cyan-400' : 'border-white/10 text-white/40'}`}>
+      <div className="glass-2 p-5 border-l-4 border-indigo-400 bg-indigo-950/20 relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-white/[0.08]">
+        <div className="flex items-start gap-3.5">
+          <div className={`p-3 rounded-xl bg-black/50 border transition-all ${shieldActive ? 'border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)] text-cyan-400' : 'border-white/10 text-white/40'}`}>
             <ShieldIcon className={`w-6 h-6 ${shieldActive ? 'animate-pulse' : ''}`} />
           </div>
           <div>
             <h3 className="font-display text-sm font-bold uppercase tracking-widest text-[#F1F5F9] flex items-center gap-2">
               Streak Freeze Shield
-              {shieldActive && <span className="text-[9px] bg-cyan-950/40 border border-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold animate-pulse">ACTIVE</span>}
+              {shieldActive && <span className="text-[9px] bg-cyan-950/60 border border-cyan-400/50 text-cyan-400 px-2.5 py-0.5 rounded-full font-mono font-bold animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.4)]">ACTIVE</span>}
             </h3>
-            <p className="font-mono text-xs text-white/50 mt-0.5">Protects streak if you miss objectives for up to 24h.</p>
-            <div className="mt-1 font-mono text-[10px] text-[#A78BFA]">
-              Inventory: <span className="font-bold text-white bg-white/5 px-2 py-0.5 rounded border border-white/10">{streakFreezes} SHIELDS</span>
+            <p className="font-mono text-xs text-white/50 mt-0.5">Protects streak if you miss directives for up to 24h.</p>
+            <div className="mt-1.5 font-mono text-[10px] text-monarch-glow flex items-center gap-1.5">
+              <span>Inventory:</span>
+              <span className="font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">{streakFreezes} SHIELDS</span>
             </div>
           </div>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex gap-2.5 shrink-0 items-center">
           <button
             onClick={handleToggleShield}
-            className={`px-3 py-2 text-xs font-mono font-bold border transition-all ${shieldActive ? 'bg-red-950/20 border-red-500/30 text-red-400' : 'bg-cyan-950/20 border-cyan-500/30 text-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]'}`}
+            className={`px-4 py-2 text-xs font-mono font-bold border rounded-xl transition-all cursor-pointer ${shieldActive ? 'btn-danger' : 'btn-success'}`}
           >
             {shieldActive ? 'DEACTIVATE' : 'ACTIVATE'}
           </button>
           <div className="flex flex-col gap-1">
-            <button onClick={() => handleBuyShield('xp')} className="px-2 py-1 bg-black/40 border border-white/10 hover:border-white/20 text-[9px] font-mono text-white/70 uppercase tracking-widest transition-all hover:text-white">Buy: 500 XP</button>
-            <button onClick={() => handleBuyShield('aura')} className="px-2 py-1 bg-black/40 border border-white/10 hover:border-white/20 text-[9px] font-mono text-[#A78BFA] uppercase tracking-widest transition-all hover:text-white">Buy: 100 Aura</button>
+            <button onClick={() => handleBuyShield('xp')} className="px-2.5 py-1 bg-black/50 border border-white/10 hover:border-amber-400/40 text-[9px] font-mono text-white/80 uppercase tracking-wider transition-all hover:text-amber-400 rounded-md cursor-pointer">Buy: 500 XP</button>
+            <button onClick={() => handleBuyShield('aura')} className="px-2.5 py-1 bg-black/50 border border-white/10 hover:border-purple-400/40 text-[9px] font-mono text-purple-300 uppercase tracking-wider transition-all hover:text-purple-200 rounded-md cursor-pointer">Buy: 100 Aura</button>
           </div>
         </div>
       </div>
