@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Target, Clock, ArrowRight, Volume2, Dumbbell, Brain, Terminal,
   Video, Swords, LineChart as LineChartIcon, Flame, Star, CheckCircle2, Circle,
-  TrendingUp, Calendar, ChevronRight, Zap
+  TrendingUp, Calendar, ChevronRight
 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line } from 'recharts';
 import { StatRing } from '../components/StatRing';

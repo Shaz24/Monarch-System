@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Mail, Lock, UserPlus, LogIn, Shield, Zap, Swords, Terminal, Sparkles, Cpu, Fingerprint } from 'lucide-react';
+import { Mail, Lock, UserPlus, LogIn, Shield, Zap, Swords, Terminal, Fingerprint } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Auth() {
@@ -12,14 +12,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [bootSequenceComplete, setBootSequenceComplete] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setBootSequenceComplete(true);
-    }, 450);
-    return () => clearTimeout(timer);
-  }, []);
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
